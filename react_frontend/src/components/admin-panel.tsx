@@ -18,6 +18,7 @@ import {
 } from "@/services/subcategory-service"
 import type { AuthToken } from "@/types/auth"
 
+
 export function AdminPanel() {
   const [categoryName, setCategoryName] = useState("")
   const [apiError, setApiError] = useState("")
@@ -136,102 +137,100 @@ export function AdminPanel() {
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Admin Panel</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p>Welcome to the admin panel.</p>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader>
-          <CardTitle>Create Category</CardTitle>
-          <CardDescription>
-            Create a new category for questions.
-          </CardDescription>
-        </CardHeader>
-        <form onSubmit={handleSubmit}>
+    <div className="flex flex-col gap-6">   
+        <Card>
+          <CardHeader>
+            <CardTitle>Admin Panel</CardTitle>
+          </CardHeader>
           <CardContent>
-            <div className="grid gap-3">
-              <Label htmlFor="categoryName">Category Name</Label>
-              <Input
-                id="categoryName"
-                type="text"
-                placeholder="e.g. Science"
-                required
-                value={categoryName}
-                onChange={handleCategoryNameChange}
-              />
-            </div>
+            <p>Welcome to the admin panel.</p>
           </CardContent>
-          <CardFooter className="flex flex-col items-start gap-4">
-            <Button type="submit" disabled={isLoading}>
-              {isLoading ? "Creating..." : "Create Category"}
-            </Button>
-            {apiError && (
-              <p className="text-red-500 text-sm">{apiError}</p>
-            )}
-            {apiSuccess && (
-              <p className="text-green-500 text-sm">{apiSuccess}</p>
-            )}
-          </CardFooter>
-        </form>
-      </Card>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Create Category</CardTitle>
+            <CardDescription>
+              Create a new category for questions.
+            </CardDescription>
+          </CardHeader>
+          <form onSubmit={handleSubmit}>
+            <CardContent>
+              <div className="grid gap-3">
+                <Label htmlFor="categoryName">Category Name</Label>
+                <Input
+                  id="categoryName"
+                  type="text"
+                  placeholder="e.g. Science"
+                  required
+                  value={categoryName}
+                  onChange={handleCategoryNameChange} />
+              </div>
+            </CardContent>
+            <CardFooter className="flex flex-col items-start gap-4">
+              <Button type="submit" disabled={isLoading}>
+                {isLoading ? "Creating..." : "Create Category"}
+              </Button>
+              {apiError && (
+                <p className="text-red-500 text-sm">{apiError}</p>
+              )}
+              {apiSuccess && (
+                <p className="text-green-500 text-sm">{apiSuccess}</p>
+              )}
+            </CardFooter>
+          </form>
+        </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Create Sub Category</CardTitle>
-          <CardDescription>
-            Create a new sub category for a selected category.
-          </CardDescription>
-        </CardHeader>
-        <form onSubmit={handleCreateSubCategorySubmit}>
-          <CardContent>
-            <div className="grid gap-3">
-              <Label htmlFor="parentCategory">Parent Category</Label>
-              <select
-                id="parentCategory"
-                value={selectedCategoryId}
-                onChange={handleCategorySelect}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <option value="" disabled>
-                  Select a category
-                </option>
-                {categories.map((category) => (
-                  <option key={category.categoryId} value={category.categoryId}>
-                    {category.categoryName}
+        <Card>
+          <CardHeader>
+            <CardTitle>Create Sub Category</CardTitle>
+            <CardDescription>
+              Create a new sub category for a selected category.
+            </CardDescription>
+          </CardHeader>
+          <form onSubmit={handleCreateSubCategorySubmit}>
+            <CardContent>
+              <div className="grid gap-3">
+                <Label htmlFor="parentCategory">Parent Category</Label>
+                <select
+                  id="parentCategory"
+                  value={selectedCategoryId}
+                  onChange={handleCategorySelect}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <option value="" disabled>
+                    Select a category
                   </option>
-                ))}
-              </select>
-            </div>
-            <div className="grid gap-3 mt-4">
-              <Label htmlFor="subCategoryName">Sub Category Name</Label>
-              <Input
-                id="subCategoryName"
-                type="text"
-                placeholder="e.g. Physics"
-                required
-                value={subCategoryName}
-                onChange={handleSubCategoryNameChange}
-              />
-            </div>
-          </CardContent>
-          <CardFooter className="flex flex-col items-start gap-4">
-            <Button type="submit" disabled={isSubCategoryLoading}>
-              {isSubCategoryLoading ? "Creating..." : "Create Sub Category"}
-            </Button>
-            {subCategoryApiError && (
-              <p className="text-red-500 text-sm">{subCategoryApiError}</p>
-            )}
-            {subCategoryApiSuccess && (
-              <p className="text-green-500 text-sm">{subCategoryApiSuccess}</p>
-            )}
-          </CardFooter>
-        </form>
-      </Card>
-    </div>
+                  {categories.map((category) => (
+                    <option key={category.categoryId} value={category.categoryId}>
+                      {category.categoryName}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="grid gap-3 mt-4">
+                <Label htmlFor="subCategoryName">Sub Category Name</Label>
+                <Input
+                  id="subCategoryName"
+                  type="text"
+                  placeholder="e.g. Physics"
+                  required
+                  value={subCategoryName}
+                  onChange={handleSubCategoryNameChange} />
+              </div>
+            </CardContent>
+            <CardFooter className="flex flex-col items-start gap-4">
+              <Button type="submit" disabled={isSubCategoryLoading}>
+                {isSubCategoryLoading ? "Creating..." : "Create Sub Category"}
+              </Button>
+              {subCategoryApiError && (
+                <p className="text-red-500 text-sm">{subCategoryApiError}</p>
+              )}
+              {subCategoryApiSuccess && (
+                <p className="text-green-500 text-sm">{subCategoryApiSuccess}</p>
+              )}
+            </CardFooter>
+          </form>
+        </Card>
+      </div>
   )
 }

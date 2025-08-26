@@ -79,10 +79,18 @@ TEMPLATES = [
 WSGI_APPLICATION = 'mcq_project.wsgi.application'
 
 DATABASES = {
+    # 'default': {
+    #     'ENGINE': 'django.db.backends.sqlite3',
+    #     'NAME': BASE_DIR / 'db.sqlite3',
+    # }
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': 'eps',
+            'USER': 'root',
+            'PASSWORD': 'Nepal123',
+            'HOST': 'localhost',  # e.g., 'localhost' or an IP address
+            'PORT': '3306',  # Default MySQL port
+        }
 }
 # ---------------------ADDED BY SAMIP REGMI-------------------
 AUTH_USER_MODEL = 'sqldb_app.User'
