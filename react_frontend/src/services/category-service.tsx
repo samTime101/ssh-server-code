@@ -21,7 +21,7 @@ export interface CreateCategoryResponse {
 }
 
 export const createCategory = async (
-  category: Category,
+  categoryName: Category,
   token: AuthToken
 ): Promise<CreateCategoryResponse> => {
   const response = await fetch(`${API_URL}/api/create/category/`, {
@@ -30,7 +30,7 @@ export const createCategory = async (
       "Content-Type": "application/json",
       Authorization: `Bearer ${token.access}`,
     },
-    body: JSON.stringify({ category }),
+    body: JSON.stringify({ categoryName }),
   });
 
   if (!response.ok) {

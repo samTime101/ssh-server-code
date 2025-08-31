@@ -4,52 +4,53 @@ import React, { useEffect, useState } from 'react';
 
 // Types
 interface SubCategory {
-  id: string;
+  id: number;
   name: string;
-  questionCount: number;
+  question_count: number;
+  subSubCategories: any[];
 }
 
 interface Category {
-  id: string;
+  id: number;
   name: string;
+  question_count: number;
   subCategories: SubCategory[];
 }
-
 interface UserStats {
   points: number;
   totalQuestions: number;
   attemptedQuestions: number;
 }
 
-// Mock data
-const MOCK_CATEGORIES: Category[] = [
-  {
-    id: 'math',
-    name: 'Mathematics',
-    subCategories: [
-      { id: 'algebra', name: 'Algebra', questionCount: 15 },
-      { id: 'geometry', name: 'Geometry', questionCount: 12 },
-      { id: 'calculus', name: 'Calculus', questionCount: 8 },
-    ],
-  },
-  {
-    id: 'science',
-    name: 'Science',
-    subCategories: [
-      { id: 'physics', name: 'Physics', questionCount: 20 },
-      { id: 'chemistry', name: 'Chemistry', questionCount: 18 },
-      { id: 'biology', name: 'Biology', questionCount: 22 },
-    ],
-  },
-  {
-    id: 'history',
-    name: 'History',
-    subCategories: [
-      { id: 'ancient', name: 'Ancient History', questionCount: 10 },
-      { id: 'modern', name: 'Modern History', questionCount: 15 },
-    ],
-  },
-];
+// // Mock data
+// const MOCK_CATEGORIES: Category[] = [
+//   {
+//     id: 'math',
+//     name: 'Mathematics',
+//     subCategories: [
+//       { id: 'algebra', name: 'Algebra', questionCount: 15 },
+//       { id: 'geometry', name: 'Geometry', questionCount: 12 },
+//       { id: 'calculus', name: 'Calculus', questionCount: 8 },
+//     ],
+//   },
+//   {
+//     id: 'science',
+//     name: 'Science',
+//     subCategories: [
+//       { id: 'physics', name: 'Physics', questionCount: 20 },
+//       { id: 'chemistry', name: 'Chemistry', questionCount: 18 },
+//       { id: 'biology', name: 'Biology', questionCount: 22 },
+//     ],
+//   },
+//   {
+//     id: 'history',
+//     name: 'History',
+//     subCategories: [
+//       { id: 'ancient', name: 'Ancient History', questionCount: 10 },
+//       { id: 'modern', name: 'Modern History', questionCount: 15 },
+//     ],
+//   },
+// ];
 
 const MOCK_USER_STATS: UserStats = {
   points: 1250,
@@ -74,6 +75,9 @@ const UserPanel: React.FC = () => {
           const token: AuthToken = { access: tokenString, refresh: "" };
           const result = await getCategories(token);
           setCategories(result.categories);
+          // ----------------------ADDED BY SAMIP REGMI--------------------------------
+          userStats.totalQuestions = result.total_question_count;
+          // ------------------------------------------------------------------------------
         } catch (error) {
           if (error instanceof Error) {
             console.error("Failed to fetch categories:", error.message);
@@ -284,7 +288,10 @@ const UserPanel: React.FC = () => {
                         />
                         <span className="text-gray-700">{subCategory.subCategoryName}</span>
                         <span className="text-sm text-gray-500 ml-auto">
-                          ({subCategory.questionCount} questions)
+                          {/* MODIFIED BY SAMIP REGMI */}
+                          {/*({subCategory.questionCount} questions)*/}
+                          {/* ----------------------------------------------------------*/}
+                          ({subCategory.question_count} questions)
                         </span>
                       </div>
                     ))}

@@ -36,172 +36,199 @@ const QuestionsPage: React.FC = () => {
   const [submitting, setSubmitting] = useState(false);
 
   // Sample questions data
-  const sampleQuestions: QuestionsResponse = {
-    questions: [
-      {
-        id: "68a98ac5d969b82fb73726a2",
-        questionText: "What is the way to multiply two matrices?",
-        questionType: "single",
-        options: [
-          {
-            optionId: "A",
-            text: "Multiply corresponding elements"
-          },
-          {
-            optionId: "B",
-            text: "Add corresponding elements"
-          },
-          {
-            optionId: "C",
-            text: "Dot product of rows and columns"
-          },
-          {
-            optionId: "D",
-            text: "Cross product of rows and columns"
-          }
-        ],
-        correctAnswers: ["C"],
-        difficulty: "easy",
-        category: "Maths",
-        subCategory: ["Matrices"],
-        subSubCategory: ["Matrices"],
-        createdAt: "2025-08-23T09:32:53.640000",
-        updatedAt: "2025-08-23T09:32:53.640000"
-      },
-      {
-        id: "68a98ac5d969b82fb73726a3",
-        questionText: "What is the derivative of x²?",
-        questionType: "single",
-        options: [
-          {
-            optionId: "A",
-            text: "x"
-          },
-          {
-            optionId: "B",
-            text: "2x"
-          },
-          {
-            optionId: "C",
-            text: "x²"
-          },
-          {
-            optionId: "D",
-            text: "2x²"
-          }
-        ],
-        correctAnswers: ["B"],
-        difficulty: "easy",
-        category: "Maths",
-        subCategory: ["Calculus"],
-        subSubCategory: ["Derivatives"],
-        createdAt: "2025-08-23T09:32:53.640000",
-        updatedAt: "2025-08-23T09:32:53.640000"
-      },
-      {
-        id: "68a98ac5d969b82fb73726a4",
-        questionText: "Which of the following are programming languages?",
-        questionType: "multiple",
-        options: [
-          {
-            optionId: "A",
-            text: "Python"
-          },
-          {
-            optionId: "B",
-            text: "HTML"
-          },
-          {
-            optionId: "C",
-            text: "Java"
-          },
-          {
-            optionId: "D",
-            text: "CSS"
-          }
-        ],
-        correctAnswers: ["A", "C"],
-        difficulty: "medium",
-        category: "Computer Science",
-        subCategory: ["Programming"],
-        subSubCategory: ["Languages"],
-        createdAt: "2025-08-23T09:32:53.640000",
-        updatedAt: "2025-08-23T09:32:53.640000"
-      },
-      {
-        id: "68a98ac5d969b82fb73726a5",
-        questionText: "What is the capital of France?",
-        questionType: "single",
-        options: [
-          {
-            optionId: "A",
-            text: "London"
-          },
-          {
-            optionId: "B",
-            text: "Berlin"
-          },
-          {
-            optionId: "C",
-            text: "Paris"
-          },
-          {
-            optionId: "D",
-            text: "Madrid"
-          }
-        ],
-        correctAnswers: ["C"],
-        difficulty: "easy",
-        category: "Geography",
-        subCategory: ["Europe"],
-        subSubCategory: ["Capitals"],
-        createdAt: "2025-08-23T09:32:53.640000",
-        updatedAt: "2025-08-23T09:32:53.640000"
-      },
-      {
-        id: "68a98ac5d969b82fb73726a6",
-        questionText: "Which elements are noble gases?",
-        questionType: "multiple",
-        options: [
-          {
-            optionId: "A",
-            text: "Helium"
-          },
-          {
-            optionId: "B",
-            text: "Oxygen"
-          },
-          {
-            optionId: "C",
-            text: "Neon"
-          },
-          {
-            optionId: "D",
-            text: "Argon"
-          }
-        ],
-        correctAnswers: ["A", "C", "D"],
-        difficulty: "medium",
-        category: "Science",
-        subCategory: ["Chemistry"],
-        subSubCategory: ["Elements"],
-        createdAt: "2025-08-23T09:32:53.640000",
-        updatedAt: "2025-08-23T09:32:53.640000"
-      }
-    ]
-  };
+  // const sampleQuestions: QuestionsResponse = {
+  //   questions: [
+  //     {
+  //       id: "68a98ac5d969b82fb73726a2",
+  //       questionText: "What is the way to multiply two matrices?",
+  //       questionType: "single",
+  //       options: [
+  //         {
+  //           optionId: "A",
+  //           text: "Multiply corresponding elements"
+  //         },
+  //         {
+  //           optionId: "B",
+  //           text: "Add corresponding elements"
+  //         },
+  //         {
+  //           optionId: "C",
+  //           text: "Dot product of rows and columns"
+  //         },
+  //         {
+  //           optionId: "D",
+  //           text: "Cross product of rows and columns"
+  //         }
+  //       ],
+  //       correctAnswers: ["C"],
+  //       difficulty: "easy",
+  //       category: "Maths",
+  //       subCategory: ["Matrices"],
+  //       subSubCategory: ["Matrices"],
+  //       createdAt: "2025-08-23T09:32:53.640000",
+  //       updatedAt: "2025-08-23T09:32:53.640000"
+  //     },
+  //     {
+  //       id: "68a98ac5d969b82fb73726a3",
+  //       questionText: "What is the derivative of x²?",
+  //       questionType: "single",
+  //       options: [
+  //         {
+  //           optionId: "A",
+  //           text: "x"
+  //         },
+  //         {
+  //           optionId: "B",
+  //           text: "2x"
+  //         },
+  //         {
+  //           optionId: "C",
+  //           text: "x²"
+  //         },
+  //         {
+  //           optionId: "D",
+  //           text: "2x²"
+  //         }
+  //       ],
+  //       correctAnswers: ["B"],
+  //       difficulty: "easy",
+  //       category: "Maths",
+  //       subCategory: ["Calculus"],
+  //       subSubCategory: ["Derivatives"],
+  //       createdAt: "2025-08-23T09:32:53.640000",
+  //       updatedAt: "2025-08-23T09:32:53.640000"
+  //     },
+  //     {
+  //       id: "68a98ac5d969b82fb73726a4",
+  //       questionText: "Which of the following are programming languages?",
+  //       questionType: "multiple",
+  //       options: [
+  //         {
+  //           optionId: "A",
+  //           text: "Python"
+  //         },
+  //         {
+  //           optionId: "B",
+  //           text: "HTML"
+  //         },
+  //         {
+  //           optionId: "C",
+  //           text: "Java"
+  //         },
+  //         {
+  //           optionId: "D",
+  //           text: "CSS"
+  //         }
+  //       ],
+  //       correctAnswers: ["A", "C"],
+  //       difficulty: "medium",
+  //       category: "Computer Science",
+  //       subCategory: ["Programming"],
+  //       subSubCategory: ["Languages"],
+  //       createdAt: "2025-08-23T09:32:53.640000",
+  //       updatedAt: "2025-08-23T09:32:53.640000"
+  //     },
+  //     {
+  //       id: "68a98ac5d969b82fb73726a5",
+  //       questionText: "What is the capital of France?",
+  //       questionType: "single",
+  //       options: [
+  //         {
+  //           optionId: "A",
+  //           text: "London"
+  //         },
+  //         {
+  //           optionId: "B",
+  //           text: "Berlin"
+  //         },
+  //         {
+  //           optionId: "C",
+  //           text: "Paris"
+  //         },
+  //         {
+  //           optionId: "D",
+  //           text: "Madrid"
+  //         }
+  //       ],
+  //       correctAnswers: ["C"],
+  //       difficulty: "easy",
+  //       category: "Geography",
+  //       subCategory: ["Europe"],
+  //       subSubCategory: ["Capitals"],
+  //       createdAt: "2025-08-23T09:32:53.640000",
+  //       updatedAt: "2025-08-23T09:32:53.640000"
+  //     },
+  //     {
+  //       id: "68a98ac5d969b82fb73726a6",
+  //       questionText: "Which elements are noble gases?",
+  //       questionType: "multiple",
+  //       options: [
+  //         {
+  //           optionId: "A",
+  //           text: "Helium"
+  //         },
+  //         {
+  //           optionId: "B",
+  //           text: "Oxygen"
+  //         },
+  //         {
+  //           optionId: "C",
+  //           text: "Neon"
+  //         },
+  //         {
+  //           optionId: "D",
+  //           text: "Argon"
+  //         }
+  //       ],
+  //       correctAnswers: ["A", "C", "D"],
+  //       difficulty: "medium",
+  //       category: "Science",
+  //       subCategory: ["Chemistry"],
+  //       subSubCategory: ["Elements"],
+  //       createdAt: "2025-08-23T09:32:53.640000",
+  //       updatedAt: "2025-08-23T09:32:53.640000"
+  //     }
+  //   ]
+  // };
 
   useEffect(() => {
     // Simulate API call with timeout
+    // const fetchQuestions = async () => {
+    //   try {
+    //     setLoading(true);
+        
+    //     // Simulate network delay
+    //     await new Promise(resolve => setTimeout(resolve, 1000));
+        
+    //     // Use sample data instead of API call
+    //     setQuestions(sampleQuestions.questions);
+    //   } 
+    // DATA FETCH
     const fetchQuestions = async () => {
       try {
         setLoading(true);
-        
-        // Simulate network delay
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        // Use sample data instead of API call
-        setQuestions(sampleQuestions.questions);
+        // --------------------------_ADDED BY SAMIP REGMI----------------------
+        const token = localStorage.getItem('accessToken');
+        const response = await fetch('http://localhost:8000/api/select/questions/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            categoryIds: [],
+            subCategoryIds: [],
+            subSubCategoryIds: []
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error("FAILED TO LOAD QUESTION");
+        }
+        const data: QuestionsResponse = await response.json();
+        setQuestions(data.questions);
+        setError(null);
+        // -------------------------------------------------------------
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An unknown error occurred');
         console.error('Error loading questions:', err);

@@ -45,3 +45,5 @@ react_frontend.env.production.local
 react_frontend/npm-debug.log*
 react_frontend/yarn-debug.log*
 react_frontend/yarn-error.log*
+
+/sisani/

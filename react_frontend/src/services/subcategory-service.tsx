@@ -61,10 +61,16 @@ export async function getCategories(
     categories: data.categories.map((category: any) => ({
       categoryId: category.id,
       categoryName: category.name,
+      // -----ADDED BY SAMIP REGMI----
+      question_count: category.question_count,
+      // --------------------------------
       subCategories: category.subCategories.map((subcategory: any) => ({
         subCategoryId: subcategory.id, 
         subCategoryName: subcategory.name, 
-        subSubCategory: subcategory.subSubCategories
+        subSubCategory: subcategory.subSubCategories,
+        // -----------ADDED BY SAMIP REGMI----
+        question_count: subcategory.question_count,
+        // ------------------------------------
       }))
     })),
   };
