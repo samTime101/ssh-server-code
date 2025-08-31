@@ -21,7 +21,7 @@ class CreateQuestionView(APIView):
                 "message": "You do not have permission to create a question",
             }
             return Response(response_data, status=status.HTTP_403_FORBIDDEN)
-
+        print(request.data)
         serializer = CreateQuestionSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         question = serializer.save()

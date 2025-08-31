@@ -3,8 +3,16 @@ import type { AuthToken } from "@/types/auth";
 const API_URL = "http://localhost:8000";
 
 export interface Category {
-  id: number;
-  name: string;
+  categoryId: number;
+  categoryName: string;
+  subCategories: SubCategory[]
+}
+
+export interface SubCategory {
+  subCategoryId: string;
+  subCategoryName: string;
+  categoryId: string;
+  categoryName: string;
 }
 
 export interface CreateCategoryResponse {
@@ -13,7 +21,7 @@ export interface CreateCategoryResponse {
 }
 
 export const createCategory = async (
-  categoryName: string,
+  category: Category,
   token: AuthToken
 ): Promise<CreateCategoryResponse> => {
   const response = await fetch(`${API_URL}/api/create/category/`, {
@@ -22,7 +30,7 @@ export const createCategory = async (
       "Content-Type": "application/json",
       Authorization: `Bearer ${token.access}`,
     },
-    body: JSON.stringify({ categoryName }),
+    body: JSON.stringify({ category }),
   });
 
   if (!response.ok) {

@@ -54,12 +54,20 @@ export async function getCategories(
   }
 
   const data = await response.json();
+
+  
   const transformedData = {
     ...data,
     categories: data.categories.map((category: any) => ({
       categoryId: category.id,
       categoryName: category.name,
+      subCategories: category.subCategories.map((subcategory: any) => ({
+        subCategoryId: subcategory.id, 
+        subCategoryName: subcategory.name, 
+        subSubCategory: subcategory.subSubCategories
+      }))
     })),
   };
+console.log(transformedData);
   return transformedData;
 }
