@@ -12,6 +12,7 @@ from create_subsubcategory.views import CreateSubSubCategoryView
 from get_categories.views import GetCategoriesView
 from create_question.views import CreateQuestionView
 from select_questions.views import SelectQuestionView
+from user_attempts.views import UserAttemptView
 # -----------------------------------------------------
 
 urlpatterns = [
@@ -32,8 +33,19 @@ urlpatterns = [
     path('api/create/question/',CreateQuestionView.as_view(),name='create_question'),
 
 
+    path('api/user/attempt/', UserAttemptView.as_view(), name='user_attempt'),
+
+
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     
     # ------------------------------------------------------
 ]
+
+# USER ANALYTICS GET GARDA
+# api/user/analytics
+"""
+response_type = {
+        
+}
+"""

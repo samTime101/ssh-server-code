@@ -1,5 +1,5 @@
 from datetime import datetime
-from mongoengine import Document, StringField, ListField, EmbeddedDocument, EmbeddedDocumentField, DateTimeField
+from mongoengine import Document, StringField, ListField, EmbeddedDocument, EmbeddedDocumentField, DateTimeField, BooleanField
 from mongoengine import connect
 
 connect(db='mcq_db', host='localhost', port=27017)
@@ -25,7 +25,19 @@ class Question(Document):
 
     meta = {'collection': 'questions'}
 
+class Submissions(EmbeddedDocument):
+    questionId = StringField(required=True)
+    selectedAnswers = ListField(StringField())
+    isCorrect = BooleanField(required=True)
+    attemptedAt = DateTimeField(default=datetime.utcnow)
 
+class SubmissionCollection(Document):
+    userId = StringField(required=True)
+    answers = ListField(EmbeddedDocumentField(Submissions))
+    started_at = DateTimeField(default=datetime.utcnow)
+
+    meta = {'collection': 'user_attempts'}
+    
 # DUMMY DATA
 # question = Question(
 #     questionText="Which of the following are valid data types in Java?",

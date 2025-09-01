@@ -32,6 +32,7 @@ INSTALLED_APPS = [
     'create_question',
     'get_categories',
     'select_questions',
+    'user_attempts',
     # -------------------------------------------------------
 ]
 
