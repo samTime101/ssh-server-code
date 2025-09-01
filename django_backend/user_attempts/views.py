@@ -28,16 +28,17 @@ class UserAttemptView(APIView):
 
 
         # CHECK IF DATA EXISTS
-        
+
         data = SubmissionCollection.objects(userId=userId).first()
         
         if data:
             newdata = Submissions(questionId=questionId, selectedAnswers=selectedAnswers, isCorrect=isCorrect, attemptedAt=attemptedAt)
             data.answers.append(newdata)
             data.save()
-            return Response({
+            response_data = {
                 "message": "Attempt recorded",
-            }, status=status.HTTP_201_CREATED)
+            }
+            return Response(response_data, status=status.HTTP_201_CREATED)
 
 
         user_attempt = SubmissionCollection(
@@ -52,6 +53,7 @@ class UserAttemptView(APIView):
         )
 
         user_attempt.save()
-        return Response({
+        response_data = {
             "message": "Attempt recorded",
-        }, status=status.HTTP_201_CREATED)
+        }
+        return Response(response_data, status=status.HTTP_201_CREATED)

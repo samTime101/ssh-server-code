@@ -25,6 +25,8 @@ class Question(Document):
 
     meta = {'collection': 'questions'}
 
+
+# SUBMISSION DOCUMENTS
 class Submissions(EmbeddedDocument):
     questionId = StringField(required=True)
     selectedAnswers = ListField(StringField())
