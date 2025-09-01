@@ -18,7 +18,10 @@ class UserAttemptView(APIView):
             question = Question.objects.get(id=questionId)
 
         except Question.DoesNotExist:
-            return Response({"error": "QUESTION NOT "}, status=status.HTTP_404_NOT_FOUND)
+            response_data = {
+                "error": "Question not found"
+                }
+            return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
         # CHECK IF ANSWERS ARE CORRECT
         correctAnswers = set(question.correctAnswers)
