@@ -33,7 +33,7 @@ class UserAttemptView(APIView):
         
         if data:
             newdata = Submissions(questionId=questionId, selectedAnswers=selectedAnswers, isCorrect=isCorrect, attemptedAt=attemptedAt)
-            data.answers.append(newdata)
+            data.attempts.append(newdata)
             data.save()
             response_data = {
                 "message": "Attempt recorded",
@@ -43,7 +43,7 @@ class UserAttemptView(APIView):
 
         user_attempt = SubmissionCollection(
             userId=userId,
-            answers = [{
+            attempts=[{
                 "questionId": questionId,
                 "selectedAnswers": selectedAnswers,
                 "isCorrect": isCorrect,

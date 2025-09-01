@@ -35,7 +35,7 @@ class Submissions(EmbeddedDocument):
 
 class SubmissionCollection(Document):
     userId = StringField(required=True)
-    answers = ListField(EmbeddedDocumentField(Submissions))
+    attempts = ListField(EmbeddedDocumentField(Submissions))
     started_at = DateTimeField(default=datetime.utcnow)
 
     meta = {'collection': 'user_attempts'}
