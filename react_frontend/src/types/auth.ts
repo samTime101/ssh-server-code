@@ -1,8 +1,11 @@
 export interface User {
-  userId: string; // Or number, depending on your model's primary key
+  userId: string;
   email: string;
   username: string;
   phonenumber: string;
+  is_superuser: boolean;
+  is_staff: boolean;
+  is_active: boolean;
 }
 
 export interface AuthToken {

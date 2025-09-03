@@ -1,18 +1,29 @@
+// FILE MODIFIED ON SEP 3 BY SAMIP REGMI  
+//TODO: FIX THE TYPES OF FUNCTION **createSubCategory** 
+
+
 import { API_URL } from "@/lib/utils";
 import type { AuthToken } from "@/types/auth";
 
 // Force re-evaluation of this module
 
 export interface Category {
-  categoryId: string;
+  categoryId: number;
   categoryName: string;
+  question_count: number;
+  subCategories: SubCategory[];
 }
 
 export interface SubCategory {
-  subCategoryId: string;
+  subCategoryId: number;
   subCategoryName: string;
-  categoryId: string;
-  categoryName: string;
+  question_count: number;
+  subSubCategories?: SubSubCategory[];
+}
+
+export interface SubSubCategory {
+  subSubCategoryId: number;
+  subSubCategoryName: string;
 }
 
 export async function createSubCategory(
@@ -39,7 +50,7 @@ export async function createSubCategory(
 
 export async function getCategories(
   token: AuthToken
-): Promise<{ message: string; categories: Category[] }> {
+): Promise<{ total_question_count: number; categories: Category[] }> {
   const response = await fetch(`${API_URL}/api/get/categories/`, {
     method: "GET",
     headers: {
