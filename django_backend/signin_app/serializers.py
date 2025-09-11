@@ -4,6 +4,11 @@
 
 from rest_framework import serializers
 from django.contrib.auth import authenticate
+# MODIFIED ON SEP 11 , SAMIP REGMI
+
+# STADARD DJANGO EXCEPTION RAISED FOR AUTHENTICATION FAILED
+# 401 UNAUTHORIZED
+from rest_framework.exceptions import AuthenticationFailed
 
 class UserSignInSerializer(serializers.Serializer):
     email = serializers.EmailField()
@@ -31,10 +36,10 @@ class UserSignInSerializer(serializers.Serializer):
 
         user = authenticate(username=email, password=password)
         if not user:
-            raise serializers.ValidationError("Invalid email or password")
+            raise AuthenticationFailed("Invalid email or password")
 
         if not user.is_active:
-            raise serializers.ValidationError("User account is disabled")
+            raise AuthenticationFailed("User account is disabled")
 
         data['user'] = user
         return data
