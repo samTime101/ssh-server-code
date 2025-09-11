@@ -21,7 +21,11 @@ class UserSignInSerializer(serializers.Serializer):
         received = set(data.keys())
         extra = received - allowed
         if extra:
-            raise serializers.ValidationError(f"extra fields detected: {extra}")
+            # CUSTOM RESPONSE DATA
+            response_data = {
+                "error": f"extra fields detected: {extra}"
+            }
+            raise serializers.ValidationError(response_data)
         return data
 
     def validate(self, data):
@@ -32,14 +36,26 @@ class UserSignInSerializer(serializers.Serializer):
         password = data.get('password')
 
         if not email or not password:
-            raise serializers.ValidationError("Both email and password are required")
+            # CUSTOM RESPONSE DATA
+            response_data = {
+                "error": "Both email and password are required"
+            }
+            raise serializers.ValidationError(response_data)
 
         user = authenticate(username=email, password=password)
         if not user:
-            raise AuthenticationFailed("Invalid email or password")
+            # CUSTOM RESPONSE DATA
+            response_data = {
+                "error": "Invalid email or password"
+            }
+            raise AuthenticationFailed(response_data)
 
         if not user.is_active:
-            raise AuthenticationFailed("User account is disabled")
+            # CUSTOM RESPONSE DATA
+            response_data = {
+                "error": "User account is disabled"
+            }
+            raise AuthenticationFailed(response_data)
 
         data['user'] = user
         return data
