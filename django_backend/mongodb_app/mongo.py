@@ -1,8 +1,19 @@
 from datetime import datetime
 from mongoengine import Document, StringField, ListField, EmbeddedDocument, EmbeddedDocumentField, DateTimeField, BooleanField
 from mongoengine import connect
+# MODIFIED ON SEP 11 , SAMIP REGMI
+import os
+from dotenv import load_dotenv
 
-connect(db='mcq_db', host='localhost', port=27017)
+# CONNECTION TO MONGO DB IS NOW ON .ENV FILE
+load_dotenv()
+mongo_uri = os.getenv("MONGO_URI")
+connect(host=mongo_uri)
+
+# THE FOLLOWING CONTENT SHALL BE IN .env FILE
+# FOR LOCAL USE 
+# MONGO_URI=mongodb://localhost:27017/mcq_db
+# FOR ATLAS I WILL SHARE
 
 # OPTION EMBEDDED DOCUMENT
 class Option(EmbeddedDocument):
