@@ -46,8 +46,6 @@
 
 ```json
 {
-    "non_field_errors": [
-        "Invalid email or password"
-    ]
+	"error": "Invalid email or password"
 }
 ```
