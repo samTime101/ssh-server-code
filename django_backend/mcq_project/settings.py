@@ -1,7 +1,10 @@
 
 from pathlib import Path
 from datetime import timedelta
+from dotenv import load_dotenv
+import os
 
+load_dotenv()  
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-yg$-iov^lsz7mv^6-oy)11!4^*mzr$!w#bb-y2jfpcs$n8)pxy'
@@ -33,6 +36,7 @@ INSTALLED_APPS = [
     'get_categories',
     'select_questions',
     'user_attempts',
+    'userhistory_app'
     # -------------------------------------------------------
 ]
 
@@ -84,13 +88,21 @@ DATABASES = {
     #     'ENGINE': 'django.db.backends.sqlite3',
     #     'NAME': BASE_DIR / 'db.sqlite3',
     # }
+    # 'default': {
+    #         'ENGINE': 'django.db.backends.mysql',
+    #         'NAME': 'sisani',
+    #         'USER': 'samip@localhost',
+    #         'PASSWORD': 'samip@admin',
+    #         'HOST': 'localhost',  # e.g., 'localhost' or an IP address
+    #         'PORT': '3306',  # Default MySQL port
+    #     }
     'default': {
-            'ENGINE': 'django.db.backends.mysql',
-            'NAME': 'sisani',
-            'USER': 'samip@localhost',
-            'PASSWORD': 'samip@admin',
-            'HOST': 'localhost',  # e.g., 'localhost' or an IP address
-            'PORT': '3306',  # Default MySQL port
+            'ENGINE': os.getenv("ENGINE"),
+            'NAME': os.getenv("NAME"),
+            'USER': os.getenv("DB_USER"),
+            'PASSWORD': os.getenv("DB_PASSWORD"),
+            'HOST': os.getenv("HOST"),
+            'PORT': os.getenv("PORT"),
         }
 }
 # ---------------------ADDED BY SAMIP REGMI-------------------
@@ -149,5 +161,34 @@ SIMPLE_JWT = {
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
     "ROTATE_REFRESH_TOKENS": False,
     "BLACKLIST_AFTER_ROTATION": True,
+}
+
+
+
+# SERVER LOGS
+# https://docs.djangoproject.com/en/5.2/howto/logging/
+
+# FULLY REFRENCED FROM DOCS FILE 
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "file": {
+            "class": "logging.FileHandler",
+            "filename": "server.log",
+            "level": "DEBUG",
+        },
+        "console": {  
+            "class": "logging.StreamHandler",
+            "level": "DEBUG",
+        },
+    },
+    "loggers": {
+        "django.server": { 
+            "level": "DEBUG",
+            "handlers": ["file", "console"],
+        },
+    },
 }
 
