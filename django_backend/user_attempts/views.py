@@ -5,9 +5,12 @@ from rest_framework.permissions import IsAuthenticated
 from mongodb_app.mongo import SubmissionCollection, Question ,Submissions
 from datetime import datetime
 from .serializers import UserAttemptSerializer
+from drf_spectacular.utils import extend_schema
+
 
 class UserAttemptView(APIView):
     permission_classes = [IsAuthenticated]
+    @extend_schema(request=UserAttemptSerializer)
     def post(self, request):
         user = request.user
         userId = str(user.id)

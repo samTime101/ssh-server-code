@@ -4,9 +4,12 @@ from rest_framework import status
 from rest_framework.permissions import AllowAny
 from .serializers import UserSignInSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
+from drf_spectacular.utils import extend_schema
 
 class SignInView(APIView):
     permission_classes = [AllowAny]
+
+    @extend_schema(request=UserSignInSerializer)   
 
     def post(self, request):
         serializer = UserSignInSerializer(data=request.data)

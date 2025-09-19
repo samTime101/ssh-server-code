@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.urls import path
 from rest_framework_simplejwt.views import (TokenObtainPairView,  TokenRefreshView,)
+from drf_spectacular.views import (SpectacularAPIView, SpectacularSwaggerView,)
 
 # ---------------_ADDED BY SAMIP REGMI---------------
 from signup_app.views import SignUpView
@@ -17,6 +18,7 @@ from userhistory_app.views import UserAttemptHistory
 # -----------------------------------------------------
 
 urlpatterns = [
+
     path('admin/', admin.site.urls),
 
     # ------------__ADDED BY SAMIP REGMI---------------
@@ -40,6 +42,10 @@ urlpatterns = [
 
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+
+    # API DOCS
+    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
+    path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
     
     # ------------------------------------------------------
 ]
