@@ -6,11 +6,13 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import AllowAny
 from .serializers import UserSignupSerializer
+from drf_spectacular.utils import extend_schema
 # from sqldb_app.models import User
 # from rest_framework_simplejwt.tokens import RefreshToken
 
 class SignUpView(APIView):
     permission_classes = [AllowAny]
+    @extend_schema(request=UserSignupSerializer)
 
     def post(self, request):
         serializer = UserSignupSerializer(data=request.data)

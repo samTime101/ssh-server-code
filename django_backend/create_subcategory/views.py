@@ -4,10 +4,12 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from .serializers import CreateSubCategorySerializer
 from sqldb_app.models import Category , SubCategory
+from drf_spectacular.utils import extend_schema
 
 class CreateSubCategoryView(APIView):
     permission_classes = [IsAuthenticated]
 
+    @extend_schema(request=CreateSubCategorySerializer)
     def post(self, request):
         # ONLY ADMIN AND STAFF CAN CREATE SUBCATEGORY
         if not request.user.is_superuser and not request.user.is_staff:

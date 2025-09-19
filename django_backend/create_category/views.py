@@ -4,9 +4,11 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from .serializers import CreateCategorySerializer
 from sqldb_app.models import Category
+from drf_spectacular.utils import extend_schema
 
 class CreateCategoryView(APIView):
     permission_classes = [IsAuthenticated]
+    @extend_schema(request=CreateCategorySerializer)
 
     def post(self, request):
         # ONLY ADMIN AND STAFF CAN CREATE CATEGORY

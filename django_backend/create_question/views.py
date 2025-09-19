@@ -6,10 +6,11 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from .serializers import CreateQuestionSerializer
+from drf_spectacular.utils import extend_schema
 
 class CreateQuestionView(APIView):
     permission_classes = [IsAuthenticated]
-
+    @extend_schema(request=CreateQuestionSerializer)
     def post(self, request):
 
         # ONLY SUPERUSER AND STAFF CAN CREATE QUESTIONS

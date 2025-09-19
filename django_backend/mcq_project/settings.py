@@ -36,7 +36,8 @@ INSTALLED_APPS = [
     'get_categories',
     'select_questions',
     'user_attempts',
-    'userhistory_app'
+    'userhistory_app',
+    'drf_spectacular' # FOR API DOCS
     # -------------------------------------------------------
 ]
 
@@ -60,6 +61,7 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         'dj_rest_auth.jwt_auth.JWTCookieAuthentication',  
     ],
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',  # FOR API DOCS
 }
 CORS_ORIGIN_ALLOW_ALL = True 
 # -----------------------------------------------------------
