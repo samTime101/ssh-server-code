@@ -27,6 +27,7 @@ Authorization Bearer:<access_token>
             "id": "68a98ac5d969b82fb73726a2",
             "questionText": "what is the way to multiply two matrices",
             "questionType": "single",
+            "description": "whats upp",
             "options": [
                 {
                     "optionId": "A",
