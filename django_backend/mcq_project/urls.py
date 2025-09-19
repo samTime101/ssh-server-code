@@ -13,6 +13,7 @@ from get_categories.views import GetCategoriesView
 from create_question.views import CreateQuestionView
 from select_questions.views import SelectQuestionView
 from user_attempts.views import UserAttemptView
+from userhistory_app.views import UserAttemptHistory
 # -----------------------------------------------------
 
 urlpatterns = [
@@ -34,6 +35,7 @@ urlpatterns = [
 
 
     path('api/user/attempt/', UserAttemptView.as_view(), name='user_attempt'),
+    path('api/user/attempt/history/', UserAttemptHistory.as_view(), name='user_attempt'),
 
 
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
