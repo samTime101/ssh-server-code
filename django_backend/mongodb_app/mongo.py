@@ -26,6 +26,7 @@ class Question(Document):
     questionType = StringField(required=True, choices=["single", "multiple"])
     options = ListField(EmbeddedDocumentField(Option))
     correctAnswers = ListField(StringField())  
+    description = StringField()
     difficulty = StringField(choices=["easy", "medium", "hard"], default="easy") #DEFAULT MA EASY
     category = StringField()        
     # ACCEPT MULTIPLE CATEGORIES AND SUBCATEGORIES
