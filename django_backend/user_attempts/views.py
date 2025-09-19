@@ -4,14 +4,17 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from mongodb_app.mongo import SubmissionCollection, Question ,Submissions
 from datetime import datetime
+from .serializers import UserAttemptSerializer
 
 class UserAttemptView(APIView):
     permission_classes = [IsAuthenticated]
     def post(self, request):
         user = request.user
         userId = str(user.id)
-        questionId = request.data.get('questionId')
-        selectedAnswers = request.data.get('selectedAnswers', [])
+        serializer = UserAttemptSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        questionId = serializer.validated_data.get("questionId")
+        selectedAnswers = serializer.validated_data.get("selectedAnswers", [])
 
         # CHECK IF QUESTION EXISTS
         try:

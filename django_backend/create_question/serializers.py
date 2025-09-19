@@ -11,9 +11,9 @@ class OptionSerializer(serializers.Serializer):
     text = serializers.CharField(required=True)
 
 class QuestionDataSerializer(serializers.Serializer):
-    id = "firstid"
     questionText = serializers.CharField(required=True)
     questionType = serializers.ChoiceField(choices=["single", "multiple"], required=True)
+    description = serializers.CharField(required=False, allow_blank=False)
     options = OptionSerializer(many=True, required=True)
     correctAnswers = serializers.ListField(child=serializers.CharField(), required=True)
     difficulty = serializers.ChoiceField(choices=["easy", "medium", "hard"], default="easy")
@@ -74,6 +74,7 @@ class CreateQuestionSerializer(serializers.Serializer):
         # Create the question in MongoDB
         question = Question(
             questionText=question_data["questionText"],
+            description=question_data.get("description"), # THE DEFAULT DESCRIPTION IS EMPTY
             questionType=question_data["questionType"],
             options=question_data["options"],
             correctAnswers=question_data["correctAnswers"],
@@ -92,6 +93,7 @@ class CreateQuestionSerializer(serializers.Serializer):
         return {
             'questionData': {
                 'questionText': instance.questionText,
+                'description': instance.description,
                 'questionType': instance.questionType,
                 'options': instance.options,
                 'correctAnswers': instance.correctAnswers,
