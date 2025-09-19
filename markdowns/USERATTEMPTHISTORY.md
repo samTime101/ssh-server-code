@@ -7,7 +7,7 @@ Authorization Bearer:<access_token>
 `
 
 
-## GET REQUEST RESPONSE
+## GET REQUEST RESPONSE(200)
 
 ```json
 {
