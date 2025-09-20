@@ -8,6 +8,27 @@ from sqldb_app.models import Category, SubCategory, SubSubCategory
 from utils.helper.fetch_names import fetch_names
 from django.core.exceptions import ObjectDoesNotExist
 
+class OptionSerializer(serializers.Serializer):
+    optionId = serializers.CharField()
+    text = serializers.CharField()
+
+class QuestionDataSerializer(serializers.Serializer):
+    id = serializers.CharField()
+    questionText = serializers.CharField()
+    description = serializers.CharField(allow_blank=True, required=False)
+    questionType = serializers.CharField()
+    options = OptionSerializer(many=True)
+    difficulty = serializers.CharField()
+    category = serializers.CharField()
+    subCategory = serializers.ListField(child=serializers.CharField())
+    subSubCategory = serializers.ListField(child=serializers.CharField())
+    createdAt = serializers.DateTimeField()
+    updatedAt = serializers.DateTimeField()
+
+class QuestionResponseSerializer(serializers.Serializer):
+    detail = serializers.CharField()
+    questions = QuestionDataSerializer(many=True)
+
 class SelectQuestionSerializer(serializers.Serializer):
 
     categoryIds = serializers.ListField(child=serializers.IntegerField(), required=False, allow_empty=True)
@@ -47,7 +68,6 @@ class SelectQuestionSerializer(serializers.Serializer):
             result = result.filter(subCategory__in=subCategories)
         if subSubCategories:
             result = result.filter(subSubCategory__in=subSubCategories)
-        if result:
-            return result
-        else:
-            return Question.objects.all()
+        self.questions = result if result else Question.objects().all()
+        return self.questions
+

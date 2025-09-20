@@ -46,3 +46,7 @@ class UserAttemptSerializer(serializers.Serializer):
             submission = SubmissionCollection(userId=user.id, attempts=[new_submission])
             submission.save()
             return new_submission
+        
+
+class UserAttemptResponseSerializer(serializers.Serializer):
+    detail = serializers.CharField()

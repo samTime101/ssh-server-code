@@ -11,3 +11,13 @@ class CreateSubSubCategorySerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         return SubSubCategory.objects.create(**validated_data)
+
+class SubSubCategoryDataSerializer(serializers.Serializer):
+    id = serializers.IntegerField(source='subSubCategoryId')
+    name = serializers.CharField(source='subSubCategoryName')
+    subCategoryId = serializers.IntegerField(source='subCategoryID.subCategoryId')
+    subCategoryName = serializers.CharField(source='subCategoryID.subCategoryName')
+
+class SubSubCategoryResponseSerializer(serializers.Serializer):
+    detail = serializers.CharField()
+    subsubcategory = SubSubCategoryDataSerializer()

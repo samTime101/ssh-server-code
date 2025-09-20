@@ -16,3 +16,12 @@ class UserSignupSerializer(serializers.ModelSerializer):
         #PASSWORD HASHING AND SAVING IS ALREADY HANDLED BY USER MODEL
         user = User.objects.create_user(**validated_data , is_active=True, is_staff=False ,is_superuser=False)
         return user
+
+class UserSignupResponseSerializer(serializers.Serializer):
+    detail = serializers.CharField(default="User registered successfully")
+    userId = serializers.CharField()
+    email = serializers.EmailField()
+    username = serializers.CharField()
+    phonenumber = serializers.CharField()
+    firstname = serializers.CharField()
+    lastname = serializers.CharField()

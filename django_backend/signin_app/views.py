@@ -32,16 +32,15 @@ from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework import status
 from rest_framework.permissions import AllowAny
-from .serializers import UserSignInSerializer
+from .serializers import UserSignInSerializer,UserSignInResponseSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from drf_spectacular.utils import extend_schema
 from django.contrib.auth import authenticate
 from rest_framework.exceptions import AuthenticationFailed
-from utils.responses.signin_response import build_signin_response
 
 class SignInView(APIView):
     permission_classes = [AllowAny]
-    @extend_schema(request = UserSignInSerializer)   
+    @extend_schema(request = UserSignInSerializer,responses=UserSignInResponseSerializer)   
 
     def post(self, request: Request) -> Response:
         
@@ -60,5 +59,25 @@ class SignInView(APIView):
         refresh = RefreshToken.for_user(user)
         access_token = str(refresh.access_token)    
         refresh_token = str(refresh)
+        response_serializer = UserSignInResponseSerializer({
+            "detail": "User signed in successfully",
+            "user": {
+                "userId": str(user.id),
+                "email": user.email,
+                "username": user.username,
+                "phonenumber": getattr(user, 'phonenumber', None),
+                "firstname": getattr(user, 'firstname', None),
+                "lastname": getattr(user, 'lastname', None),
+                "is_active": user.is_active,
+                "is_staff": user.is_staff,
+                "is_superuser": user.is_superuser
+            },
+            "tokens": {
+                "access": access_token,
+                "refresh": refresh_token
+            }
+        })
 
-        return build_signin_response(user, access_token, refresh_token)
+        return Response(response_serializer.data, status=status.HTTP_200_OK)
+
+
