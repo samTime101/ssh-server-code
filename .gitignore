@@ -36,6 +36,13 @@ django_backend/userhistory_app/migrations/
 django_backend/userhistory_app/__pycache__/
 django_backend/userhistory_app/*.pyc
 
+
+django_backendutils/hepler/__pycache__/
+django_backend/utils/responses/__pycache__/
+
+# RESPONSES 
+django_backend/responses/__pycache__/
+
 db.sqlite3
 
 # FOR REACT AND NODE
