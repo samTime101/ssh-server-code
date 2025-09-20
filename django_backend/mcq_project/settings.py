@@ -21,9 +21,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # ----------------_ADDED BY SAMIP REGMI-------------------
     'corsheaders', 
-    'rest_framework', 
-    "rest_framework.authtoken",
-    'dj_rest_auth', 
+    'rest_framework.authtoken', 
+    'drf_spectacular', 
+    'dj_rest_auth',
+    # --------------------------------------- 
     'signup_app',
     'signin_app',
     'user_data', #  
@@ -37,7 +38,6 @@ INSTALLED_APPS = [
     'select_questions',
     'user_attempts',
     'userhistory_app',
-    'drf_spectacular' # FOR API DOCS
     # -------------------------------------------------------
 ]
 
@@ -59,12 +59,11 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.AllowAny',
     ],
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        'dj_rest_auth.jwt_auth.JWTCookieAuthentication',  
+        "rest_framework_simplejwt.authentication.JWTAuthentication", # JWT AUTHENTICATION
     ],
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',  # FOR API DOCS
 }
 CORS_ORIGIN_ALLOW_ALL = True 
-# -----------------------------------------------------------
 
 ROOT_URLCONF = 'mcq_project.urls'
 
@@ -86,18 +85,6 @@ TEMPLATES = [
 WSGI_APPLICATION = 'mcq_project.wsgi.application'
 
 DATABASES = {
-    # 'default': {
-    #     'ENGINE': 'django.db.backends.sqlite3',
-    #     'NAME': BASE_DIR / 'db.sqlite3',
-    # }
-    # 'default': {
-    #         'ENGINE': 'django.db.backends.mysql',
-    #         'NAME': 'sisani',
-    #         'USER': 'samip@localhost',
-    #         'PASSWORD': 'samip@admin',
-    #         'HOST': 'localhost',  # e.g., 'localhost' or an IP address
-    #         'PORT': '3306',  # Default MySQL port
-    #     }
     'default': {
             'ENGINE': os.getenv("ENGINE"),
             'NAME': os.getenv("NAME"),
@@ -107,9 +94,7 @@ DATABASES = {
             'PORT': os.getenv("PORT"),
         }
 }
-# ---------------------ADDED BY SAMIP REGMI-------------------
 AUTH_USER_MODEL = 'sqldb_app.User'
-# ------------------------------------------------------------
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -127,30 +112,16 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 LANGUAGE_CODE = 'en-us'
-
 TIME_ZONE = 'UTC'
-
 USE_I18N = True
-
 USE_TZ = True
-
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.2/howto/static-files/
-
 STATIC_URL = 'static/'
 
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
-
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-REST_AUTH = {
-    "USE_JWT": True,
-    "JWT_AUTH_COOKIE": "mcq_project_cookie",
-    "JWT_AUTH_REFRESH_COOKIE": "mcq_project_refresh_cookie",
-}
 
 
 # REFERENCE https://pypi.org/project/djangorestframework-simplejwt/3.2/
