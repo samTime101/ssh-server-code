@@ -26,7 +26,6 @@ urlpatterns = [
     path('api/signup/',SignUpView.as_view(), name='signup'),
     path('api/signin/', SignInView.as_view(), name='signin'),
 
-    path('api/user/', UserDataView.as_view(),name='user_data'),
     path('api/get/categories/', GetCategoriesView.as_view(), name='get_categories'),
     path('api/select/questions/',SelectQuestionView.as_view(),name='select_questions'),
 
@@ -36,6 +35,7 @@ urlpatterns = [
     path('api/create/question/',CreateQuestionView.as_view(),name='create_question'),
 
 
+    path('api/user/', UserDataView.as_view(),name='user_data'),
     path('api/user/attempt/', UserAttemptView.as_view(), name='user_attempt'),
     path('api/user/attempt/history/', UserAttemptHistory.as_view(), name='user_attempt'),
 

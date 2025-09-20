@@ -3,29 +3,22 @@
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from mongodb_app.mongo import SubmissionCollection
-
-# USER CAN SELECT SO NO CHECKING OF IS STAFF OR SUPERUSER
+from rest_framework.request import Request
+from utils.responses.userhistory_response import build_userhistory_response
+from rest_framework.exceptions import NotFound
 
 class UserAttemptHistory(APIView):
     permission_classes = [IsAuthenticated]
 
-    def get(self, request):
+    def get(self, request: Request) -> Response:
         user = request.user
         userId = str(user.id)       
-
-        # CHECK IF ATTEMPT DATA FOR USER EXISTS
         data = SubmissionCollection.objects(userId=userId).first()
-        
         if not data:
-            response_data = {
-                "error": "No attempt history found for the user"
-                }
-            return Response(response_data, status=status.HTTP_404_NOT_FOUND)
-
-        # SERIALIZING THE DATA
+            raise NotFound("No attempt history found for the user")
+            
         attempts = []
         for attempt in data.attempts:
             attempts.append({
@@ -34,12 +27,5 @@ class UserAttemptHistory(APIView):
                 "isCorrect": attempt.isCorrect,
                 "attemptedAt": attempt.attemptedAt
             })
-
-        response_data = {
-            "userId": data.userId,
-            "started_at": data.started_at,
-            "attempts": attempts
-        }
-
-        return Response(response_data, status=status.HTTP_200_OK)
+        return build_userhistory_response(data, attempts)
 
