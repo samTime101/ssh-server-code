@@ -12,3 +12,17 @@ export interface AuthToken {
   access: string;
   refresh: string;
 }
+
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+export interface SignupRequest {
+  email: string;
+  username: string;
+  phonenumber: string;
+  firstname: string;
+  lastname: string;
+  password: string;
+}
