@@ -3,6 +3,8 @@
 
 from rest_framework import serializers
 from sqldb_app.models import Category
+from rest_framework.response import Response
+
 
 class CreateCategorySerializer(serializers.ModelSerializer):
     class Meta:
@@ -13,3 +15,11 @@ class CreateCategorySerializer(serializers.ModelSerializer):
         category = Category.objects.create(**validated_data)
         return category
 
+
+class CategoryDataSerializer(serializers.Serializer):
+    id = serializers.IntegerField(source='categoryId')
+    name = serializers.CharField(source='categoryName')
+
+class CategoryResponseSerializer(serializers.Serializer):
+    detail = serializers.CharField()
+    category = CategoryDataSerializer()

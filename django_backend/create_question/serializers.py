@@ -3,12 +3,17 @@ from sqldb_app.models import Category, SubCategory, SubSubCategory
 from mongodb_app.mongo import Question
 from utils.helper.fetch_names import fetch_names
 
+class OptionSerializer(serializers.Serializer):
+    optionId = serializers.CharField()
+    text = serializers.CharField()
+
+    
 class QuestionSerializer(serializers.Serializer):
     questionText = serializers.CharField()
     description = serializers.CharField()
     questionType = serializers.ChoiceField(choices=['multiple', 'single'])
-    options = serializers.ListField()
-    correctAnswers = serializers.ListField()
+    options = OptionSerializer(many=True)
+    correctAnswers = serializers.ListField(child=serializers.CharField())
     difficulty = serializers.ChoiceField(choices=['easy', 'medium', 'hard'])
     categoryId = serializers.IntegerField()
     subCategoryIds = serializers.ListField(child=serializers.IntegerField(), required=True)
@@ -52,3 +57,8 @@ class QuestionSerializer(serializers.Serializer):
         question = Question(**data)
         question.save()
         return question
+
+
+class CreateQuestionResponseSerializer(serializers.Serializer):
+    detail = serializers.CharField()
+    questionId = serializers.CharField()

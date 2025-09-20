@@ -5,12 +5,15 @@ from rest_framework.permissions import IsAuthenticated
 from sqldb_app.models import Category , SubCategory , SubSubCategory
 from mongodb_app.mongo import Question
 from rest_framework.request import Request
-from utils.responses.get_categories_response import build_getcategories_response
+from .serializers import GetCategoriesResponseSerializer
+from drf_spectacular.utils import extend_schema
 
 class GetCategoriesView(APIView):
 
     permission_classes = [IsAuthenticated]
-
+    @extend_schema(
+        responses=GetCategoriesResponseSerializer
+    )
 
     def get(self, request: Request) -> Response:
         categories = Category.objects.all()
@@ -46,6 +49,11 @@ class GetCategoriesView(APIView):
                 "question_count": Question.objects(category=category.categoryName).count(),
                 "subCategories": subcategory_list,
             })
-        return build_getcategories_response(total_question_count, data)
+        response_serializer = GetCategoriesResponseSerializer({
+        "total_question_count": total_question_count,
+        "categories": data
+        })
+        return Response(response_serializer.data, status=status.HTTP_200_OK)
+            
 
 
