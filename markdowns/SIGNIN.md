@@ -42,12 +42,10 @@
 }
 ```
 
-## RESPONSE FOR WRONG CREDENTIALS(400)
+## RESPONSE FOR WRONG CREDENTIALS(401)
 
 ```json
 {
-    "non_field_errors": [
-        "Invalid email or password"
-    ]
+	"error": "Invalid email or password"
 }
 ```

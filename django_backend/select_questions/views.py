@@ -8,11 +8,13 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from .serializers import SelectQuestionSerializer
+from drf_spectacular.utils import extend_schema
 
 # USER CAN SELECT SO NO CHECKING OF IS STAFF OR SUPERUSER
 
 class SelectQuestionView(APIView):
     permission_classes = [IsAuthenticated]
+    @extend_schema(request=SelectQuestionSerializer)
 
     def post(self, request):
         serializer = SelectQuestionSerializer(data=request.data)
@@ -25,6 +27,7 @@ class SelectQuestionView(APIView):
             question_list.append({
                 "id": str(question.id),  
                 "questionText": question.questionText,
+                "description": question.description,
                 "questionType": question.questionType,
                 "options": [{"optionId": option.optionId, "text": option.text} for option in question.options],
                 "correctAnswers": question.correctAnswers,

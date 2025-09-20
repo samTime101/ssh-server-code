@@ -6,13 +6,11 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from .serializers import CreateQuestionSerializer
-
-# FOR TESTING
-from mongodb_app.mongo import Question
+from drf_spectacular.utils import extend_schema
 
 class CreateQuestionView(APIView):
     permission_classes = [IsAuthenticated]
-
+    @extend_schema(request=CreateQuestionSerializer)
     def post(self, request):
 
         # ONLY SUPERUSER AND STAFF CAN CREATE QUESTIONS
@@ -33,6 +31,7 @@ class CreateQuestionView(APIView):
             "question": {
                 "id": str(question.id),  
                 "questionText": question.questionText,
+                "description": question.description,
                 "questionType": question.questionType,
                 "options": [{"optionId": option.optionId, "text": option.text} for option in question.options],
                 "correctAnswers": question.correctAnswers,
@@ -46,28 +45,4 @@ class CreateQuestionView(APIView):
         }
         return Response(response_data, status=status.HTTP_201_CREATED)
 
-    def get(self,request):
-        # FOR TESTING
-        # RETURN ALL QUESTIONS
-        questions = Question.objects.all()
-        question_list = []
-        for question in questions:
-            question_list.append({
-                "id": str(question.id),  
-                "questionText": question.questionText,
-                "questionType": question.questionType,
-                "options": [{"optionId": option.optionId, "text": option.text} for option in question.options],
-                "correctAnswers": question.correctAnswers,
-                "difficulty": question.difficulty,
-                "category": question.category,
-                "subCategory": question.subCategory,
-                "subSubCategory": question.subSubCategory,
-                "createdAt": question.createdAt,
-                "updatedAt": question.updatedAt,
-            })
-            response_data = {
-                # "message": "Questions retrieved successfully",
-                "questions": question_list
-            }
-        return Response(response_data, status=status.HTTP_200_OK)
-
+        # NO NEED FOR GET REQUEST CURRENTLY
