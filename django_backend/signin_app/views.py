@@ -65,9 +65,9 @@ class SignInView(APIView):
                 "userId": str(user.id),
                 "email": user.email,
                 "username": user.username,
-                "phonenumber": getattr(user, 'phonenumber', None),
-                "firstname": getattr(user, 'firstname', None),
-                "lastname": getattr(user, 'lastname', None),
+                "phonenumber":user.phonenumber,
+                "firstname":user.firstname,
+                "lastname": user.lastname,
                 "is_active": user.is_active,
                 "is_staff": user.is_staff,
                 "is_superuser": user.is_superuser
