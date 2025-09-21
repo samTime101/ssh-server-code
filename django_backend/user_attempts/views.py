@@ -10,8 +10,8 @@ class UserAttemptView(APIView):
     permission_classes = [IsAuthenticated]
     @extend_schema(request=UserAttemptSerializer, responses=UserAttemptResponseSerializer)
     def post(self, request: Request) -> Response:
-
-        serializer = UserAttemptSerializer(data=request.data)
+        user_context = {'user': request.user}
+        serializer = UserAttemptSerializer(data=request.data, context=user_context)
         serializer.is_valid(raise_exception=True)
         serializer.create(serializer.validated_data)
         response_serializer = UserAttemptResponseSerializer({

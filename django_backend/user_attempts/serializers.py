@@ -1,10 +1,14 @@
-import datetime
+# REFACTORED ON SEP 21 2025
+
+from datetime import datetime
 from rest_framework import serializers
 from mongodb_app.mongo import SubmissionCollection, Question ,Submissions  
+from bson import ObjectId
 
 class UserAttemptSerializer(serializers.Serializer):
     questionId = serializers.CharField()
     selectedAnswers = serializers.ListField(child=serializers.CharField())
+    
 
     def validate_questionId(self, value):
         if not value:
@@ -12,40 +16,36 @@ class UserAttemptSerializer(serializers.Serializer):
         return value
 
     def check_question_exists(self, questionId):
-        question = Question.objects(questionId=questionId).first()
+        question = Question.objects(id=ObjectId(questionId)).first()
         if not question:
             raise serializers.ValidationError(f"Question with id {questionId} does not exist")
         return question
     
     def create(self, validated_data):
+        userId = str(self.context['user'].id)
         questionId = validated_data['questionId']
         selectedAnswers = validated_data['selectedAnswers']
         question = self.check_question_exists(questionId)
-        user = self.context['request'].user
         correctAnswers = set(question.correctAnswers)
         userAnswers = set(selectedAnswers)
         isCorrect = correctAnswers == userAnswers
         attemptedAt = datetime.utcnow()
 
-        data = {
-            "userId": user.id,
-            "questionId": questionId,
-            "selectedAnswers": selectedAnswers,
-            "isCorrect": isCorrect,
-            "attemptedAt": attemptedAt
-        }
-
-        submission = SubmissionCollection(userId=user.id).first()
+        new_submission = Submissions(
+            questionId=questionId,
+            selectedAnswers=selectedAnswers,
+            isCorrect=isCorrect,
+            attemptedAt=attemptedAt
+        )
+        
+        submission = SubmissionCollection.objects(userId=userId).first()
         if submission:
-            new_submission = Submissions(**data)
             submission.attempts.append(new_submission)
             submission.save()
-            return new_submission
         else:
-            new_submission = Submissions(**data)
-            submission = SubmissionCollection(userId=user.id, attempts=[new_submission])
+            submission = SubmissionCollection(userId=userId, attempts=[new_submission])
             submission.save()
-            return new_submission
+        return new_submission
         
 
 class UserAttemptResponseSerializer(serializers.Serializer):
