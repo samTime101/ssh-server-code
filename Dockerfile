@@ -19,7 +19,8 @@ RUN apt-get update -y
 # RUN apt-get install -y pkg-config
 
 # https://stackoverflow.com/questions/76585758/mysqlclient-cannot-install-via-pip-cannot-find-pkg-config-name-in-ubuntu
-RUN apt-get install -y pkg-config python3-dev default-libmysqlclient-dev build-essential libpq-dev
+# CERTIFICATE ISSUE WHILE CONNECTING TO MONGODB ATLAS FROM DOCKER CONTAINER SO I INSTALLED CA-CERTIFICATES
+RUN apt-get install -y pkg-config python3-dev default-libmysqlclient-dev build-essential libpq-dev ca-certificates
 
 RUN pip install --upgrade pip
 COPY ./requirements.txt .
