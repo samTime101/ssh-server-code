@@ -4,11 +4,11 @@ import { useAuth } from "@/hooks/useAuth";
 import LoginPage from "@/pages/LoginPage";
 import SignupPage from "@/pages/SignupPage";
 import UserLayout from "@/layouts/UserLayout";
-import TeacherLayout from "@/layouts/TeacherLayout";
+//import TeacherLayout from "@/layouts/TeacherLayout";
 import AdminLayout from "@/layouts/AdminLayout";
-import AddQuestionPage from "@/pages/admin/AddQuestionPage";
-import CreateCategoryPage from "@/pages/admin/CreateCategoryPage";
-import QuestionPage from "./pages/user/QuestionPage";
+//import AddQuestionPage from "@/pages/admin/AddQuestionPage";
+//import CreateCategoryPage from "@/pages/admin/CreateCategoryPage";
+//import QuestionPage from "./pages/user/QuestionPage";
 import QuestionBankSection from "./components/user/QuestionBankSection";
 
 const PrivateRoute = () => {
@@ -63,12 +63,12 @@ const App = () => {
       <Route element={<PrivateRoute />}>
         <Route path="/userpanel" element={<UserLayout />}>
           <Route path="question-bank" element={<QuestionBankSection />} index></Route>
-          <Route path="question" element={<QuestionPage />}></Route>
+          {/* <Route path="question" element={<QuestionPage />}></Route> */}
         </Route>
-        <Route path="/teacherpanel" element={<TeacherLayout />} />
+        {/* <Route path="/teacherpanel" element={<TeacherLayout />} /> */}
         <Route path="/admin" element={<AdminLayout />}>
-          <Route path="add-question" element={<AddQuestionPage />} />
-          <Route path="create-category" element={<CreateCategoryPage />} />
+          {/* <Route path="add-question" element={<AddQuestionPage />} />
+          <Route path="create-category" element={<CreateCategoryPage />} /> */}
         </Route>
       </Route>
 

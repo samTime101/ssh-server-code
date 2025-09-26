@@ -1,5 +1,5 @@
 import { Search, ChevronRight } from "lucide-react";
-import React, { useState } from "react";
+import  { useState } from "react"; //React,
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "../ui/button";
