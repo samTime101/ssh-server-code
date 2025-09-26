@@ -8,6 +8,7 @@ from rest_framework.permissions import IsAuthenticated
 from .serializers import CreateSubCategorySerializer, SubCategoryResponseSerializer
 from drf_spectacular.utils import extend_schema
 from rest_framework.exceptions import PermissionDenied
+from rest_framework import status
 
 class CreateSubCategoryView(APIView):
     permission_classes = [IsAuthenticated]
@@ -24,4 +25,4 @@ class CreateSubCategoryView(APIView):
             "detail": "Subcategory created successfully",
             "subcategory": subcategory
         })
-        return Response(response_serializer.data, status=201)
+        return Response(response_serializer.data, status=status.HTTP_201_CREATED)
