@@ -10,6 +10,7 @@ import AddQuestionPage from "@/pages/admin/AddQuestionPage";
 import CreateCategoryPage from "@/pages/admin/CreateCategoryPage";
 import QuestionPage from "./pages/user/QuestionPage";
 import QuestionBankSection from "./components/user/QuestionBankSection";
+import QuestionProvider from "@/contexts/QuestionContext.tsx";
 
 const PrivateRoute = () => {
   const { token } = useAuth();
@@ -61,7 +62,15 @@ const App = () => {
       </Route>
 
       <Route element={<PrivateRoute />}>
-        <Route path="/userpanel" element={<UserLayout />}>
+        <Route
+          path="/userpanel"
+          element={
+            <QuestionProvider>
+              <UserLayout />
+            </QuestionProvider>
+          }
+        >
+          <Route index element={<Navigate to="question-bank" replace />} />
           <Route path="question-bank" element={<QuestionBankSection />} index></Route>
           <Route path="question" element={<QuestionPage />}></Route>
         </Route>
