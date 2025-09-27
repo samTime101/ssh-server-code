@@ -1,6 +1,5 @@
-# SAMIPREGMI
-# AUGUST 23
-
+# REFACTORED ON SEP 20 2025
+# SAMIP REGMI
 
 from rest_framework import serializers
 from sqldb_app.models import SubSubCategory
@@ -10,14 +9,15 @@ class CreateSubSubCategorySerializer(serializers.ModelSerializer):
         model = SubSubCategory
         fields = ['subCategoryID', 'subSubCategoryId', 'subSubCategoryName']
 
-    # NO SAME SUBSUBCATEGORY NAME IN THE SAME SUBCATEGORY
-    def validate(self, data):
-        if SubSubCategory.objects.filter(
-            subSubCategoryName__iexact=data['subSubCategoryName'],
-            subCategoryID=data['subCategoryID']
-        ).exists():
-            raise serializers.ValidationError("SubSubCategory with this name already exists in this SubCategory")
-        return data
-
     def create(self, validated_data):
         return SubSubCategory.objects.create(**validated_data)
+
+class SubSubCategoryDataSerializer(serializers.Serializer):
+    id = serializers.IntegerField(source='subSubCategoryId')
+    name = serializers.CharField(source='subSubCategoryName')
+    subCategoryId = serializers.IntegerField(source='subCategoryID.subCategoryId')
+    subCategoryName = serializers.CharField(source='subCategoryID.subCategoryName')
+
+class SubSubCategoryResponseSerializer(serializers.Serializer):
+    detail = serializers.CharField()
+    subsubcategory = SubSubCategoryDataSerializer()
