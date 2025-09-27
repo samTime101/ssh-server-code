@@ -13,9 +13,13 @@ class UserAttemptView(APIView):
         user_context = {'user': request.user}
         serializer = UserAttemptSerializer(data=request.data, context=user_context)
         serializer.is_valid(raise_exception=True)
-        serializer.create(serializer.validated_data)
+        attempt = serializer.create(serializer.validated_data)
+
+
         response_serializer = UserAttemptResponseSerializer({
-            "detail": "Attempt recorded successfully"
+            "detail": "Attempt recorded successfully",
+            "isCorrect": attempt.isCorrect,
+            "description": attempt.description
         })
         return Response(response_serializer.data,status = status.HTTP_201_CREATED)
 

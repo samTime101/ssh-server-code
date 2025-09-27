@@ -30,12 +30,14 @@ class UserAttemptSerializer(serializers.Serializer):
         userAnswers = set(selectedAnswers)
         isCorrect = correctAnswers == userAnswers
         attemptedAt = datetime.utcnow()
+        description = question.description
 
         new_submission = Submissions(
             questionId=questionId,
             selectedAnswers=selectedAnswers,
             isCorrect=isCorrect,
-            attemptedAt=attemptedAt
+            attemptedAt=attemptedAt,
+            description=description
         )
         
         submission = SubmissionCollection.objects(userId=userId).first()
@@ -50,3 +52,5 @@ class UserAttemptSerializer(serializers.Serializer):
 
 class UserAttemptResponseSerializer(serializers.Serializer):
     detail = serializers.CharField()
+    isCorrect = serializers.BooleanField(required=False)
+    description = serializers.CharField(required=False)
