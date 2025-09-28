@@ -39,7 +39,7 @@ django_backend/userhistory_app/*.pyc
 db.sqlite3
 
 # FOR REACT AND NODE
-react_frontend/node_modules
+react_frontend/node_modules/
 react_frontend/.pnp
 react_frontend.pnp.js
 react_frontend/coverage
