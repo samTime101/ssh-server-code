@@ -43,18 +43,18 @@ class QuestionSerializer(serializers.Serializer):
 
 
     def create(self, validated_data):
-        data =  {
-            "questionText": validated_data['questionText'],
-            "description": validated_data['description'],
-            "questionType": validated_data['questionType'],
-            "options": validated_data['options'],
-            "correctAnswers": validated_data['correctAnswers'],
-            "difficulty": validated_data['difficulty'],
-            "category": self.categoryName,
-            "subCategory": self.subCategoryNames,
-            "subSubCategory": self.subSubCategoryNames
-        }
-        question = Question(**data)
+        
+        question = Question(
+            questionText=validated_data['questionText'],
+            description=validated_data['description'],
+            questionType=validated_data['questionType'],
+            options=validated_data['options'],
+            correctAnswers=validated_data['correctAnswers'],
+            difficulty=validated_data['difficulty'],
+            category=self.categoryName,
+            subCategory=self.subCategoryNames,
+            subSubCategory=self.subSubCategoryNames
+        )
         question.save()
         return question
 

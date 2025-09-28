@@ -38,6 +38,7 @@ class Submissions(EmbeddedDocument):
     selectedAnswers = ListField(StringField())
     isCorrect = BooleanField(required=True)
     attemptedAt = DateTimeField(default=datetime.utcnow)
+    description = StringField()
 
 class SubmissionCollection(Document):
     userId = StringField(required=True)

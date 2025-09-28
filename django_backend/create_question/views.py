@@ -8,6 +8,8 @@ from rest_framework.permissions import IsAuthenticated
 from .serializers import CreateQuestionResponseSerializer, QuestionSerializer 
 from drf_spectacular.utils import extend_schema,OpenApiExample
 from rest_framework.exceptions import PermissionDenied
+from .example import CreateQuestionRequestExample
+from rest_framework import status
 class CreateQuestionView(APIView):
 
     permission_classes = [IsAuthenticated]
@@ -17,24 +19,9 @@ class CreateQuestionView(APIView):
     responses=CreateQuestionResponseSerializer,
     examples=[
         OpenApiExample(
-            "Example Create Question Request",
-            summary="Example request to create a question",
-            value={
-                "questionText": "WHAT IS GOING ON",
-                "description": "Some explanation here",
-                "questionType": "multiple",
-                "options": [
-                    {"optionId": "A", "text": "for"},
-                    {"optionId": "B", "text": "while"},
-                    {"optionId": "C", "text": "switch"},
-                    {"optionId": "D", "text": "do-while"}
-                ],
-                "correctAnswers": ["A", "B", "D"],
-                "difficulty": "easy",
-                "categoryId": 1,
-                "subCategoryIds": [],
-                "subSubCategoryIds": []
-            },
+            name=CreateQuestionRequestExample.name,
+            summary=CreateQuestionRequestExample.summary,
+            value=CreateQuestionRequestExample.example,
             request_only=True,
             response_only=False
         )
@@ -52,5 +39,5 @@ class CreateQuestionView(APIView):
             "detail": "Question created successfully",
             "questionId": str(question.id)
         })
-        return Response(response_serializer.data, status=201)
+        return Response(response_serializer.data, status=status.HTTP_201_CREATED)
 
