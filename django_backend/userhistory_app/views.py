@@ -3,29 +3,25 @@
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from mongodb_app.mongo import SubmissionCollection
-
-# USER CAN SELECT SO NO CHECKING OF IS STAFF OR SUPERUSER
+from rest_framework.request import Request
+from .serializers import UserHistoryResponseSerializer
+from rest_framework.exceptions import NotFound
+from drf_spectacular.utils import extend_schema 
+from rest_framework import status
 
 class UserAttemptHistory(APIView):
     permission_classes = [IsAuthenticated]
+    @extend_schema(responses=UserHistoryResponseSerializer)
 
-    def get(self, request):
+    def get(self, request: Request) -> Response:
         user = request.user
         userId = str(user.id)       
-
-        # CHECK IF ATTEMPT DATA FOR USER EXISTS
         data = SubmissionCollection.objects(userId=userId).first()
-        
         if not data:
-            response_data = {
-                "error": "No attempt history found for the user"
-                }
-            return Response(response_data, status=status.HTTP_404_NOT_FOUND)
-
-        # SERIALIZING THE DATA
+            raise NotFound("No attempt history found for the user")
+            
         attempts = []
         for attempt in data.attempts:
             attempts.append({
@@ -34,12 +30,8 @@ class UserAttemptHistory(APIView):
                 "isCorrect": attempt.isCorrect,
                 "attemptedAt": attempt.attemptedAt
             })
-
-        response_data = {
-            "userId": data.userId,
-            "started_at": data.started_at,
+        response_serializer = UserHistoryResponseSerializer({
+            "userId": userId,
             "attempts": attempts
-        }
-
-        return Response(response_data, status=status.HTTP_200_OK)
-
+        })
+        return Response(response_serializer.data, status=status.HTTP_200_OK)

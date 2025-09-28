@@ -1,4 +1,8 @@
 .env
+__pycache__/
+*.pyc
+migrations/
+
 django_backend/mcq_project/__pycache__/
 django_backend/signup_app/__pycache__/
 django_backend/signup_app/migrations/
@@ -39,7 +43,7 @@ django_backend/userhistory_app/*.pyc
 db.sqlite3
 
 # FOR REACT AND NODE
-react_frontend/node_modules/
+react_frontend/node_modules
 react_frontend/.pnp
 react_frontend.pnp.js
 react_frontend/coverage
@@ -56,4 +60,6 @@ react_frontend/yarn-error.log*
 # SERVER LOG
 django_backend/server.log
 
+*.log
 /sisani/
+
