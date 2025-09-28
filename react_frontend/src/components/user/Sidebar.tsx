@@ -1,8 +1,10 @@
-import  { useState } from "react"; //React,
-import { Book, Stethoscope, Folder, FileText, User, Settings } from "lucide-react";
+import { useState } from "react"; //React,
+import { Book, Stethoscope, Folder, FileText, User, Settings, LogOut } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 
 const Sidebar = () => {
+  const { logout } = useAuth();
   const [activeItem, setActiveItem] = useState("Question Bank");
 
   const menuItems = [
@@ -12,13 +14,17 @@ const Sidebar = () => {
     { icon: FileText, text: "Mock Exams", path: "/userpanel/mock-exams" },
   ];
 
+  const handleLogout = () => {
+    logout();
+  };
+
   return (
-    <aside className="fixed mt-3 top-[64px] left-0 h-[calc(100vh-64px)] border-t w-64 bg-gray-50 border-r border-gray-200 z-10">
-      <div className="px-4 py-6 border-b border-gray-200">
+    <aside className="fixed top-[64px] left-0 h-[calc(100vh-64px)] w-64 bg-gray-50 border-r border-gray-200 z-10 flex flex-col">
+      <div className="px-4 py-6 border-b border-gray-200 flex-shrink-0">
         <h2 className="text-xl font-bold text-blue-600 text-center">SISANI-EPS</h2>
       </div>
 
-      <nav className="py-6 overflow-y-auto">
+      <nav className="flex-1 py-6 overflow-y-auto">
         <ul className="flex flex-col gap-2 px-3">
           {menuItems.map((item, index) => {
             const IconComponent = item.icon;
@@ -48,7 +54,7 @@ const Sidebar = () => {
         </ul>
       </nav>
 
-      <div className="absolute bottom-0 left-0 w-full px-3 py-6 border-t border-gray-200 bg-gray-50">
+      <div className="flex-shrink-0 px-3 py-6 border-t border-gray-200 bg-gray-50">
         <div className="flex items-center gap-4 px-6 py-3 rounded-lg hover:bg-white hover:shadow-sm cursor-pointer transition-all duration-200 text-gray-700 border border-transparent hover:border-gray-200">
           <User size={20} className="text-gray-500" />
           <p className="font-medium text-sm">Profile</p>
@@ -57,6 +63,13 @@ const Sidebar = () => {
           <Settings size={20} className="text-gray-500" />
           <p className="font-medium text-sm">Settings</p>
         </div>
+        <button
+          onClick={handleLogout}
+          className="w-full flex items-center gap-4 px-6 py-3 rounded-lg hover:bg-red-50 hover:shadow-sm cursor-pointer transition-all duration-200 text-red-600 border border-transparent hover:border-red-200 mt-2"
+        >
+          <LogOut size={20} className="text-red-500" />
+          <p className="font-medium text-sm">Logout</p>
+        </button>
       </div>
     </aside>
   );

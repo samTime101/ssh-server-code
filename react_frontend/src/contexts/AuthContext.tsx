@@ -4,6 +4,9 @@ import { createContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
+let globalLogout: (() => void) | null = null;
+export const getGlobalLogout = () => globalLogout;
+
 export const AuthContext = createContext<{
   login: (data: LoginRequest) => void;
   logout: () => void;
@@ -56,6 +59,9 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     localStorage.removeItem("user");
     localStorage.removeItem("accessToken");
   };
+
+  // Store the logout function globally
+  globalLogout = logout;
 
   const register = async ({
     email,
