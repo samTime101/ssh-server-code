@@ -1,48 +1,73 @@
+# REFACTORED ON SEP 20 2025
 # SAMIP REGMI
-# AUGUST 23
 
 
 from rest_framework import serializers
-from mongodb_app.mongo import Option, Question
-from sqldb_app.models import Category, SubCategory, SubSubCategory  # SQL models
+from mongodb_app.mongo import  Question
+from sqldb_app.models import Category, SubCategory, SubSubCategory  
+from utils.helper.fetch_names import fetch_names
+from django.core.exceptions import ObjectDoesNotExist
 
+class OptionSerializer(serializers.Serializer):
+    optionId = serializers.CharField()
+    text = serializers.CharField()
+
+class QuestionDataSerializer(serializers.Serializer):
+    id = serializers.CharField()
+    questionText = serializers.CharField()
+    description = serializers.CharField(allow_blank=True, required=False)
+    questionType = serializers.CharField()
+    options = OptionSerializer(many=True)
+    difficulty = serializers.CharField()
+    category = serializers.CharField()
+    subCategory = serializers.ListField(child=serializers.CharField())
+    subSubCategory = serializers.ListField(child=serializers.CharField())
+    createdAt = serializers.DateTimeField()
+    updatedAt = serializers.DateTimeField()
+
+class QuestionResponseSerializer(serializers.Serializer):
+    detail = serializers.CharField()
+    questions = QuestionDataSerializer(many=True)
 
 class SelectQuestionSerializer(serializers.Serializer):
-    # IF ALL EMPTY JUST RETURN ALL QUESTIONS
+
     categoryIds = serializers.ListField(child=serializers.IntegerField(), required=False, allow_empty=True)
     subCategoryIds = serializers.ListField(child=serializers.IntegerField(), required=False, allow_empty=True)
     subSubCategoryIds = serializers.ListField(child=serializers.IntegerField(), required=False, allow_empty=True)
 
+    def validate_categoryIds(self, value):
+        try:
+            self.categoryNames = fetch_names(Category, value, 'categoryId', 'categoryName')
+        except ObjectDoesNotExist as e:
+            raise serializers.ValidationError(str(e))
+        return value
+
+    def validate_subCategoryIds(self, value):
+        try:
+            self.subCategoryNames = fetch_names(SubCategory, value, 'subCategoryId', 'subCategoryName')
+        except ObjectDoesNotExist as e:
+            raise serializers.ValidationError(str(e))
+        return value
+
+    def validate_subSubCategoryIds(self, value):
+        try:
+            self.subSubCategoryNames = fetch_names(SubSubCategory, value, 'subSubCategoryId', 'subSubCategoryName')
+        except ObjectDoesNotExist as e:
+            raise serializers.ValidationError(str(e))
+        return value
 
     def get_questions(self):
-        # GET IDS 
-        category_ids = self.validated_data.get("categoryIds", [])
-        sub_category_ids = self.validated_data.get("subCategoryIds", [])
-        sub_sub_category_ids = self.validated_data.get("subSubCategoryIds", [])
+        categories = getattr(self, 'categoryNames', [])
+        subCategories = getattr(self, 'subCategoryNames', [])
+        subSubCategories = getattr(self, 'subSubCategoryNames', [])
 
-        # FETCH NAMES FROM SQL DB
-        # SELECT categoryName FROM Category WHERE categoryId IN (category_ids)
-        categories = list(Category.objects.filter(categoryId__in=category_ids).values_list("categoryName", flat=True))
-        # SAME
-        subCategories = list(SubCategory.objects.filter(subCategoryId__in=sub_category_ids).values_list("subCategoryName", flat=True))
-        # SAME
-        subSubCategories = list(SubSubCategory.objects.filter(subSubCategoryId__in=sub_sub_category_ids).values_list("subSubCategoryName", flat=True))
-
-        query_parts = []
+        result = Question.objects()
         if categories:
-            query_parts.append({"category": {"$in": categories}})
+            result = result.filter(category__in=categories)
         if subCategories:
-            query_parts.append({"subCategory": {"$in": subCategories}})
+            result = result.filter(subCategory__in=subCategories)
         if subSubCategories:
-            query_parts.append({"subSubCategory": {"$in": subSubCategories}})
+            result = result.filter(subSubCategory__in=subSubCategories)
+        self.questions = result if result else Question.objects().all()
+        return self.questions
 
-
-        # print(query_parts)
-        if query_parts:
-            # https://onecompiler.com/mongodb/43ujbj8k6
-            return Question.objects(__raw__={"$or": query_parts})
-        
-        # IF ALL EMPTY JUST RETURN ALL QUESTIONS
-        # TODO: MAY BE I NEED TO FIX THIS LATER
-        else:
-            return Question.objects.all()

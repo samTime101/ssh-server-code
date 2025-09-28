@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react"; //React,
 import { Book, Stethoscope, Folder, FileText, User, Settings, LogOut } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";

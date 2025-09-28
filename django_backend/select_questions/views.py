@@ -1,41 +1,24 @@
-# SAMIP REGMI
-# AUGUST 23
-
-# CODE TEMPLATE FROM CREATE_QUESTION/VIEW.PY
+# REFACTORED ON SEP 20 2025
+# SAMIP REGMI 
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework.request import Request
 from rest_framework.permissions import IsAuthenticated
-from .serializers import SelectQuestionSerializer
-
-# USER CAN SELECT SO NO CHECKING OF IS STAFF OR SUPERUSER
+from .serializers import  SelectQuestionSerializer, QuestionResponseSerializer
+from rest_framework import status
+from drf_spectacular.utils import extend_schema
 
 class SelectQuestionView(APIView):
     permission_classes = [IsAuthenticated]
+    @extend_schema(request=SelectQuestionSerializer,responses=QuestionResponseSerializer(many=True))
 
-    def post(self, request):
+    def post(self, request: Request) -> Response:
         serializer = SelectQuestionSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         questions = serializer.get_questions()
-
-        # RETURNING CUSTOM RESPONSE
-        question_list = []
-        for question in questions:
-            question_list.append({
-                "id": str(question.id),  
-                "questionText": question.questionText,
-                "questionType": question.questionType,
-                "options": [{"optionId": option.optionId, "text": option.text} for option in question.options],
-                "correctAnswers": question.correctAnswers,
-                "difficulty": question.difficulty,
-                "category": question.category,
-                "subCategory": question.subCategory,
-                "subSubCategory": question.subSubCategory,
-                "createdAt": question.createdAt,
-                "updatedAt": question.updatedAt,
-            })
-        response_data = {
-            "questions": question_list
-        }
-        return Response(response_data, status=status.HTTP_200_OK)
+        response_serializer = QuestionResponseSerializer({
+            "detail": "Questions fetched successfully",
+            "questions": questions
+        })
+        return Response(response_serializer.data, status=status.HTTP_200_OK)

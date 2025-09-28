@@ -1,13 +1,16 @@
 
 from pathlib import Path
 from datetime import timedelta
+from dotenv import load_dotenv
+import os
 
+load_dotenv()  
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-SECRET_KEY = 'django-insecure-yg$-iov^lsz7mv^6-oy)11!4^*mzr$!w#bb-y2jfpcs$n8)pxy'
+SECRET_KEY = os.getenv("SECRET_KEY")
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*'] # TEMPORARY FOR TESTING PURPOSES
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -18,9 +21,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # ----------------_ADDED BY SAMIP REGMI-------------------
     'corsheaders', 
-    'rest_framework', 
-    "rest_framework.authtoken",
-    'dj_rest_auth', 
+    'rest_framework.authtoken', 
+    'drf_spectacular', 
+    'dj_rest_auth',
+    # --------------------------------------- 
     'signup_app',
     'signin_app',
     'user_data', #  
@@ -33,6 +37,7 @@ INSTALLED_APPS = [
     'get_categories',
     'select_questions',
     'user_attempts',
+    'userhistory_app',
     # -------------------------------------------------------
 ]
 
@@ -54,11 +59,11 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.AllowAny',
     ],
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        'dj_rest_auth.jwt_auth.JWTCookieAuthentication',  
+        "rest_framework_simplejwt.authentication.JWTAuthentication", # JWT AUTHENTICATION
     ],
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',  # FOR API DOCS
 }
 CORS_ORIGIN_ALLOW_ALL = True 
-# -----------------------------------------------------------
 
 ROOT_URLCONF = 'mcq_project.urls'
 
@@ -80,22 +85,16 @@ TEMPLATES = [
 WSGI_APPLICATION = 'mcq_project.wsgi.application'
 
 DATABASES = {
-    # 'default': {
-    #     'ENGINE': 'django.db.backends.sqlite3',
-    #     'NAME': BASE_DIR / 'db.sqlite3',
-    # }
     'default': {
-            'ENGINE': 'django.db.backends.mysql',
-            'NAME': 'sisani',
-            'USER': 'samip@localhost',
-            'PASSWORD': 'samip@admin',
-            'HOST': 'localhost',  # e.g., 'localhost' or an IP address
-            'PORT': '3306',  # Default MySQL port
+            'ENGINE': os.getenv("ENGINE"),
+            'NAME': os.getenv("NAME"),
+            'USER': os.getenv("DB_USER"),
+            'PASSWORD': os.getenv("DB_PASSWORD"),
+            'HOST': os.getenv("HOST"),
+            'PORT': os.getenv("PORT"),
         }
 }
-# ---------------------ADDED BY SAMIP REGMI-------------------
 AUTH_USER_MODEL = 'sqldb_app.User'
-# ------------------------------------------------------------
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -113,30 +112,16 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 LANGUAGE_CODE = 'en-us'
-
 TIME_ZONE = 'UTC'
-
 USE_I18N = True
-
 USE_TZ = True
-
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.2/howto/static-files/
-
 STATIC_URL = 'static/'
 
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
-
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-REST_AUTH = {
-    "USE_JWT": True,
-    "JWT_AUTH_COOKIE": "mcq_project_cookie",
-    "JWT_AUTH_REFRESH_COOKIE": "mcq_project_refresh_cookie",
-}
 
 
 # REFERENCE https://pypi.org/project/djangorestframework-simplejwt/3.2/
@@ -149,5 +134,34 @@ SIMPLE_JWT = {
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
     "ROTATE_REFRESH_TOKENS": False,
     "BLACKLIST_AFTER_ROTATION": True,
+}
+
+
+
+# SERVER LOGS
+# https://docs.djangoproject.com/en/5.2/howto/logging/
+
+# FULLY REFRENCED FROM DOCS FILE 
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "file": {
+            "class": "logging.FileHandler",
+            "filename": "server.log",
+            "level": "DEBUG",
+        },
+        "console": {  
+            "class": "logging.StreamHandler",
+            "level": "DEBUG",
+        },
+    },
+    "loggers": {
+        "django.server": { 
+            "level": "DEBUG",
+            "handlers": ["file", "console"],
+        },
+    },
 }
 

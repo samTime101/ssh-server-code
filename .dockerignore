@@ -1,0 +1,15 @@
+.env
+.env.*
+
+__pycache__/
+migrations/
+*.pyc
+
+sisani/
+
+.git
+.gitignore
+Dockerfile
+.dockerignore
+
+*.log
