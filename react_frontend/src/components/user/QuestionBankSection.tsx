@@ -26,13 +26,13 @@ interface Category {
   subCategories: SubCategory[];
 }
 
-interface CategoriesResponse {
-  categories: Category[];
-}
+// interface CategoriesResponse {
+//   categories: Category[];
+// }
 
 const QuestionBankSection = () => {
   const { token } = useAuth();
-  const { selectedCategoriesId, selectedSubSubCategoryId, selectedSubCategoryId, fetchQuestions } =
+  const {  fetchQuestions } =  //selectedCategoriesId, selectedSubSubCategoryId, selectedSubCategoryId,
     useQuestions();
   const navigate = useNavigate();
 
@@ -130,9 +130,9 @@ const CategoryList: React.FC<{ category: Category }> = ({ category }) => {
   const {
     selectedCategoriesId,
     handleCategorySelection,
-    selectedSubCategoryId,
+   // selectedSubCategoryId,
     handleSubCategorySelection,
-    selectedSubSubCategoryId,
+   // selectedSubSubCategoryId,
     handleSubSubCategorySelection,
   } = useQuestions();
 

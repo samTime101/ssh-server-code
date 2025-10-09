@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext,  useState } from "react"; //useContext,
 import { useAuth } from "@/hooks/useAuth.tsx";
 import { getQuestions } from "@/services/user/questionService.ts";
 

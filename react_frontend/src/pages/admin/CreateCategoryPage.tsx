@@ -1,8 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import type { AuthToken } from "@/types/auth";
 import { API_ENDPOINTS } from "@/config/apiConfig";
 import axios from "axios";
 import { useAuth } from "@/hooks/useAuth";
+import { getCategories } from "@/services/admin/subcategory-service";
+import { createSubCategory } from "@/services/admin/subcategory-service";
+import { createSubSubCategory } from "@/services/admin/subsubcategory-service";
 
 interface CreateCategoryResponse {
   message: string;
@@ -44,50 +47,120 @@ const createCategory = async (
 const CreateCategoryPage = () => {
   const { token } = useAuth();
 
+  const [categories, setCategories] = useState<any[]>([]);
   const [categoryName, setCategoryName] = useState("");
+  const [subCategoryName, setSubCategoryName] = useState("");
+  const [subSubCategoryName, setSubSubCategoryName] = useState("");
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string>("");
+  const [selectedSubCategoryId, setSelectedSubCategoryId] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState<"success" | "error" | "">("");
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // Fetch categories and subcategories
+  useEffect(() => {
+    async function fetchCategories() {
+      if (!token) return;
+      try {
+        const data = await getCategories(token);
+        setCategories(data.categories);
+      } catch (err) {
+        setMessage("Failed to fetch categories");
+        setMessageType("error");
+      }
+    }
+    fetchCategories();
+  }, [token]);
 
-    // Validate input
+  // Create Category
+  const handleCategorySubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     if (!categoryName.trim()) {
       setMessage("Please enter a category name");
       setMessageType("error");
       return;
     }
-
     setIsLoading(true);
     setMessage("");
     setMessageType("");
-
     try {
-      // Get token from localStorage
-      // const tokenString = localStorage.getItem("accessToken");
-      if (!token) {
-        throw new Error("Authentication token not found");
-      }
-
-      // const token: AuthToken = { access: tokenString, refresh: "" };
-      const result = await createCategory(categoryName, token);
-
-      setMessage(`Category "${result.category.name}" created successfully!`);
+      if (!token) throw new Error("Authentication token not found");
+      const result = await axios.post(
+        API_ENDPOINTS.createCategory,
+        { categoryName },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setMessage(`Category \"${result.data.category.name}\" created successfully!`);
       setMessageType("success");
-      setCategoryName(""); // Reset form
-    } catch (error) {
-      console.error("Error creating category:", error);
-      if (error instanceof Error) {
-        setMessage(error.message);
-      } else {
-        setMessage("Failed to create category. Please try again.");
-      }
+      setCategoryName("");
+      // Refresh categories
+      const data = await getCategories(token);
+      setCategories(data.categories);
+    } catch (error: any) {
+      setMessage(error.message || "Failed to create category. Please try again.");
       setMessageType("error");
     } finally {
       setIsLoading(false);
     }
   };
+
+  // Create SubCategory
+  const handleSubCategorySubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedCategoryId || !subCategoryName.trim()) {
+      setMessage("Select category and enter subcategory name");
+      setMessageType("error");
+      return;
+    }
+    setIsLoading(true);
+    setMessage("");
+    setMessageType("");
+    try {
+      if (!token) throw new Error("Authentication token not found");
+      const result = await createSubCategory(selectedCategoryId, subCategoryName, { access: token, refresh: "" });
+      setMessage(`Subcategory \"${result.subcategory.subCategoryName}\" created successfully!`);
+      setMessageType("success");
+      setSubCategoryName("");
+      // Refresh categories
+      const data = await getCategories(token);
+      setCategories(data.categories);
+    } catch (error: any) {
+      setMessage(error.message || "Failed to create subcategory. Please try again.");
+      setMessageType("error");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Create SubSubCategory
+  const handleSubSubCategorySubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedSubCategoryId || !subSubCategoryName.trim()) {
+      setMessage("Select subcategory and enter subsubcategory name");
+      setMessageType("error");
+      return;
+    }
+    setIsLoading(true);
+    setMessage("");
+    setMessageType("");
+    try {
+      if (!token) throw new Error("Authentication token not found");
+      const result = await createSubSubCategory(selectedSubCategoryId, subSubCategoryName, { access: token, refresh: "" });
+      setMessage(`Subsubcategory \"${result.subsubcategory.subSubCategoryName}\" created successfully!`);
+      setMessageType("success");
+      setSubSubCategoryName("");
+      // Refresh categories
+      const data = await getCategories(token);
+      setCategories(data.categories);
+    } catch (error: any) {
+      setMessage(error.message || "Failed to create subsubcategory. Please try again.");
+      setMessageType("error");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -143,15 +216,10 @@ const CreateCategoryPage = () => {
             </div>
           )}
 
-          {/* Form */}
-          <form onSubmit={handleSubmit}>
+          {/* Category Form */}
+          <form onSubmit={handleCategorySubmit}>
             <div className="mb-6">
-              <label
-                htmlFor="categoryName"
-                className="block text-sm font-medium text-gray-700 mb-2"
-              >
-                Category Name *
-              </label>
+              <label htmlFor="categoryName" className="block text-sm font-medium text-gray-700 mb-2">Category Name *</label>
               <input
                 type="text"
                 id="categoryName"
@@ -163,44 +231,98 @@ const CreateCategoryPage = () => {
                 disabled={isLoading}
               />
             </div>
-
             <div className="flex justify-end">
               <button
                 type="submit"
                 disabled={isLoading || !categoryName.trim()}
-                className={`px-6 py-2 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
-                  isLoading || !categoryName.trim()
-                    ? "bg-gray-400 text-gray-700 cursor-not-allowed"
-                    : "bg-blue-600 text-white hover:bg-blue-700"
-                }`}
+                className={`px-6 py-2 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${isLoading || !categoryName.trim() ? "bg-gray-400 text-gray-700 cursor-not-allowed" : "bg-blue-600 text-white hover:bg-blue-700"}`}
               >
-                {isLoading ? (
-                  <div className="flex items-center">
-                    <svg
-                      className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      ></circle>
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      ></path>
-                    </svg>
-                    Creating...
-                  </div>
-                ) : (
-                  "Create Category"
-                )}
+                {isLoading ? "Creating..." : "Create Category"}
+              </button>
+            </div>
+          </form>
+
+          {/* SubCategory Form */}
+          <form onSubmit={handleSubCategorySubmit} className="mt-8">
+            <div className="mb-6">
+              <label htmlFor="categorySelect" className="block text-sm font-medium text-gray-700 mb-2">Select Category *</label>
+              <select
+                id="categorySelect"
+                value={selectedCategoryId}
+                onChange={(e) => setSelectedCategoryId(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                required
+                disabled={isLoading}
+              >
+                <option value="">-- Select Category --</option>
+                {categories.map((cat) => (
+                  <option key={cat.categoryId} value={cat.categoryId}>{cat.categoryName}</option>
+                ))}
+              </select>
+            </div>
+            <div className="mb-6">
+              <label htmlFor="subCategoryName" className="block text-sm font-medium text-gray-700 mb-2">Subcategory Name *</label>
+              <input
+                type="text"
+                id="subCategoryName"
+                value={subCategoryName}
+                onChange={(e) => setSubCategoryName(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="Enter subcategory name"
+                required
+                disabled={isLoading}
+              />
+            </div>
+            <div className="flex justify-end">
+              <button
+                type="submit"
+                disabled={isLoading || !selectedCategoryId || !subCategoryName.trim()}
+                className={`px-6 py-2 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${isLoading || !selectedCategoryId || !subCategoryName.trim() ? "bg-gray-400 text-gray-700 cursor-not-allowed" : "bg-blue-600 text-white hover:bg-blue-700"}`}
+              >
+                {isLoading ? "Creating..." : "Add Subcategory"}
+              </button>
+            </div>
+          </form>
+
+          {/* SubSubCategory Form */}
+          <form onSubmit={handleSubSubCategorySubmit} className="mt-8">
+            <div className="mb-6">
+              <label htmlFor="subCategorySelect" className="block text-sm font-medium text-gray-700 mb-2">Select Subcategory *</label>
+              <select
+                id="subCategorySelect"
+                value={selectedSubCategoryId}
+                onChange={(e) => setSelectedSubCategoryId(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                required
+                disabled={isLoading}
+              >
+                <option value="">-- Select Subcategory --</option>
+                {categories
+                  .find((cat) => cat.categoryId === selectedCategoryId)?.subCategories?.map((subcat: any) => (
+                    <option key={subcat.subCategoryId} value={subcat.subCategoryId}>{subcat.subCategoryName}</option>
+                  ))}
+              </select>
+            </div>
+            <div className="mb-6">
+              <label htmlFor="subSubCategoryName" className="block text-sm font-medium text-gray-700 mb-2">Subsubcategory Name *</label>
+              <input
+                type="text"
+                id="subSubCategoryName"
+                value={subSubCategoryName}
+                onChange={(e) => setSubSubCategoryName(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="Enter subsubcategory name"
+                required
+                disabled={isLoading}
+              />
+            </div>
+            <div className="flex justify-end">
+              <button
+                type="submit"
+                disabled={isLoading || !selectedSubCategoryId || !subSubCategoryName.trim()}
+                className={`px-6 py-2 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${isLoading || !selectedSubCategoryId || !subSubCategoryName.trim() ? "bg-gray-400 text-gray-700 cursor-not-allowed" : "bg-blue-600 text-white hover:bg-blue-700"}`}
+              >
+                {isLoading ? "Creating..." : "Add Subsubcategory"}
               </button>
             </div>
           </form>

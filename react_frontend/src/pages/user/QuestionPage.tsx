@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { useQuestions } from "@/hooks/useQuestions";
-import React, { useState, useEffect } from "react";
+import  { useState, useEffect } from "react"; //React,
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, ArrowRight } from "lucide-react";
@@ -19,7 +19,7 @@ const QuestionPage = () => {
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
   const [selectedOption, setSelectedOption] = useState<string>("");
   const [answers, setAnswers] = useState<{ [questionId: string]: string[] }>({});
-  const [feedback, setFeedback] = useState<{ [questionId: string]: boolean | null }>({});
+  const [ _feedback, setFeedback] = useState<{ [questionId: string]: boolean }>({}); //feedback,
   const [showFeedback, setShowFeedback] = useState(false);
   const [attemptButtonVisible, setAttemptButtonVisible] = useState(true);
 
