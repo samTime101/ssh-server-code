@@ -1,25 +1,27 @@
 import { Button } from "@/components/ui/button";
 import { useQuestions } from "@/hooks/useQuestions";
-import  { useState, useEffect } from "react"; //React,
+import { useState, useEffect } from "react"; //React,
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowLeft, ArrowRight, Lightbulb, Info } from "lucide-react";
 import { attemptQuestion } from "@/services/user/questionService";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import type { Question } from "@/types/question";
 import MultipleChoiceOption from "@/components/user/MultipleChoiceOption";
 import SingleChoiceOption from "@/components/user/SingleChoiceOption";
+import { useNavigate } from "react-router-dom";
 
 const QuestionPage = () => {
   const { token } = useAuth();
   const { questionData } = useQuestions();
+  const navigate = useNavigate();
 
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
   const [selectedOption, setSelectedOption] = useState<string>("");
   const [answers, setAnswers] = useState<{ [questionId: string]: string[] }>({});
-  const [ _feedback, setFeedback] = useState<{ [questionId: string]: boolean }>({}); //feedback,
+  const [_feedback, setFeedback] = useState<{ [questionId: string]: boolean }>({}); //feedback,
   const [showFeedback, setShowFeedback] = useState(false);
   const [attemptButtonVisible, setAttemptButtonVisible] = useState(true);
 
@@ -75,16 +77,19 @@ const QuestionPage = () => {
     const currentQuestionIndex = questionData.findIndex(
       (q: Question) => q.id === currentQuestion.id
     );
-    const nextIndex = (currentQuestionIndex + 1) % questionData.length;
 
-    if (currentQuestionIndex < questionData.length - 1) {
-      setCurrentQuestion(questionData[nextIndex]);
-    } else {
-      setCurrentQuestion(questionData[0]);
+    const nextIndex = currentQuestionIndex + 1;
+
+    if (nextIndex >= questionData.length) {
+      toast.info("You've completed all questions!");
+      navigate("/userpanel");
+      return;
     }
-
+    console.log("Next question index:", nextIndex);
+    setCurrentQuestion(questionData[nextIndex]);
     setSelectedOptions([]);
     setSelectedOption("");
+    setShowFeedback(false);
     setAttemptButtonVisible(true);
   };
 
@@ -95,6 +100,7 @@ const QuestionPage = () => {
 
     setCurrentQuestion(questionData[prevIndex]);
     setSelectedOptions([]);
+    setShowFeedback(false);
     setSelectedOption("");
   };
 
@@ -104,7 +110,21 @@ const QuestionPage = () => {
       return;
     }
 
-    let selected = question.questionType === "multiple" ? selectedOptions : [selectedOption];
+    /*
+      For multiple choice question: [option1, option2]
+      For single choice question: [option1] or []
+    */
+    let selected =
+      question.questionType === "multiple"
+        ? selectedOptions
+        : selectedOption
+        ? [selectedOption]
+        : [];
+
+    if (!selected || selected.length === 0) {
+      toast.error("Please select an option before attempting the question.");
+      return;
+    }
 
     try {
       const result = await attemptQuestion(question.id, selected, token);
@@ -169,14 +189,29 @@ const QuestionPage = () => {
             <h2 className="text-xl font-semibold text-gray-800 leading-relaxed">
               {currentQuestion.questionText}
             </h2>
-            {showFeedback && (
-              <div className="mb-2 p-4 rounded-lg text-white text-center">
-                {currentQuestion.description}
-              </div>
-            )}
           </CardHeader>
 
           <CardContent>
+            {showFeedback && (
+              <div className="mb-6 p-5 bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 rounded-lg">
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0 mt-1">
+                    <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                      <Lightbulb size={18} className="text-white" />
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-2 flex items-center gap-2">
+                      Explanation
+                    </h3>
+                    <p className="text-sm text-blue-800 dark:text-blue-200 leading-relaxed">
+                      {currentQuestion.description}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div className="space-y-4">
               {currentQuestion.questionType === "multiple"
                 ? currentQuestion.options.map((option) => (
