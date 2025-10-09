@@ -9,17 +9,22 @@ import axios from "axios";
 // Force re-evaluation of this module
 
 export interface Category {
-  categoryId: number;
+  categoryId: string;
   categoryName: string;
-  question_count: number;
   subCategories: SubCategory[];
+  // -----ADDED BY SAMIP REGMI----      
+  question_count: number;
 }
 
 export interface SubCategory {
-  subCategoryId: number;
+  subCategoryId: string;
   subCategoryName: string;
+  categoryId: string;
+  categoryName: string;
+  subSubCategories: SubSubCategory[];
+  // -----------ADDED BY SAMIP REGMI---
   question_count: number;
-  subSubCategories?: SubSubCategory[];
+  // ------------------------------------
 }
 
 export interface SubSubCategory {

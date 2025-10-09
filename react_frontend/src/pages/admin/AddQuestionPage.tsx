@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
 // import AdminPanel from "../admin-panel";
-import { createQuestion } from "@/services/addquestion-service";
-import { createCategory, type Category } from "@/services/category-service";
-import { getCategories, type SubCategory } from "@/services/subcategory-service";
+
+import { getCategories, type Category, type SubCategory, type SubSubCategory } from "@/services/admin/subcategory-service";
 import type { AuthToken } from "@/types/auth";
 import { useAuth } from "@/hooks/useAuth";
+import { createQuestion, type ApiQuestionData } from "@/services/admin/addquestion-service";
+
 
 const AddQuestionPage = () => {
   // Form state
@@ -13,8 +14,8 @@ const AddQuestionPage = () => {
     questionText: "",
     description: "",
     categoryId: "",
-    subCategoryId: [] as string[],
-    subSubCategoryId: [] as string[],
+    subCategoryIds: [] as string[],
+    subSubCategoryIds: [] as string[],
     questionType: "single" as "single" | "multiple",
     difficulty: "medium",
     answers: [
@@ -25,7 +26,7 @@ const AddQuestionPage = () => {
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [subCategories, setSubCategories] = useState<SubCategory[]>([]);
-  const [subSubCategories, setSubSubCategories] = useState<SubCategory[]>([]);
+  const [subSubCategories, setSubSubCategories] = useState<SubSubCategory[]>([]);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -55,8 +56,7 @@ const AddQuestionPage = () => {
   useEffect(() => {
     if (formData.categoryId) {
       const selectedCategory = categories.find(
-        (c) => c.categoryId === parseInt(formData.categoryId)
-      );
+        (c) => c.categoryId === parseInt(formData.categoryId));
       setSubCategories(selectedCategory?.subCategories || []);
       // Reset subcategory and sub-subcategory when category changes
       setFormData((prev) => ({
@@ -70,18 +70,18 @@ const AddQuestionPage = () => {
 
   // Update sub-subcategories when subcategory changes
   useEffect(() => {
-    if (formData.subCategoryId.length > 0) {
+    if (formData.subCategoryIds.length > 0) {
       const selectedSubCategory = subCategories.find(
         (sc) => sc.subCategoryId === parseInt(formData.subCategoryId[0])
       );
-      setSubSubCategories(selectedSubCategory?.subCategories || []);
+      setSubSubCategories(selectedSubCategory?.subSubCategories || []);
       // Reset sub-subcategory when subcategory changes
       setFormData((prev) => ({
         ...prev,
         subSubCategoryId: [],
       }));
     }
-  }, [formData.subCategoryId, subCategories]);
+  }, [formData.subCategoryIds, subCategories]);
 
   // Handlers
   const handleInputChange = (
@@ -191,9 +191,9 @@ const AddQuestionPage = () => {
           .filter((answer) => answer.isCorrect)
           .map((answer) => answer.id),
         difficulty: formData.difficulty,
-        categoryId: formData.categoryId,
-        subCategoryId: formData.subCategoryId.map((id) => parseInt(id)),
-        subSubCategoryId: formData.subSubCategoryId.map((id) => parseInt(id)),
+        categoryId: parseInt(formData.categoryId),
+        subCategoryIds: formData.subCategoryIds.map((id) => parseInt(id)),
+        subSubCategoryIds: formData.subSubCategoryIds.map((id) => parseInt(id)),
       };
 
       // Add description if provided
@@ -218,8 +218,8 @@ const AddQuestionPage = () => {
         questionText: "",
         description: "",
         categoryId: "",
-        subCategoryId: [],
-        subSubCategoryId: [],
+        subCategoryIds: [],
+        subSubCategoryIds: [],
         questionType: "single",
         difficulty: "medium",
         answers: [
@@ -318,7 +318,7 @@ const AddQuestionPage = () => {
                   id="subCategoryId"
                   name="subCategoryId"
                   multiple
-                  value={formData.subCategoryId}
+                  value={formData.subCategoryIds}
                   onChange={handleSubCategoryChange}
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   disabled={!formData.categoryId}
@@ -345,15 +345,15 @@ const AddQuestionPage = () => {
                   id="subSubCategoryId"
                   name="subSubCategoryId"
                   multiple
-                  value={formData.subSubCategoryId}
+                  value={formData.subSubCategoryIds}
                   onChange={handleSubSubCategoryChange}
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  disabled={formData.subCategoryId.length === 0}
+                  disabled={formData.subCategoryIds.length === 0}
                   size={3}
                 >
                   {subSubCategories.map((subSubCategory) => (
-                    <option key={subSubCategory.subCategoryId} value={subSubCategory.subCategoryId}>
-                      {subSubCategory.subCategoryName}
+                    <option key={subSubCategory.subSubCategoryId} value={subSubCategory.subSubCategoryId}>
+                      {subSubCategory.subSubCategoryName}
                     </option>
                   ))}
                 </select>

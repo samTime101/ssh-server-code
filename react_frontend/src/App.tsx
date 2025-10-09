@@ -11,6 +11,9 @@ import AdminLayout from "@/layouts/AdminLayout";
 //import QuestionPage from "./pages/user/QuestionPage";
 import QuestionBankSection from "./components/user/QuestionBankSection";
 import QuestionProvider from "@/contexts/QuestionContext.tsx";
+import QuestionPage from "./pages/user/QuestionPage";
+import AddQuestionPage from "./pages/admin/AddQuestionPage";
+import CreateCategoryPage from "./pages/admin/CreateCategoryPage";
 
 const PrivateRoute = () => {
   const { token } = useAuth();
@@ -62,6 +65,7 @@ const App = () => {
       </Route>
 
       <Route element={<PrivateRoute />}>
+        
         <Route
           path="/userpanel"
           element={
@@ -72,13 +76,16 @@ const App = () => {
         >
           <Route index element={<Navigate to="question-bank" replace />} />
           <Route path="question-bank" element={<QuestionBankSection />} index></Route>
-          {/* <Route path="question" element={<QuestionPage />}></Route> */}
+          { <Route path="question" element={<QuestionPage />}></Route> }
         </Route>
+
         {/* <Route path="/teacherpanel" element={<TeacherLayout />} /> */}
-        <Route path="/admin" element={<AdminLayout />}>
-          {/* <Route path="add-question" element={<AddQuestionPage />} />
-          <Route path="create-category" element={<CreateCategoryPage />} /> */}
+
+         <Route path="/admin" element={<AdminLayout />}>
+          <Route path="add-question" element={<AddQuestionPage />} />
+          <Route path="create-category" element={<CreateCategoryPage />} />
         </Route>
+
       </Route>
 
       <Route path="/" element={<RootRedirect />} />
