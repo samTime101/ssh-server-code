@@ -1,4 +1,5 @@
 import type { AuthToken } from "@/types/auth";
+import axiosInstance from "../axios";
 
 const API_URL = "http://localhost:8000";
 
@@ -21,22 +22,19 @@ export interface CreateCategoryResponse {
 }
 
 export const createCategory = async (
+  //TODO: Confirm the type of categoryName
   categoryName: Category,
   token: AuthToken
 ): Promise<CreateCategoryResponse> => {
-  const response = await fetch(`${API_URL}/api/create/category/`, {
-    method: "POST",
+  const response = await axiosInstance.post(`${API_URL}/api/create/category/`, categoryName, {
     headers: {
-      "Content-Type": "application/json",
       Authorization: `Bearer ${token.access}`,
     },
-    body: JSON.stringify({ categoryName }),
   });
 
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.message || "Failed to create category");
+  if (!response.data) {
+    throw new Error("Failed to create category");
   }
 
-  return response.json();
+  return response.data;
 };

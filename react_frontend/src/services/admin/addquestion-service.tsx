@@ -1,5 +1,5 @@
 import type { AuthToken } from "@/types/auth";
-import axios from "axios";
+import axiosInstance from "../axios";
 
 const API_URL = "http://localhost:8000";
 
@@ -63,7 +63,7 @@ export const createQuestion = async (
   console.log(token.access);
 
   try {
-    const response = await axios.post(
+    const response = await axiosInstance.post(
       API_URL + `/api/create/question/`,
       questionData,
       {
