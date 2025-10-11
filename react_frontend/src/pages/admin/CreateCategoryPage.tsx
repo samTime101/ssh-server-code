@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { API_ENDPOINTS } from "@/config/apiConfig";
-import axios from "axios";
 import { useAuth } from "@/hooks/useAuth";
 import { getCategories } from "@/services/admin/subcategory-service";
 import { createSubCategory } from "@/services/admin/subcategory-service";
@@ -58,6 +57,7 @@ const CreateCategoryPage = () => {
       setMessageType("success");
       setCategoryName("");
       // Refresh categories
+      // TODO: Refactor to use fetchCategories function
       const data = await getCategories(token);
       setCategories(data.categories);
     } catch (error: any) {

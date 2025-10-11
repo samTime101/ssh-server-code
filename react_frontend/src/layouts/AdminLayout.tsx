@@ -19,7 +19,7 @@ const AdminLayout = () => {
       <AdminSidebar isOpen={sidebarOpen} onClose={closeSidebar} />
       
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col lg:ml-64">
+      <div className="flex-1 flex flex-col">
         <AdminHeader onMenuClick={toggleSidebar} />
         <main className="flex-1 p-4 lg:p-6 bg-gray-50 ">
           <Outlet /> {/* This will render admin pages */}
