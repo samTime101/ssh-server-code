@@ -1,8 +1,10 @@
 import type { AuthToken } from "@/types/auth";
 import axiosInstance from "../axios";
+import { API_ENDPOINTS } from "@/config/apiConfig";
 
-const API_URL = "http://localhost:8000";
+// const API_URL = "http://localhost:8000";
 
+// TODO: Refactor types and interfaces into separate files
 // Types
 // export interface AnswerOption {
 //   id: string;
@@ -39,7 +41,7 @@ interface Option {
 
 export interface ApiQuestionData {
   questionText: string;
-  questionType: 'single' | 'multiple';
+  questionType: "single" | "multiple";
   options: Option[];
   correctAnswers: string[];
   difficulty: string;
@@ -56,23 +58,20 @@ export interface CreateQuestionResponse {
 
 export const createQuestion = async (
   questionData: ApiQuestionData,
-  token: AuthToken
+  // token: AuthToken
+  token: string
 ): Promise<CreateQuestionResponse> => {
   console.log(JSON.stringify(questionData));
-  console.log(API_URL + '/api/create/question/');
-  console.log(token.access);
+  // console.log(API_URL + "/api/create/question/");
+  console.log(token);
 
   try {
-    const response = await axiosInstance.post(
-      API_URL + `/api/create/question/`,
-      questionData,
-      {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token.access}`,
-        },
-      }
-    );
+    const response = await axiosInstance.post(API_ENDPOINTS.createQuestion, questionData, {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
     return response.data;
   } catch (error) {
     throw new Error("Failed to create questions");

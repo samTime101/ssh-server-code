@@ -6,7 +6,7 @@ export const API_ENDPOINTS = {
   signup: `${API_BASE_URL}/signup/`,
 
   userInfo: `${API_BASE_URL}/user/`,
-  
+
   createCategory: `${API_BASE_URL}/create/category/`,
   getCategories: `${API_BASE_URL}/get/categories/`,
 
@@ -15,4 +15,5 @@ export const API_ENDPOINTS = {
 
   selectQuestions: `${API_BASE_URL}/select/questions/`,
   attemptQuestion: `${API_BASE_URL}/user/attempt/`,
+  createQuestion: `${API_BASE_URL}/create/question/`,
 };
