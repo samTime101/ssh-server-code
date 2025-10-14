@@ -1,4 +1,4 @@
-import  { useState } from "react"; //React,
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,17 +18,12 @@ const LoginPage = () => {
     formState: { errors },
   } = useForm<LoginRequest>();
 
-  const onSubmit = (data: LoginRequest) => {
+  const onSubmit = async (data: LoginRequest) => {
     if (!data.email || !data.password) {
       return;
     }
     setLoading(true);
-    login({ email: data.email, password: data.password });
-    // TODO: Remove this timeout and handle loading state based on actual login response
-    setTimeout(() => {
-      setLoading(false);
-    }, 400);
-    // Handle login logic here
+    await login({ email: data.email, password: data.password });
   };
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">

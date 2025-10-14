@@ -10,16 +10,16 @@ let globalLogout: (() => void) | null = null;
 export const getGlobalLogout = () => globalLogout;
 
 export const AuthContext = createContext<{
-  login: (data: LoginRequest) => void;
+  login: (data: LoginRequest) => Promise<void>;
   logout: () => void;
   token: string | null;
-  register: (data: SignupRequest) => void;
+  register: (data: SignupRequest) => Promise<void>;
   user: User | null;
 }>({
-  login: () => {},
-  logout: () => {},
+  login: () => Promise.resolve(),
+  logout: () => Promise.resolve(),
   token: null,
-  register: () => {},
+  register: () => Promise.resolve(),
   user: null,
 });
 
