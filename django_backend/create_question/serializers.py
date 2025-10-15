@@ -21,6 +21,7 @@ class QuestionSerializer(serializers.Serializer):
     subSubCategoryIds = serializers.ListField(child=serializers.IntegerField(), required=True)
 
     def validate_categoryIds(self, value):
+        print("CHECKING CATEGORY ID")
         try:
             self.categoryNames = fetch_names(Category, value, 'categoryId', 'categoryName')
         except Exception as e:
@@ -28,6 +29,7 @@ class QuestionSerializer(serializers.Serializer):
         return value
 
     def validate_subCategoryIds(self, value):
+        print("CHECKING SUB CATEGORY ID")
         try:
             self.subCategoryNames = fetch_names(SubCategory, value, 'subCategoryId', 'subCategoryName')
         except Exception as e:
@@ -35,10 +37,19 @@ class QuestionSerializer(serializers.Serializer):
         return value
 
     def validate_subSubCategoryIds(self, value):
+        print("CHECKING SUB SUB CATEGORY ID")
         try:
             self.subSubCategoryNames = fetch_names(SubSubCategory, value, 'subSubCategoryId', 'subSubCategoryName')
         except Exception as e:
             raise serializers.ValidationError(str(e))
+        return value
+    
+    def validate_correctAnswers(self, value):
+        print("CHECKING CORRECT ANSWERS")
+        option_ids = [option['optionId'] for option in self.initial_data.get('options', [])]
+        for answer in value:
+            if answer not in option_ids:
+                raise serializers.ValidationError(f"Correct answer '{answer}' is not a valid optionId.")
         return value
 
 

@@ -22,7 +22,7 @@ class UserAttemptSerializer(serializers.Serializer):
         return question
     
     def create(self, validated_data):
-        userId = str(self.context['user'].id)
+        userGuid = self.context['user'].userGuid
         questionId = validated_data['questionId']
         selectedAnswers = validated_data['selectedAnswers']
         question = self.check_question_exists(questionId)
@@ -40,12 +40,12 @@ class UserAttemptSerializer(serializers.Serializer):
             description=description
         )
         
-        submission = SubmissionCollection.objects(userId=userId).first()
+        submission = SubmissionCollection.objects(userGuid=userGuid).first()
         if submission:
             submission.attempts.append(new_submission)
             submission.save()
         else:
-            submission = SubmissionCollection(userId=userId, attempts=[new_submission])
+            submission = SubmissionCollection(userGuid=userGuid, attempts=[new_submission])
             submission.save()
         return new_submission
         

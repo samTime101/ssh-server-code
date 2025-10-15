@@ -46,7 +46,7 @@ class Submissions(EmbeddedDocument):
     description = StringField()
 
 class SubmissionCollection(Document):
-    userId = StringField(required=True)
+    userGuid = UUIDField(required=True, unique=True, binary=False)
     attempts = ListField(EmbeddedDocumentField(Submissions))
     started_at = DateTimeField(default=datetime.utcnow)
 
