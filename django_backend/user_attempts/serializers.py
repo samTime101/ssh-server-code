@@ -33,7 +33,7 @@ class UserAttemptSerializer(serializers.Serializer):
         description = question.description
 
         new_submission = Submissions(
-            questionId=questionId,
+            question=questionId,
             selectedAnswers=selectedAnswers,
             isCorrect=isCorrect,
             attemptedAt=attemptedAt,

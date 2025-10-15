@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from sqldb_app.models import Category , SubCategory , SubSubCategory
-from mongodb_app.mongo import Question
+from mongodb_app.mongo import Question, QuestionCategorization
 from rest_framework.request import Request
 from .serializers import GetCategoriesResponseSerializer
 from drf_spectacular.utils import extend_schema
@@ -32,21 +32,21 @@ class GetCategoriesView(APIView):
                     subsubcategory_list.append({
                         "id": subsubcategory.subSubCategoryId,
                         # SAME HERE , USING THREE CONDITIONS TO COUNT
-                        "question_count": Question.objects(category=category.categoryName, subCategory=subcategory.subCategoryName, subSubCategory=subsubcategory.subSubCategoryName).count(),
+                        "question_count": QuestionCategorization.objects(categories=category.categoryName, subCategories=subcategory.subCategoryName, subSubCategories=subsubcategory.subSubCategoryName).count(),
                         "name": subsubcategory.subSubCategoryName,
                     })
                 subcategory_list.append({
                     "id": subcategory.subCategoryId,
                     "name": subcategory.subCategoryName,
                     # SAME HERE BUT ONLY TWO CONDITIONS
-                    "question_count": Question.objects(category=category.categoryName, subCategory=subcategory.subCategoryName).count(),
+                    "question_count": QuestionCategorization.objects(categories=category.categoryName, subCategories=subcategory.subCategoryName).count(),
                     "subSubCategories": subsubcategory_list,
                 })
             data.append({
                 "id": category.categoryId,
                 "name": category.categoryName,
                 # SELECT COUNT(*) FROM QUESTIONS WHERE category=category.categoryName
-                "question_count": Question.objects(category=category.categoryName).count(),
+                "question_count": QuestionCategorization.objects(categories=category.categoryName).count(),
                 "subCategories": subcategory_list,
             })
         response_serializer = GetCategoriesResponseSerializer({
