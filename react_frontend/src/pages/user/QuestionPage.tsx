@@ -20,8 +20,12 @@ const QuestionPage = () => {
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
   const [selectedOption, setSelectedOption] = useState<string>("");
-  const [answers, setAnswers] = useState<{ [questionId: string]: string[] }>({});
-  const [_feedback, setFeedback] = useState<{ [questionId: string]: boolean }>({}); //feedback,
+  const [answers, setAnswers] = useState<{ [questionId: string]: string[] }>(
+    {}
+  );
+  const [_feedback, setFeedback] = useState<{ [questionId: string]: boolean }>(
+    {}
+  ); //feedback,
   const [showFeedback, setShowFeedback] = useState(false);
   const [attemptButtonVisible, setAttemptButtonVisible] = useState(true);
 
@@ -66,7 +70,8 @@ const QuestionPage = () => {
     }
 
     if (
-      (currentQuestion.questionType === "multiple" && selectedOptions.length === 0) ||
+      (currentQuestion.questionType === "multiple" &&
+        selectedOptions.length === 0) ||
       (currentQuestion.questionType === "single" && selectedOption === "")
     ) {
       toast.error("Please select an option before proceeding.");
@@ -95,8 +100,11 @@ const QuestionPage = () => {
 
   const handlePreviousQuestion = () => {
     if (!currentQuestion) return;
-    const currentIndex = questionData.findIndex((q: Question) => q.id === currentQuestion.id);
-    const prevIndex = (currentIndex - 1 + questionData.length) % questionData.length;
+    const currentIndex = questionData.findIndex(
+      (q: Question) => q.id === currentQuestion.id
+    );
+    const prevIndex =
+      (currentIndex - 1 + questionData.length) % questionData.length;
 
     setCurrentQuestion(questionData[prevIndex]);
     setSelectedOptions([]);
@@ -132,6 +140,13 @@ const QuestionPage = () => {
       // Save the answer and feedback
       setAnswers((prev) => ({ ...prev, [question.id]: selected }));
       setFeedback((prev) => ({ ...prev, [question.id]: result.isCorrect }));
+
+      if (result.isCorrect) {
+        toast.success("Correct answer!");
+      } else {
+        toast.error("Incorrect answer. Try again!");
+      }
+
       setShowFeedback(true);
       setAttemptButtonVisible(false);
       console.log("Attempt Result:", result);
@@ -143,7 +158,9 @@ const QuestionPage = () => {
   if (!currentQuestion) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-600 text-lg">No questions available. Please select categories.</p>
+        <p className="text-gray-600 text-lg">
+          No questions available. Please select categories.
+        </p>
       </div>
     );
   }
@@ -151,7 +168,9 @@ const QuestionPage = () => {
   const handleOptionSelect = (optionId: string) => {
     if (currentQuestion.questionType === "multiple") {
       setSelectedOptions((prev) =>
-        prev.includes(optionId) ? prev.filter((id) => id !== optionId) : [...prev, optionId]
+        prev.includes(optionId)
+          ? prev.filter((id) => id !== optionId)
+          : [...prev, optionId]
       );
     } else {
       setSelectedOption(optionId);
@@ -161,7 +180,9 @@ const QuestionPage = () => {
     <div className="min-h-screen p-6">
       <div className="max-w-4xl mx-auto">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">Entrance Preparation Test</h1>
+          <h1 className="text-3xl font-bold text-gray-800 mb-2">
+            Entrance Preparation Test
+          </h1>
         </div>
 
         <Card className="mb-6 shadow-lg">
