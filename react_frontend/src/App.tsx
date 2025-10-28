@@ -1,19 +1,16 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Navigate, Routes, Route, Outlet } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import LoginPage from "@/pages/LoginPage";
 import SignupPage from "@/pages/SignupPage";
 import UserLayout from "@/layouts/UserLayout";
-//import TeacherLayout from "@/layouts/TeacherLayout";
 import AdminLayout from "@/layouts/AdminLayout";
-//import AddQuestionPage from "@/pages/admin/AddQuestionPage";
-//import CreateCategoryPage from "@/pages/admin/CreateCategoryPage";
-//import QuestionPage from "./pages/user/QuestionPage";
 import QuestionBankSection from "./components/user/QuestionBankSection";
 import QuestionProvider from "@/contexts/QuestionContext.tsx";
 import QuestionPage from "./pages/user/QuestionPage";
 import AddQuestionPage from "./pages/admin/AddQuestionPage";
 import CreateCategoryPage from "./pages/admin/CreateCategoryPage";
+import Loader from "./components/ui/Loader";
 
 const PrivateRoute = () => {
   const { token } = useAuth();
@@ -27,7 +24,7 @@ const PublicRoute = ({ children }: { children: React.ReactNode }) => {
 };
 
 const RootRedirect = () => {
-  const { token, user, logout } = useAuth();
+  const { token, user } = useAuth();
 
   if (token && user) {
     if (user.is_superuser) return <Navigate to="/admin" />;
@@ -36,10 +33,20 @@ const RootRedirect = () => {
   }
 
   if (token && !user) {
-    logout();
+    return <Loader />;
   }
 
-  return <Navigate to="/login" />;
+  return <Navigate to="/auth/login" />;
+};
+
+const AdminRoute = () => {
+  const { token, user } = useAuth();
+  return token && user?.is_superuser ? <Outlet /> : <Navigate to="/" />;
+};
+
+const UserRoute = () => {
+  const { token, user } = useAuth();
+  return token && user && !user.is_superuser ? <Outlet /> : <Navigate to="/" />;
 };
 
 const App = () => {
@@ -65,27 +72,29 @@ const App = () => {
       </Route>
 
       <Route element={<PrivateRoute />}>
-        
-        <Route
-          path="/userpanel"
-          element={
-            <QuestionProvider>
-              <UserLayout />
-            </QuestionProvider>
-          }
-        >
-          <Route index element={<Navigate to="question-bank" replace />} />
-          <Route path="question-bank" element={<QuestionBankSection />} index></Route>
-          { <Route path="question" element={<QuestionPage />}></Route> }
+        <Route element={<UserRoute />}>
+          <Route
+            path="/userpanel"
+            element={
+              <QuestionProvider>
+                <UserLayout />
+              </QuestionProvider>
+            }
+          >
+            <Route index element={<Navigate to="question-bank" replace />} />
+            <Route path="question-bank" element={<QuestionBankSection />} index></Route>
+            {<Route path="question" element={<QuestionPage />}></Route>}
+          </Route>
         </Route>
 
         {/* <Route path="/teacherpanel" element={<TeacherLayout />} /> */}
 
-         <Route path="/admin" element={<AdminLayout />}>
-          <Route path="add-question" element={<AddQuestionPage />} />
-          <Route path="create-category" element={<CreateCategoryPage />} />
+        <Route element={<AdminRoute />}>
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route path="add-question" element={<AddQuestionPage />} />
+            <Route path="create-category" element={<CreateCategoryPage />} />
+          </Route>
         </Route>
-
       </Route>
 
       <Route path="/" element={<RootRedirect />} />

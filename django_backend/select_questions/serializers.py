@@ -31,6 +31,7 @@ class SelectQuestionSerializer(serializers.Serializer):
     subCategoryIds = serializers.ListField(child=serializers.IntegerField(), required=False, allow_empty=True)
     subSubCategoryIds = serializers.ListField(child=serializers.IntegerField(), required=False, allow_empty=True)
 
+
     def validate_categoryIds(self, value):
         try:
             self.categoryNames = fetch_names(Category, value, 'categoryId', 'categoryName')

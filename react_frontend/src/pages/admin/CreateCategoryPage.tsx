@@ -1,48 +1,10 @@
 import React, { useState, useEffect } from "react";
-import type { AuthToken } from "@/types/auth";
 import { API_ENDPOINTS } from "@/config/apiConfig";
-import axios from "axios";
 import { useAuth } from "@/hooks/useAuth";
 import { getCategories } from "@/services/admin/subcategory-service";
 import { createSubCategory } from "@/services/admin/subcategory-service";
 import { createSubSubCategory } from "@/services/admin/subsubcategory-service";
-
-interface CreateCategoryResponse {
-  message: string;
-  category: {
-    id: number;
-    name: string;
-  };
-}
-
-const createCategory = async (
-  categoryName: string,
-  token: string
-): Promise<CreateCategoryResponse> => {
-  // const response = await axios.post(API_ENDPOINTS.createCategory, {
-  //   headers: {
-  //     "Content-Type": "application/json",
-  //     Authorization: `Bearer ${token}`,
-  //   },
-  //   data: JSON.stringify({ categoryName }),
-  // });
-  const response = await axios.post(
-    API_ENDPOINTS.createCategory,
-    { categoryName },
-    {
-      headers: {
-        // "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-    }
-  );
-  if (!response) {
-    // const errorData = await response.json();
-    throw new Error("Failed to create category");
-  }
-
-  return response.data;
-};
+import axiosInstance from "@/services/axios";
 
 const CreateCategoryPage = () => {
   const { token } = useAuth();
@@ -85,7 +47,8 @@ const CreateCategoryPage = () => {
     setMessageType("");
     try {
       if (!token) throw new Error("Authentication token not found");
-      const result = await axios.post(
+      //TODO: Implement createCategory service function
+      const result = await axiosInstance.post(
         API_ENDPOINTS.createCategory,
         { categoryName },
         { headers: { Authorization: `Bearer ${token}` } }
@@ -94,6 +57,7 @@ const CreateCategoryPage = () => {
       setMessageType("success");
       setCategoryName("");
       // Refresh categories
+      // TODO: Refactor to use fetchCategories function
       const data = await getCategories(token);
       setCategories(data.categories);
     } catch (error: any) {
@@ -117,7 +81,10 @@ const CreateCategoryPage = () => {
     setMessageType("");
     try {
       if (!token) throw new Error("Authentication token not found");
-      const result = await createSubCategory(selectedCategoryId, subCategoryName, { access: token, refresh: "" });
+      const result = await createSubCategory(selectedCategoryId, subCategoryName, {
+        access: token,
+        refresh: "",
+      });
       setMessage(`Subcategory \"${result.subcategory.subCategoryName}\" created successfully!`);
       setMessageType("success");
       setSubCategoryName("");
@@ -145,8 +112,13 @@ const CreateCategoryPage = () => {
     setMessageType("");
     try {
       if (!token) throw new Error("Authentication token not found");
-      const result = await createSubSubCategory(selectedSubCategoryId, subSubCategoryName, { access: token, refresh: "" });
-      setMessage(`Subsubcategory \"${result.subsubcategory.subSubCategoryName}\" created successfully!`);
+      const result = await createSubSubCategory(selectedSubCategoryId, subSubCategoryName, {
+        access: token,
+        refresh: "",
+      });
+      setMessage(
+        `Subsubcategory \"${result.subsubcategory.subSubCategoryName}\" created successfully!`
+      );
       setMessageType("success");
       setSubSubCategoryName("");
       // Refresh categories
@@ -159,8 +131,6 @@ const CreateCategoryPage = () => {
       setIsLoading(false);
     }
   };
-
-
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -219,7 +189,12 @@ const CreateCategoryPage = () => {
           {/* Category Form */}
           <form onSubmit={handleCategorySubmit}>
             <div className="mb-6">
-              <label htmlFor="categoryName" className="block text-sm font-medium text-gray-700 mb-2">Category Name *</label>
+              <label
+                htmlFor="categoryName"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                Category Name *
+              </label>
               <input
                 type="text"
                 id="categoryName"
@@ -235,7 +210,11 @@ const CreateCategoryPage = () => {
               <button
                 type="submit"
                 disabled={isLoading || !categoryName.trim()}
-                className={`px-6 py-2 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${isLoading || !categoryName.trim() ? "bg-gray-400 text-gray-700 cursor-not-allowed" : "bg-blue-600 text-white hover:bg-blue-700"}`}
+                className={`px-6 py-2 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                  isLoading || !categoryName.trim()
+                    ? "bg-gray-400 text-gray-700 cursor-not-allowed"
+                    : "bg-blue-600 text-white hover:bg-blue-700"
+                }`}
               >
                 {isLoading ? "Creating..." : "Create Category"}
               </button>
@@ -245,7 +224,12 @@ const CreateCategoryPage = () => {
           {/* SubCategory Form */}
           <form onSubmit={handleSubCategorySubmit} className="mt-8">
             <div className="mb-6">
-              <label htmlFor="categorySelect" className="block text-sm font-medium text-gray-700 mb-2">Select Category *</label>
+              <label
+                htmlFor="categorySelect"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                Select Category *
+              </label>
               <select
                 id="categorySelect"
                 value={selectedCategoryId}
@@ -256,12 +240,19 @@ const CreateCategoryPage = () => {
               >
                 <option value="">-- Select Category --</option>
                 {categories.map((cat) => (
-                  <option key={cat.categoryId} value={cat.categoryId}>{cat.categoryName}</option>
+                  <option key={cat.categoryId} value={cat.categoryId}>
+                    {cat.categoryName}
+                  </option>
                 ))}
               </select>
             </div>
             <div className="mb-6">
-              <label htmlFor="subCategoryName" className="block text-sm font-medium text-gray-700 mb-2">Subcategory Name *</label>
+              <label
+                htmlFor="subCategoryName"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                Subcategory Name *
+              </label>
               <input
                 type="text"
                 id="subCategoryName"
@@ -277,7 +268,11 @@ const CreateCategoryPage = () => {
               <button
                 type="submit"
                 disabled={isLoading || !selectedCategoryId || !subCategoryName.trim()}
-                className={`px-6 py-2 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${isLoading || !selectedCategoryId || !subCategoryName.trim() ? "bg-gray-400 text-gray-700 cursor-not-allowed" : "bg-blue-600 text-white hover:bg-blue-700"}`}
+                className={`px-6 py-2 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                  isLoading || !selectedCategoryId || !subCategoryName.trim()
+                    ? "bg-gray-400 text-gray-700 cursor-not-allowed"
+                    : "bg-blue-600 text-white hover:bg-blue-700"
+                }`}
               >
                 {isLoading ? "Creating..." : "Add Subcategory"}
               </button>
@@ -287,7 +282,12 @@ const CreateCategoryPage = () => {
           {/* SubSubCategory Form */}
           <form onSubmit={handleSubSubCategorySubmit} className="mt-8">
             <div className="mb-6">
-              <label htmlFor="subCategorySelect" className="block text-sm font-medium text-gray-700 mb-2">Select Subcategory *</label>
+              <label
+                htmlFor="subCategorySelect"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                Select Subcategory *
+              </label>
               <select
                 id="subCategorySelect"
                 value={selectedSubCategoryId}
@@ -298,13 +298,21 @@ const CreateCategoryPage = () => {
               >
                 <option value="">-- Select Subcategory --</option>
                 {categories
-                  .find((cat) => cat.categoryId === selectedCategoryId)?.subCategories?.map((subcat: any) => (
-                    <option key={subcat.subCategoryId} value={subcat.subCategoryId}>{subcat.subCategoryName}</option>
+                  .find((cat) => cat.categoryId === selectedCategoryId)
+                  ?.subCategories?.map((subcat: any) => (
+                    <option key={subcat.subCategoryId} value={subcat.subCategoryId}>
+                      {subcat.subCategoryName}
+                    </option>
                   ))}
               </select>
             </div>
             <div className="mb-6">
-              <label htmlFor="subSubCategoryName" className="block text-sm font-medium text-gray-700 mb-2">Subsubcategory Name *</label>
+              <label
+                htmlFor="subSubCategoryName"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                Subsubcategory Name *
+              </label>
               <input
                 type="text"
                 id="subSubCategoryName"
@@ -320,7 +328,11 @@ const CreateCategoryPage = () => {
               <button
                 type="submit"
                 disabled={isLoading || !selectedSubCategoryId || !subSubCategoryName.trim()}
-                className={`px-6 py-2 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${isLoading || !selectedSubCategoryId || !subSubCategoryName.trim() ? "bg-gray-400 text-gray-700 cursor-not-allowed" : "bg-blue-600 text-white hover:bg-blue-700"}`}
+                className={`px-6 py-2 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                  isLoading || !selectedSubCategoryId || !subSubCategoryName.trim()
+                    ? "bg-gray-400 text-gray-700 cursor-not-allowed"
+                    : "bg-blue-600 text-white hover:bg-blue-700"
+                }`}
               >
                 {isLoading ? "Creating..." : "Add Subsubcategory"}
               </button>

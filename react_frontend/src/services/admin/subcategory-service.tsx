@@ -1,42 +1,17 @@
-// FILE MODIFIED ON SEP 3 BY SAMIP REGMI
 //TODO: FIX THE TYPES OF FUNCTION **createSubCategory**
 
 import { API_ENDPOINTS } from "@/config/apiConfig";
 import { API_URL } from "@/lib/utils";
 import type { AuthToken } from "@/types/auth";
+import type { Category, CreateSubCategoryResponse } from "@/types/category";
 import axios from "axios";
-
 // Force re-evaluation of this module
-
-export interface Category {
-  categoryId: string;
-  categoryName: string;
-  subCategories: SubCategory[];
-  // -----ADDED BY SAMIP REGMI----      
-  question_count: number;
-}
-
-export interface SubCategory {
-  subCategoryId: string;
-  subCategoryName: string;
-  categoryId: string;
-  categoryName: string;
-  subSubCategories: SubSubCategory[];
-  // -----------ADDED BY SAMIP REGMI---
-  question_count: number;
-  // ------------------------------------
-}
-
-export interface SubSubCategory {
-  subSubCategoryId: number;
-  subSubCategoryName: string;
-}
 
 export async function createSubCategory(
   categoryId: string,
   subCategoryName: string,
   token: AuthToken
-): Promise<{ message: string; subcategory: SubCategory }> {
+): Promise<{ message: string; subcategory: CreateSubCategoryResponse }> {
   const response = await fetch(`${API_URL}/api/create/subcategory/`, {
     method: "POST",
     headers: {
@@ -80,16 +55,12 @@ export async function getCategories(
     categories: response.data.categories.map((category: any) => ({
       categoryId: category.id,
       categoryName: category.name,
-      // -----ADDED BY SAMIP REGMI----
       question_count: category.question_count,
-      // --------------------------------
       subCategories: category.subCategories.map((subcategory: any) => ({
         subCategoryId: subcategory.id,
         subCategoryName: subcategory.name,
         subSubCategory: subcategory.subSubCategories,
-        // -----------ADDED BY SAMIP REGMI---
         question_count: subcategory.question_count,
-        // ------------------------------------
       })),
     })),
   };
