@@ -1,20 +1,26 @@
 import type { AuthToken } from "@/types/auth";
 import axiosInstance from "../axios";
 import { API_ENDPOINTS } from "@/config/apiConfig";
-import type { CreateCategoryResponse, GetCategoriesResponse, Category } from "@/types/category";
-
-const API_URL = "http://localhost:8000";
+import type {
+  CreateCategoryResponse,
+  GetCategoriesResponse,
+  Category,
+} from "@/types/category";
 
 export const createCategory = async (
   //TODO: Confirm the type of categoryName
   categoryName: Category,
   token: AuthToken
 ): Promise<CreateCategoryResponse> => {
-  const response = await axiosInstance.post(`${API_URL}/api/create/category/`, categoryName, {
-    headers: {
-      Authorization: `Bearer ${token.access}`,
-    },
-  });
+  const response = await axiosInstance.post(
+    API_ENDPOINTS.createCategory,
+    categoryName,
+    {
+      headers: {
+        Authorization: `Bearer ${token.access}`,
+      },
+    }
+  );
 
   if (!response.data) {
     throw new Error("Failed to create category");
@@ -23,7 +29,9 @@ export const createCategory = async (
   return response.data;
 };
 
-export const fetchCategories = async (token: string): Promise<GetCategoriesResponse> => {
+export const fetchCategories = async (
+  token: string
+): Promise<GetCategoriesResponse> => {
   try {
     const response = await axiosInstance.get(API_ENDPOINTS.getCategories, {
       headers: { Authorization: `Bearer ${token}` },

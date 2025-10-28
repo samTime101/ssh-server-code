@@ -1,5 +1,6 @@
-import { API_URL } from "@/lib/utils";
+import { API_ENDPOINTS } from "@/config/apiConfig";
 import type { AuthToken } from "@/types/auth";
+import axiosInstance from "../axios";
 
 export interface SubSubCategory {
   subSubCategoryId: number;
@@ -12,19 +13,27 @@ export async function createSubSubCategory(
   subSubCategoryName: string,
   token: AuthToken
 ): Promise<{ message: string; subsubcategory: SubSubCategory }> {
-  const response = await fetch(`${API_URL}/api/create/subsubcategory/`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token.access}`,
-    },
-    body: JSON.stringify({ subCategoryID: subCategoryId, subSubCategoryName }),
-  });
+  try {
+    const response = await axiosInstance.post(
+      API_ENDPOINTS.createSubSubCategory,
+      {
+        subCategoryID: subCategoryId,
+        subSubCategoryName,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token.access}`,
+        },
+      }
+    );
 
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.message || "Failed to create subsubcategory");
+    if (!response) {
+      throw new Error("Failed to create subsubcategory");
+    }
+
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw new Error("Failed to create subsubcategory");
   }
-
-  return response.json();
 }
