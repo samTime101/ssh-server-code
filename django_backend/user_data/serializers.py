@@ -1,7 +1,8 @@
 from rest_framework import serializers
 
 class UserDataResponseSerializer(serializers.Serializer):
-    userId = serializers.IntegerField(source='id')
+    id = serializers.IntegerField()
+    userGuid = serializers.UUIDField()
     email = serializers.EmailField()
     username = serializers.CharField()
     phonenumber = serializers.CharField(allow_blank=True, required=False)

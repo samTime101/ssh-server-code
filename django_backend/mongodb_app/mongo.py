@@ -1,6 +1,5 @@
 from datetime import datetime
-from mongoengine import Document, StringField, ListField, EmbeddedDocument, EmbeddedDocumentField, DateTimeField, BooleanField
-from mongoengine import connect
+from mongoengine import *
 # MODIFIED ON SEP 11 , SAMIP REGMI
 import os
 from dotenv import load_dotenv
@@ -23,25 +22,31 @@ class Question(Document):
     correctAnswers = ListField(StringField())  
     description = StringField()
     difficulty = StringField(choices=["easy", "medium", "hard"], default="easy")
-    category = StringField()        
-    subCategory = ListField(StringField())
-    subSubCategory = ListField(StringField())
     createdAt = DateTimeField(default=datetime.utcnow)
     updatedAt = DateTimeField(default=datetime.utcnow)
 
     meta = {'collection': 'questions'}
 
+class QuestionCategorization(Document):
+    categories = ListField(StringField(), required=True)
+    subCategories = ListField(StringField())
+    subSubCategories = ListField(StringField())
+    questions = ListField(ReferenceField(Question))
+    createdAt = DateTimeField(default=datetime.utcnow)
+    updatedAt = DateTimeField(default=datetime.utcnow)
+    meta = {'collection': 'question_categorizations'}
+
 
 # SUBMISSION DOCUMENTS
 class Submissions(EmbeddedDocument):
-    questionId = StringField(required=True)
+    question = ReferenceField(Question,required=True)
     selectedAnswers = ListField(StringField())
     isCorrect = BooleanField(required=True)
     attemptedAt = DateTimeField(default=datetime.utcnow)
     description = StringField()
 
 class SubmissionCollection(Document):
-    userId = StringField(required=True)
+    userGuid = UUIDField(required=True, unique=True, binary=False)
     attempts = ListField(EmbeddedDocumentField(Submissions))
     started_at = DateTimeField(default=datetime.utcnow)
 

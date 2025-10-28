@@ -8,5 +8,5 @@ class AttemptSerializer(serializers.Serializer):
 
 
 class UserHistoryResponseSerializer(serializers.Serializer):
-    userId = serializers.CharField()
+    userGuid = serializers.UUIDField()
     attempts = AttemptSerializer(many=True)

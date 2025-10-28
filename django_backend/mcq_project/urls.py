@@ -49,11 +49,3 @@ urlpatterns = [
     
     # ------------------------------------------------------
 ]
-
-# USER ANALYTICS GET GARDA
-# api/user/analytics
-"""
-response_type = {
-        
-}
-"""
