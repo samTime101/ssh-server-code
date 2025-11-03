@@ -1,4 +1,4 @@
-import  { useState } from "react"; //React,
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,7 +19,7 @@ const SignupPage = () => {
     formState: { errors },
   } = useForm<SignupRequest>();
 
-  const onSubmit = (data: SignupRequest) => {
+  const onSubmit = async (data: SignupRequest) => {
     if (
       !data.email ||
       !data.password ||
@@ -31,7 +31,7 @@ const SignupPage = () => {
       return;
     }
     setLoading(true);
-    register({
+    await register({
       email: data.email,
       password: data.password,
       username: data.username,
@@ -39,10 +39,6 @@ const SignupPage = () => {
       lastname: data.lastname,
       phonenumber: data.phonenumber,
     });
-    // TODO: Remove this timeout and handle loading state based on actual signup response
-    setTimeout(() => {
-      setLoading(false);
-    }, 400);
   };
 
   return (

@@ -91,7 +91,7 @@ DATABASES = {
             'USER': os.getenv("DB_USER"),
             'PASSWORD': os.getenv("DB_PASSWORD"),
             'HOST': os.getenv("HOST"),
-            'PORT': os.getenv("PORT"),
+            'PORT': os.getenv("DB_PORT"),
         }
 }
 AUTH_USER_MODEL = 'sqldb_app.User'

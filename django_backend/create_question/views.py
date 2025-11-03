@@ -13,7 +13,6 @@ from rest_framework import status
 class CreateQuestionView(APIView):
 
     permission_classes = [IsAuthenticated]
-    # @extend_schema(request=QuestionSerializer, responses=CreateQuestionResponseSerializer)
     @extend_schema(
     request=QuestionSerializer,
     responses=CreateQuestionResponseSerializer,

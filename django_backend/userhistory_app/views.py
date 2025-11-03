@@ -17,21 +17,21 @@ class UserAttemptHistory(APIView):
 
     def get(self, request: Request) -> Response:
         user = request.user
-        userId = str(user.id)       
-        data = SubmissionCollection.objects(userId=userId).first()
+        userGuid = str(user.userGuid)
+        data = SubmissionCollection.objects(userGuid=userGuid).first()
         if not data:
             raise NotFound("No attempt history found for the user")
             
         attempts = []
         for attempt in data.attempts:
             attempts.append({
-                "questionId": attempt.questionId,
+                "questionId": attempt.question.id,
                 "selectedAnswers": attempt.selectedAnswers,
                 "isCorrect": attempt.isCorrect,
                 "attemptedAt": attempt.attemptedAt
             })
         response_serializer = UserHistoryResponseSerializer({
-            "userId": userId,
+            "userGuid": userGuid,
             "attempts": attempts
         })
         return Response(response_serializer.data, status=status.HTTP_200_OK)

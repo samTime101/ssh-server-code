@@ -13,7 +13,7 @@ class CreateQuestionRequestExample:
         ],
         "correctAnswers": ["C"],
         "difficulty": "easy",
-        "categoryId": 1,
+        "categoryIds": [1],
         "subCategoryIds": [],
         "subSubCategoryIds": []
     }
