@@ -3,6 +3,9 @@ SPECTACULAR_SETTINGS = {
     "TITLE": "MCQ API",
     "DESCRIPTION": """
 
+### November 9, 2025
+- Reverted back to manual forloops for `hierarchy`
+
 ### November 8, 2025
 - Replaced manual forloops for `hierarchy` with mongo's `aggregation` 
 - New endpoint `/api/users/profile/` to get current user's profile details
