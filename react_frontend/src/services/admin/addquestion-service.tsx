@@ -1,4 +1,3 @@
-import type { AuthToken } from "@/types/auth";
 import axiosInstance from "../axios";
 import { API_ENDPOINTS } from "@/config/apiConfig";
 
@@ -47,7 +46,7 @@ export interface ApiQuestionData {
   difficulty: string;
   categoryId: number;
   subCategoryIds: string[];
-  subSubCategoryIds: string[];
+  // subSubCategoryIds: string[];
   description?: string;
 }
 

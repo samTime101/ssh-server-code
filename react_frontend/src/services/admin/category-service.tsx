@@ -33,7 +33,7 @@ export const fetchCategories = async (
   token: string
 ): Promise<GetCategoriesResponse> => {
   try {
-    const response = await axiosInstance.get(API_ENDPOINTS.getCategories, {
+    const response = await axiosInstance.get(API_ENDPOINTS.getCategoriesWithHierarchy, {
       headers: { Authorization: `Bearer ${token}` },
     });
 
