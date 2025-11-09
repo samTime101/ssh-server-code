@@ -4,8 +4,8 @@ __pycache__/
 *.pyc
 migrations/
 *.log
-*.sqlite3
-/sisani/
+**/tests.py
+.venv/
 
 # FOR REACT AND NODE
 react_frontend/node_modules/
