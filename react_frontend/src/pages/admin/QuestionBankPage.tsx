@@ -42,7 +42,7 @@ const QuestionBankPage = () => {
     setIsLoading(true);
     try {
       const response = await axiosInstance.get(
-        API_ENDPOINTS.adminGetAllQuestions,
+        API_ENDPOINTS.adminQuestions,
         {
           headers: {
             Authorization: `Bearer ${token}`,

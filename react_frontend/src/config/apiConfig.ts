@@ -16,10 +16,9 @@ export const API_ENDPOINTS = {
 
   selectQuestions: `${API_BASE_URL}/select/questions/`,
   attemptQuestion: `${API_BASE_URL}/user/attempt/`,
-  createQuestion: `${API_BASE_URL}/create/question/`,
-
+  
   // Admin Routes
   usersList: `${API_BASE_URL}/users/`,
-  adminGetAllQuestions: `${API_BASE_URL}/questions`,
+  adminQuestions: `${API_BASE_URL}/questions`,
   
 };
