@@ -30,4 +30,7 @@ COPY ./django_backend .
 
 EXPOSE 8000
 
-CMD ["gunicorn", "mcq_project.wsgi:application", "--bind", "0.0.0.0:8000"]
+CMD ["gunicorn", "main.wsgi:application", "--bind", "0.0.0.0:8000"]
+
+# asgi chai async raixa
+# CMD ["uvicorn", "main.asgi:application", "--host", "0.0.0.0","--port","8000"]
