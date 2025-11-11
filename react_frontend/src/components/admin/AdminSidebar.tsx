@@ -26,7 +26,7 @@ const AdminSidebar = ({ isOpen, onClose }: AdminSidebarProps) => {
     { icon: LayoutDashboard, text: "Dashboard", path: "/admin/dashboard" },
     { icon: Plus, text: "Add Question", path: "/admin/add-question" },
     { icon: Folder, text: "Create Category", path: "/admin/create-category" },
-    { icon: Users, text: "Manage Users", path: "/admin/users" },
+    { icon: Users, text: "Manage Users", path: "/admin/manage-users" },
     { icon: BarChart3, text: "Analytics", path: "/admin/analytics" },
     { icon: FileText, text: "Question Bank", path: "/admin/question-bank" },
   ];

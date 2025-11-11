@@ -52,7 +52,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     if (!accessToken) return null;
 
     try {
-      const response = await axiosInstance.get(API_ENDPOINTS.userInfo, {
+      const response = await axiosInstance.get(API_ENDPOINTS.accountInfo, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
@@ -70,11 +70,11 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  const handleAuthSuccess = (user: User, accessToken: string) => {
+  const handleAuthSuccess = (accessToken: string) => {
     setUser(user);
     setToken(accessToken);
     navigate("/");
-    localStorage.setItem("user", JSON.stringify(user));
+    // localStorage.setItem("user", JSON.stringify(user));
     localStorage.setItem("accessToken", accessToken);
   };
 
@@ -83,7 +83,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const response = await loginService({ email, password });
       if (response) {
         toast.success("Login successful! Welcome back.");
-        handleAuthSuccess(response.data.user, response.data.tokens.access);
+        handleAuthSuccess(response.data.access);
       }
     } catch (error) {
       console.error("Login failed:", error);

@@ -19,7 +19,7 @@ const AddQuestionForm = () => {
     description: "",
     categoryId: "",
     subCategoryIds: [] as string[],
-    subSubCategoryIds: [] as string[],
+    // subSubCategoryIds: [] as string[],
     questionType: "single" as "single" | "multiple",
     difficulty: "",
     answers: [
@@ -31,7 +31,7 @@ const AddQuestionForm = () => {
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [subCategories, setSubCategories] = useState<SubCategory[]>([]);
-  const [subSubCategories, setSubSubCategories] = useState<SubSubCategory[]>([]);
+  // const [subSubCategories, setSubSubCategories] = useState<SubSubCategory[]>([]);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -60,16 +60,16 @@ const AddQuestionForm = () => {
     if (!questionData || !questionData.categoryId || categories.length === 0) return;
 
     const selectedCategory = categories.find((cat) => cat.id == questionData.categoryId);
-    setSubCategories(selectedCategory?.subCategories || []);
-    setSubSubCategories(
-      selectedCategory?.subCategories.flatMap((subCat) => subCat.subSubCategories) || []
-    );
+    setSubCategories(selectedCategory?.sub_categories || []);
+    // setSubSubCategories(
+    //   selectedCategory?.subCategories.flatMap((subCat) => subCat.subSubCategories) || []
+    // );
     console.log("Selected Category ID:", selectedCategory);
-    console.log("Sub Categories:", selectedCategory?.subCategories || []);
+    console.log("Sub Categories:", selectedCategory?.sub_categories || []);
     setQuestionData((prev) => ({
       ...prev,
       subCategoryIds: [],
-      subSubCategoryIds: [],
+      // subSubCategoryIds: [],
     }));
   }, [questionData.categoryId, categories]);
 
@@ -134,7 +134,7 @@ const AddQuestionForm = () => {
         difficulty: questionData.difficulty,
         categoryId: parseInt(questionData.categoryId),
         subCategoryIds: questionData.subCategoryIds.map((id) => id),
-        subSubCategoryIds: questionData.subSubCategoryIds.map((id) => id),
+        // subSubCategoryIds: questionData.subSubCategoryIds.map((id) => id),
       };
       console.log("Question created successfully API:", apiData);
       const response = await createQuestion(apiData, token!);
@@ -269,7 +269,7 @@ const AddQuestionForm = () => {
             </div>
           </div>
           {/* Sub-subcategory Selection */}
-          <div className="space-y-2">
+          {/* <div className="space-y-2">
             <Label htmlFor="subsubcategory">Sub-subcategory</Label>
             <select
               id="subsubcategory"
@@ -292,10 +292,10 @@ const AddQuestionForm = () => {
                   {subSubCat.name}
                 </option>
               ))}
-            </select>
+            </select> */}
 
             {/* Dynamic Chips for Sub-subcategories */}
-            <div className="flex flex-wrap gap-2 mt-2">
+            {/* <div className="flex flex-wrap gap-2 mt-2">
               {questionData.subSubCategoryIds.map((subSubCatId) => {
                 const subSubCat = subSubCategories.find((ssc) => ssc.id.toString() === subSubCatId);
                 return (
@@ -323,7 +323,7 @@ const AddQuestionForm = () => {
                 );
               })}
             </div>
-          </div>
+          </div> */}
 
           {/* Difficulty */}
           <div className="space-y-2">

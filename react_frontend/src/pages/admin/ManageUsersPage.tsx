@@ -1,0 +1,195 @@
+import { Input } from "@/components/ui/input";
+import React, { useEffect, useState } from "react";
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import axiosInstance from "@/services/axios";
+import { API_ENDPOINTS } from "@/config/apiConfig";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
+import { PenIcon, TrashIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import Paginator from "@/components/Paginator";
+
+const ManageUsersPage = () => {
+  const { token } = useAuth();
+
+  const [usersList, setUsersList] = useState([]);
+  const [pagination, setPagination] = useState({
+    count: 0,
+    total_pages: 0,
+    next: null,
+    previous: null,
+  });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(5);
+  const [isLoading, setIsLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState<string>("");
+
+  useEffect(() => {
+    if (token) {
+      fetchUsers();
+    }
+  }, [token, currentPage, pageSize]);
+
+  const fetchUsers = async () => {
+    setIsLoading(true);
+    try {
+      const response = await axiosInstance.get(API_ENDPOINTS.usersList, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        params: {
+          page: currentPage,
+          page_size: pageSize,
+        },
+      });
+
+      if (!response) {
+        console.error("No response from server");
+        throw new Error("No response from server");
+      }
+
+      setUsersList(response.data.results);
+      setPagination({
+        total_pages: response.data.total_pages,
+        count: response.data.count,
+        next: response.data.next,
+        previous: response.data.previous,
+      });
+    } catch (error) {
+      toast.error("An error occurred while fetching users");
+      console.error("Error fetching users:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const handlePageSizeChange = (newPageSize: number) => {
+    setPageSize(newPageSize);
+    setCurrentPage(1); // Reset to first page when changing page size
+  };
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  };
+  const filteredUsers = usersList.filter((user: any) =>
+    `${user.firstname} ${user.lastname} ${user.email}`
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase())
+  );
+  return (
+    <div>
+      <div className="manage-users-header">
+        <h1 className="manage-users-title text-2xl font-bold">Manage Users</h1>
+      </div>
+      <div className="manage-users-content">
+        {/* User management functionalities will go here */}
+        <p>This is where admin can manage users.</p>
+      </div>
+      <div className="manage-users-main-content p-4 rounded-md shadow-md bg-white mt-4 border">
+        <div className="users-search-section">
+          <Input
+            placeholder="Search users by name or email"
+            value={searchQuery}
+            onChange={handleSearchChange}
+          />
+        </div>
+        <div className="users-list-section mt-4">
+          <Table>
+            <TableCaption>
+              {isLoading ? "Loading..." : `Total users: ${pagination.count}`}
+            </TableCaption>
+            <TableHeader>
+              <TableRow>
+                {/* <TableHead>Id</TableHead> */}
+                <TableHead>Username</TableHead>
+                <TableHead>Name</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Role</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {isLoading ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center">
+                    Loading...
+                  </TableCell>
+                </TableRow>
+              ) : filteredUsers.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center">
+                    No users found
+                  </TableCell>
+                </TableRow>
+              ) : (
+                filteredUsers.map((user: any) => (
+                  <TableRow key={user.userGuid}>
+                    <TableCell>
+                      <p className="font-semibold">{user.username}</p>
+                    </TableCell>
+                    <TableCell>
+                      <p className="font-semibold">
+                        {user.firstname} {user.lastname}{" "}
+                      </p>
+                    </TableCell>
+                    <TableCell>
+                      <p className="text-sm text-muted-foreground">
+                        {user.email}
+                      </p>
+                    </TableCell>
+                    <TableCell>
+                      <p>{user.is_staff ? "Admin" : "Regular User"}</p>
+                    </TableCell>
+                    <TableCell>
+                      <span
+                        className={`${
+                          user.isActive
+                            ? "text-green-500 bg-green-100"
+                            : "text-red-500 bg-red-100"
+                        } px-2 py-1 rounded-md shadow-xs text-sm font-medium`}
+                      >
+                        {user.isActive ? "Active" : "Inactive"}
+                      </span>
+                    </TableCell>
+                    <TableCell className="flex gap-2">
+                      <Button className="btn-edit bg-blue-500 text-white rounded cursor-pointer">
+                        <PenIcon size={12} />
+                      </Button>
+                      <Button className="btn-delete bg-red-500 text-white rounded cursor-pointer">
+                        <TrashIcon size={12} />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+          <Paginator
+            currentPage={currentPage}
+            totalPages={pagination.total_pages}
+            pageSize={pageSize}
+            totalCount={pagination.count}
+            onPageChange={handlePageChange}
+            onPageSizeChange={handlePageSizeChange}
+            isLoading={isLoading}
+          />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ManageUsersPage;

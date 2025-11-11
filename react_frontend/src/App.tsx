@@ -11,6 +11,8 @@ import QuestionPage from "./pages/user/QuestionPage";
 import AddQuestionPage from "./pages/admin/AddQuestionPage";
 import CreateCategoryPage from "./pages/admin/CreateCategoryPage";
 import Loader from "./components/ui/Loader";
+import ManageUsersPage from "./pages/admin/ManageUsersPage";
+import QuestionBankPage from "./pages/admin/QuestionBankPage";
 
 const PrivateRoute = () => {
   const { token } = useAuth();
@@ -82,7 +84,11 @@ const App = () => {
             }
           >
             <Route index element={<Navigate to="question-bank" replace />} />
-            <Route path="question-bank" element={<QuestionBankSection />} index></Route>
+            <Route
+              path="question-bank"
+              element={<QuestionBankSection />}
+              index
+            ></Route>
             {<Route path="question" element={<QuestionPage />}></Route>}
           </Route>
         </Route>
@@ -93,6 +99,8 @@ const App = () => {
           <Route path="/admin" element={<AdminLayout />}>
             <Route path="add-question" element={<AddQuestionPage />} />
             <Route path="create-category" element={<CreateCategoryPage />} />
+            <Route path="manage-users" element={<ManageUsersPage />} />
+            <Route path="question-bank" element={<QuestionBankPage />} />
           </Route>
         </Route>
       </Route>
@@ -102,27 +110,5 @@ const App = () => {
     </Routes>
   );
 };
-// function App() {
-//   return (
-//     <BrowserRouter>
-//       <div className="flex min-h-screen w-full items-center justify-center p-6 md:p-10">
-//         <div className="w-full max-w-sm">
-//           <Routes>
-//             <Route path="/" element={<RootRedirect />} />
-//             <Route path="/login" element={<Page />} />
-//             <Route path="/questions" element={<QuestionsPage />} />
-//             <Route element={<ProtectedRoute />}>
-//               <Route path="/userpanel" element={<UserPanel />} />
-//               <Route path="/teacherpanel" element={<TeacherPanel />} />
-//               <Route path="/adminpanel" element={<AdminPanel />} />
-//               <Route path="/categories" element={<Categories />} />
-//               <Route path="/add-questions" element={<AddQuestions />} />
-//             </Route>
-//           </Routes>
-//         </div>
-//       </div>
-//     </BrowserRouter>
-//   );
-// }
 
 export default App;
