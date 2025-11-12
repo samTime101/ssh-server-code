@@ -52,6 +52,7 @@ export const useQuestionForm = ({
       { label: "B", text: "", isCorrect: false },
     ],
   };
+  console.log("squiggly lines lai banda garum", initialData);
 
   const [questionFormData, setQuestionFormData] = useState<QuestionFormData>(defaultFormData);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -204,9 +205,11 @@ export const useQuestionForm = ({
       errors.push("Question text is required");
     }
 
-    if (!questionFormData?.categoryId) {
-      errors.push("Category is required");
-    }
+    // edit mode ma aaile lai chaidaina
+  if (mode === "create" && !questionFormData?.categoryId) {
+    errors.push("Category is required");
+  }
+
 
     if (!questionFormData?.difficulty) {
       errors.push("Difficulty is required");

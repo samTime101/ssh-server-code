@@ -31,6 +31,15 @@ const SignupPage = () => {
       return;
     }
     setLoading(true);
+    // await register({
+    //   email: data.email,
+    //   password: data.password,
+    //   username: data.username,
+    //   firstname: data.firstname,
+    //   lastname: data.lastname,
+    //   phonenumber: data.phonenumber,
+    // });
+    try {
     await register({
       email: data.email,
       password: data.password,
@@ -39,6 +48,11 @@ const SignupPage = () => {
       lastname: data.lastname,
       phonenumber: data.phonenumber,
     });
+    } catch (error) {
+      console.error("Registration failed:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -129,7 +143,7 @@ const SignupPage = () => {
               />
               {errors.password && <FormErrorMessage message={errors.password.message} />}
             </div>
-            <Button type="submit" className="w-full">
+            <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Creating Account..." : "Create Account"}
             </Button>
           </form>
