@@ -77,7 +77,7 @@ export const updateQuestion = async (
       formData.append("image", questionImage);
     }
     const response = await axiosInstance.putForm(
-      `${API_ENDPOINTS.adminQuestions}/${questionId}`,
+      `${API_ENDPOINTS.adminQuestions}/${questionId}/`,
       formData,
       {
         headers: {
