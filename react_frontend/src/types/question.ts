@@ -1,12 +1,12 @@
 export interface Question {
   id: string;
-  questionText: string;
+  question_text: string;
   description: string;
-  questionType: string;
-  options: { optionId: string; text: string }[];
+  option_type: string;
+  options: { label: string; text: string }[];
   difficulty: string;
   category: string;
-  subCategory: string[];
+  sub_categories_ids: string[];
   subSubCategory: string[];
   createdAt: string;
   updatedAt: string;

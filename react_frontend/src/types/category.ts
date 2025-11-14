@@ -1,8 +1,8 @@
 export interface Category {
   id: string;
   name: string;
-  sub_categories: SubCategory[];
-  question_count: number;
+  sub_categories?: SubCategory[];
+  question_count?: number;
 }
 
 export interface SubCategory {

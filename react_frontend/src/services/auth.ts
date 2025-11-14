@@ -19,8 +19,8 @@ export const signupService = async ({
   email,
   username,
   phonenumber,
-  firstname,
-  lastname,
+  first_name,
+  last_name,
   password,
 }: SignupRequest) => {
   try {
@@ -28,8 +28,8 @@ export const signupService = async ({
       email,
       username,
       phonenumber,
-      firstname,
-      lastname,
+      first_name,
+      last_name,
       password,
     });
     return signupResponse;

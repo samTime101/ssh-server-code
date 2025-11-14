@@ -24,8 +24,8 @@ const SignupPage = () => {
       !data.email ||
       !data.password ||
       !data.username ||
-      !data.firstname ||
-      !data.lastname ||
+      !data.first_name ||
+      !data.last_name ||
       !data.phonenumber
     ) {
       return;
@@ -35,8 +35,8 @@ const SignupPage = () => {
       email: data.email,
       password: data.password,
       username: data.username,
-      firstname: data.firstname,
-      lastname: data.lastname,
+      first_name: data.first_name,
+      last_name: data.last_name,
       phonenumber: data.phonenumber,
     });
   };
@@ -59,9 +59,9 @@ const SignupPage = () => {
                   id="firstname"
                   type="text"
                   placeholder="Enter your first name"
-                  {...formRegister("firstname", { required: "First name is required" })}
+                  {...formRegister("first_name", { required: "First name is required" })}
                 />
-                {errors.firstname && <FormErrorMessage message={errors.firstname.message} />}
+                {errors.first_name && <FormErrorMessage message={errors.first_name.message} />}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="lastname">Last Name</Label>
@@ -69,9 +69,9 @@ const SignupPage = () => {
                   id="lastname"
                   type="text"
                   placeholder="Enter your last name"
-                  {...formRegister("lastname", { required: "Last name is required" })}
+                  {...formRegister("last_name", { required: "Last name is required" })}
                 />
-                {errors.lastname && <FormErrorMessage message={errors.lastname.message} />}
+                {errors.last_name && <FormErrorMessage message={errors.last_name.message} />}
               </div>
             </div>
             <div className="space-y-2">

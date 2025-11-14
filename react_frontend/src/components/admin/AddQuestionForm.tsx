@@ -117,7 +117,7 @@ const AddQuestionForm = () => {
     }));
   };
 
-  const handleCreateQuestionSubmit = async (e) => {
+  const handleCreateQuestionSubmit = async (e: { preventDefault: () => void; }) => {
     e.preventDefault();
     try {
       const apiData: ApiQuestionData = {

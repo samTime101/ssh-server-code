@@ -5,30 +5,11 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "../ui/button";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import { getCategories } from "@/services/user/questionService.ts";
+//import { getCategories } from "@/services/user/questionService.ts";
 import { toast } from "sonner";
 import { useQuestions } from "@/hooks/useQuestions.tsx";
-
-interface SubSubCategory {
-  id: number;
-  name: string;
-}
-
-interface SubCategory {
-  id: number;
-  name: string;
-  subSubCategories: SubSubCategory[];
-}
-
-interface Category {
-  id: number;
-  name: string;
-  subCategories: SubCategory[];
-}
-
-// interface CategoriesResponse {
-//   categories: Category[];
-// }
+import { fetchCategories } from "@/services/admin/category-service";
+import type { Category, GetCategoriesResponse } from "@/types/category";
 
 const QuestionBankSection = () => {
   const { token } = useAuth();
@@ -36,30 +17,22 @@ const QuestionBankSection = () => {
     useQuestions();
   const navigate = useNavigate();
 
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [categories, setCategories] = useState<GetCategoriesResponse>();
 
   useEffect(() => {
     if (!token) return;
     const getCategoriesData = async () => {
       try {
-        const categoryResponse = await getCategories(token);
+        const categoryResponse = await fetchCategories(token);
+        console.log("The category response:", categoryResponse);
         setCategories(categoryResponse);
       } catch (error) {
-        setCategories([]);
+        setCategories({ total_question_count: 0, categories: [] });
         toast.error("Failed to fetch categories");
       }
     };
     getCategoriesData();
   }, [token]);
-
-  //   const getProgressData = (categoryId: number) => {
-  //     const progressMap: { [key: number]: { completed: number; total: number } } = {
-  //       1: { completed: 85, total: 120 },
-  //       2: { completed: 45, total: 80 },
-  //       3: { completed: 30, total: 60 },
-  //     };
-  //     return progressMap[categoryId] || { completed: 0, total: 100 };
-  //   };
 
   return (
     <section className="flex-1 p-8 min-h-full flex flex-col gap-8 max-w-[1500px] mx-auto">
@@ -100,11 +73,7 @@ const QuestionBankSection = () => {
         <div className="space-y-4">
           <h3 className="text-lg font-medium text-gray-900 mb-4">Select Categories</h3>
           <ul className="space-y-3">
-            {/*{categories.map((category) => {*/}
-
-            {/*    <CategoryList category={category}/>*/}
-            {/*})}*/}
-            {categories.map((category) => (
+            {categories?.categories.map((category) => (
               <CategoryList key={category.id} category={category} />
             ))}
           </ul>
@@ -127,29 +96,19 @@ const QuestionBankSection = () => {
 };
 
 const CategoryList: React.FC<{ category: Category }> = ({ category }) => {
+  console.log("Category data:", category);
   const {
     selectedCategoriesId,
     handleCategorySelection,
-   // selectedSubCategoryId,
     handleSubCategorySelection,
-   // selectedSubSubCategoryId,
-    handleSubSubCategorySelection,
   } = useQuestions();
 
-  const [expandedCategories, setExpandedCategories] = useState<number[]>([]);
-  const [expandedSubCategories, setExpandedSubCategories] = useState<number[]>([]);
+  const [expandedCategories, setExpandedCategories] = useState<(string | number)[]>([]);
 
-  const toggleCategoryExpansion = (categoryId: number) => {
+  const toggleCategoryExpansion = (categoryId: string | number) => {
+    console.log("Toggling category:", categoryId);
     setExpandedCategories((prev) =>
       prev.includes(categoryId) ? prev.filter((id) => id !== categoryId) : [...prev, categoryId]
-    );
-  };
-
-  const toggleSubCategoryExpansion = (subCategoryId: number) => {
-    setExpandedSubCategories((prev) =>
-      prev.includes(subCategoryId)
-        ? prev.filter((id) => id !== subCategoryId)
-        : [...prev, subCategoryId]
     );
   };
 
@@ -170,7 +129,7 @@ const CategoryList: React.FC<{ category: Category }> = ({ category }) => {
               className={`text-gray-400 hover:text-gray-600 transition-all duration-200 w-5 h-5 cursor-pointer ${
                 isCategoryExpanded ? "rotate-90" : ""
               }`}
-              onClick={() => toggleCategoryExpansion(category.id)}
+               onClick={() => toggleCategoryExpansion(category.id)}
             />
             <Checkbox
               id={`category-${category.id}`}
@@ -206,12 +165,10 @@ const CategoryList: React.FC<{ category: Category }> = ({ category }) => {
         </div>
 
         {/* Sub-categories */}
-        {isCategoryExpanded && (
+        {isCategoryExpanded && category.sub_categories && (
           <div className="mt-4 pt-4 border-t border-gray-100">
             <ul className="space-y-2 pl-8">
-              {category.subCategories.map((subCategory) => {
-                const isSubCategoryExpanded = expandedSubCategories.includes(subCategory.id);
-
+              {category.sub_categories.map((subCategory) => {
                 return (
                   <li
                     key={subCategory.id}
@@ -219,14 +176,6 @@ const CategoryList: React.FC<{ category: Category }> = ({ category }) => {
                   >
                     <div className="p-3 bg-gray-50">
                       <div className="flex items-center gap-2">
-                        {subCategory.subSubCategories.length > 0 && (
-                          <ChevronRight
-                            className={`text-gray-400 hover:text-gray-600 transition-all duration-200 w-4 h-4 cursor-pointer ${
-                              isSubCategoryExpanded ? "rotate-90" : ""
-                            }`}
-                            onClick={() => toggleSubCategoryExpansion(subCategory.id)}
-                          />
-                        )}
                         <Checkbox
                           id={`subcategory-${subCategory.id}`}
                           className="border-gray-300"
@@ -239,32 +188,6 @@ const CategoryList: React.FC<{ category: Category }> = ({ category }) => {
                           {subCategory.name}
                         </label>
                       </div>
-
-                      {/* Sub-sub-categories */}
-                      {isSubCategoryExpanded && subCategory.subSubCategories.length > 0 && (
-                        <ul className="mt-3 pl-6 space-y-2">
-                          {subCategory.subSubCategories.map((subSubCategory) => (
-                            <li
-                              key={subSubCategory.id}
-                              className="flex items-center gap-2 py-1 hover:bg-gray-100 rounded-md px-2 transition-colors duration-150"
-                            >
-                              <Checkbox
-                                id={`subsubcategory-${subSubCategory.id}`}
-                                className="border-gray-300"
-                                onCheckedChange={() =>
-                                  handleSubSubCategorySelection(subSubCategory.id)
-                                }
-                              />
-                              <label
-                                htmlFor={`subsubcategory-${subSubCategory.id}`}
-                                className="cursor-pointer text-gray-700 text-sm"
-                              >
-                                {subSubCategory.name}
-                              </label>
-                            </li>
-                          ))}
-                        </ul>
-                      )}
                     </div>
                   </li>
                 );

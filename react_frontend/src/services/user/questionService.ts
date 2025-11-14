@@ -2,8 +2,8 @@ import { API_ENDPOINTS } from "@/config/apiConfig";
 import axiosInstance from "@/services/axios";
 
 interface FetchQuestionsPayload {
-  categoryId: number[];
-  subCategoryId: number[];
+  category_ids: number[];
+  sub_category_ids: number[];
   subSubCategoryId: number[];
 }
 
@@ -18,8 +18,8 @@ export const getCategories = async (token: string) => {
     if (!response) {
       return [];
     }
-
-    return response.data.categories;
+    console.log("Response data:", response.data);
+    return response.data;
   } catch (error) {
     console.error("Error fetching categories:", error);
     return [];
@@ -27,6 +27,7 @@ export const getCategories = async (token: string) => {
 };
 
 export const getQuestions = async (payload: FetchQuestionsPayload, token: string) => {
+  console.log("the category payload", payload);
   try {
     const response = await axiosInstance.post(API_ENDPOINTS.selectQuestions, payload, {
       headers: {
@@ -37,8 +38,8 @@ export const getQuestions = async (payload: FetchQuestionsPayload, token: string
     if (!response) {
       return [];
     }
-
-    return response.data.questions;
+    console.log("The response data from the get questions is ", response.data);
+    return response.data;
   } catch (error) {
     console.error("Error fetching questions:", error);
     return [];
@@ -54,8 +55,8 @@ export const attemptQuestion = async (
     const response = await axiosInstance.post(
       API_ENDPOINTS.attemptQuestion,
       {
-        questionId,
-        selectedAnswers: selectedOptions,
+        question: questionId,
+        selected_answers: selectedOptions,
       },
       {
         headers: {
@@ -67,6 +68,7 @@ export const attemptQuestion = async (
     if (!response) {
       return null;
     }
+    console.log("The response from attemptquestion is", response.data);
     return response.data;
   } catch (error) {
     console.error("Error attempting question:", error);
