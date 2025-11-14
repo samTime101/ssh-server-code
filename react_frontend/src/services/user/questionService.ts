@@ -9,7 +9,7 @@ interface FetchQuestionsPayload {
 
 export const getCategories = async (token: string) => {
   try {
-    const response = await axiosInstance.get(API_ENDPOINTS.getCategories, {
+    const response = await axiosInstance.get(API_ENDPOINTS.getCategoriesWithHierarchy, {
       headers: {
         Authorization: `Bearer ${token}`,
       },

@@ -14,7 +14,7 @@ export const API_ENDPOINTS = {
   createSubCategory: `${API_BASE_URL}/create/subcategory/`,
   createSubSubCategory: `${API_BASE_URL}/create/subsubcategory/`,
 
-  selectQuestions: `${API_BASE_URL}/select/questions/`,
+  selectQuestions: `${API_BASE_URL}/questions/select/`,
   attemptQuestion: `${API_BASE_URL}/user/attempt/`,
   
   // Admin Routes
