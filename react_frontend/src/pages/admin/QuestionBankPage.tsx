@@ -19,7 +19,8 @@ import { Button } from "@/components/ui/button";
 import Paginator from "@/components/Paginator";
 // import { DATE_OPTIONS, LOCALE } from "@/utils/dateUtils";
 import { LOCALE } from "@/utils/dateUtils";
-import QuestionEditModal from "@/components/modal/QuestionEditModal";
+import Modal from "@/components/Modal";
+import EditQuestionForm from "@/pages/admin/EditQuestionPage";
 
 const QuestionBankPage = () => {
   const { token } = useAuth();
@@ -238,12 +239,19 @@ const QuestionBankPage = () => {
           />
         </div>
       </div>
-      <QuestionEditModal
-        editModalOpen={editModalOpen}
-        setEditModalOpen={setEditModalOpen}
-        selectedQuestion={selectedQuestion}
-        handleEditSuccess={handleEditSuccess}
-      />
+      <Modal
+        open={editModalOpen}
+        onOpenChange={setEditModalOpen}
+        title="Edit Question"
+      >
+        {/* Passed as children to Modal */}
+        {selectedQuestion && (
+          <EditQuestionForm
+            selectedQuestion={selectedQuestion}
+            handleEditSuccess={handleEditSuccess}
+          />
+        )}
+      </Modal>
     </div>
   );
 };
