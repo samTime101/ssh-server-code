@@ -3,7 +3,7 @@ import { useQuestions } from "@/hooks/useQuestions";
 import { useState, useEffect } from "react"; //React,
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, ArrowRight, Lightbulb, Info } from "lucide-react";
+import { ArrowLeft, ArrowRight, Lightbulb } from "lucide-react";
 import { attemptQuestion } from "@/services/user/questionService";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";

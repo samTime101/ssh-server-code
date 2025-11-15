@@ -12,3 +12,11 @@ export interface Question {
   updatedAt: string;
   image_url?: string;
 }
+
+export interface QuestionAttemptState {
+  selectedOption?: string;
+  selectedOptions: string[];
+  isAttempted: boolean;
+  isCorrect?: boolean;
+  feedback?: string;
+}
