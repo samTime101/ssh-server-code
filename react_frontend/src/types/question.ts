@@ -19,4 +19,5 @@ export interface QuestionAttemptState {
   isAttempted: boolean;
   isCorrect?: boolean;
   feedback?: string;
+  correctOptions?: string[];
 }

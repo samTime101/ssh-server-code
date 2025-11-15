@@ -7,7 +7,7 @@ import { ArrowLeft, ArrowRight, Lightbulb } from "lucide-react";
 import { attemptQuestion } from "@/services/user/questionService";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
-import type { Question } from "@/types/question";
+import type { Question, QuestionAttemptState } from "@/types/question";
 import MultipleChoiceOption from "@/components/user/MultipleChoiceOption";
 import SingleChoiceOption from "@/components/user/SingleChoiceOption";
 import { useNavigate } from "react-router-dom";
@@ -17,99 +17,73 @@ const QuestionPage = () => {
   const { questionData } = useQuestions();
   const navigate = useNavigate();
 
-  const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
+  // use an index instead of storing whole object
+  const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
   const [selectedOption, setSelectedOption] = useState<string>("");
-  const [answers, setAnswers] = useState<{ [questionId: string]: string[] }>(
-    {}
-  );
-  const [_feedback, setFeedback] = useState<{ [questionId: string]: boolean }>(
-    {}
-  ); //feedback,
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [attemptButtonVisible, setAttemptButtonVisible] = useState(true);
+
+  // single source for per-question state
+  const [attempts, setAttempts] = useState<{ [id: string]: QuestionAttemptState }>({});
+
+  // derive currentQuestion from index and questionData
+  const currentQuestion: Question | null =
+    questionData && questionData.length > 0 ? questionData[currentIndex] || null : null;
 
   useEffect(() => {
-    // Reset to first question and clear selections when questionData changes
-    console.log("Question Data in useEffect:", questionData);
-    if (!questionData) return;
-    if (questionData && questionData.length > 0) {
-      setCurrentQuestion(questionData[0]);
-      setSelectedOptions([]);
-      setSelectedOption("");
+    // reset index and UI if questionData changes
+    if (!questionData || questionData.length === 0) {
+      setCurrentIndex(0);
+      return;
     }
+    setCurrentIndex(0);
+    setSelectedOptions([]);
+    setSelectedOption("");
   }, [questionData]);
 
+  // keep UI selections synchronized with saved attempt for the current question
   useEffect(() => {
     if (!currentQuestion) return;
-
-    // Load saved answers if they exist
-    const saved = answers[currentQuestion.id] || [];
-
-    // Show feedback if the question was already attempted
-    if (saved && saved.length > 0) {
-      setShowFeedback(true);
-      setAttemptButtonVisible(false);
-    }
-
+    const savedAttempt = attempts[currentQuestion.id];
     if (currentQuestion.option_type === "multiple") {
-      setSelectedOptions(saved);
+      setSelectedOptions(savedAttempt?.selectedOptions ?? []);
       setSelectedOption("");
     } else {
-      setSelectedOption(saved[0] || "");
+      setSelectedOption(savedAttempt?.selectedOption ?? "");
       setSelectedOptions([]);
     }
-  }, [currentQuestion, answers]);
+  }, [currentIndex, attempts, questionData]);
 
   const handleNextQuestion = async () => {
     if (!currentQuestion) return;
 
-    if (!token) {
-      console.error("No token available");
-      return;
-    }
+    // if (!token) {
+    //   console.error("No token available");
+    //   return;
+    // }
 
+    // validate selection before going next
     if (
-      (currentQuestion.option_type === "multiple" &&
-        selectedOptions.length === 0) ||
+      (currentQuestion.option_type === "multiple" && selectedOptions.length === 0) ||
       (currentQuestion.option_type === "single" && selectedOption === "")
     ) {
       toast.error("Please select an option before proceeding.");
       return;
     }
 
-    // Find the index of the current question
-    const currentQuestionIndex = questionData.findIndex(
-      (q: Question) => q.id === currentQuestion.id
-    );
+    const nextIndex = currentIndex + 1;
 
-    const nextIndex = currentQuestionIndex + 1;
-
-    if (nextIndex >= questionData.length) {
+    if (!questionData || nextIndex >= questionData.length) {
       toast.info("You've completed all questions!");
       navigate("/userpanel");
       return;
     }
-    console.log("Next question index:", nextIndex);
-    setCurrentQuestion(questionData[nextIndex]);
-    setSelectedOptions([]);
-    setSelectedOption("");
-    setShowFeedback(false);
-    setAttemptButtonVisible(true);
+    setCurrentIndex(nextIndex);
   };
 
   const handlePreviousQuestion = () => {
-    if (!currentQuestion) return;
-    const currentIndex = questionData.findIndex(
-      (q: Question) => q.id === currentQuestion.id
-    );
-    const prevIndex =
-      (currentIndex - 1 + questionData.length) % questionData.length;
-
-    setCurrentQuestion(questionData[prevIndex]);
-    setSelectedOptions([]);
-    setShowFeedback(false);
-    setSelectedOption("");
+    if (!questionData || questionData.length === 0) return;
+    const prevIndex = (currentIndex - 1 + questionData.length) % questionData.length;
+    setCurrentIndex(prevIndex);
   };
 
   const handleAttemptQuestion = async (question: Question) => {
@@ -137,19 +111,29 @@ const QuestionPage = () => {
     try {
       const result = await attemptQuestion(question.id, selected, token);
 
-      // Save the answer and feedback
-      setAnswers((prev) => ({ ...prev, [question.id]: selected }));
-      setFeedback((prev) => ({ ...prev, [question.id]: result.isCorrect }));
+      if (!result) {
+        toast.error("Something wrong occurred. Try again.")
+        navigate("/")
+        return
+      }
 
-      if (result.isCorrect) {
+      // save the attempt (selected choices, attempt flag, correctness)
+      setAttempts((prev) => ({
+        ...prev,
+        [question.id]: {
+          selectedOptions: selected,
+          selectedOption: question.option_type === "multiple" ? undefined : selected[0],
+          isAttempted: true,
+          isCorrect: result.is_correct,
+          feedback: result?.feedback ?? "",
+        },
+      }));
+
+      if (result.is_correct) {
         toast.success("Correct answer!");
       } else {
         toast.error("Incorrect answer. Try again!");
       }
-
-      setShowFeedback(true);
-      setAttemptButtonVisible(false);
-      console.log("Attempt Result:", result);
     } catch (error) {
       console.error("Error attempting question:", error);
     }
@@ -165,17 +149,23 @@ const QuestionPage = () => {
     );
   }
 
-  const handleOptionSelect = (optionId: string) => {
+  const handleOptionSelect = (label: string) => {
     if (currentQuestion.option_type === "multiple") {
       setSelectedOptions((prev) =>
-        prev.includes(optionId)
-          ? prev.filter((id) => id !== optionId)
-          : [...prev, optionId]
+        prev.includes(label)
+          ? prev.filter((id) => id !== label)
+          : [...prev, label]
       );
     } else {
-      setSelectedOption(optionId);
+      setSelectedOption(label);
     }
   };
+
+  // Derived UI flags from the attempts map
+  const currentAttempt = currentQuestion ? attempts[currentQuestion.id] : undefined;
+  const isAttempted = !!currentAttempt?.isAttempted;
+  const isCorrectAttempt = currentAttempt?.isCorrect ?? undefined
+  
   return (
     <div className="min-h-screen p-6">
       <div className="max-w-4xl mx-auto">
@@ -213,8 +203,8 @@ const QuestionPage = () => {
           </CardHeader>
 
           <CardContent>
-            {showFeedback && (
-              <div className="mb-6 p-5 bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 rounded-lg">
+            {isAttempted && (
+              <div className="mb-6 rounded-lg border-l-4 border-blue-500 bg-blue-50 p-5 dark:bg-blue-900/20">
                 <div className="flex items-start gap-3">
                   <div className="flex-shrink-0 mt-1">
                     <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
@@ -241,6 +231,8 @@ const QuestionPage = () => {
                       option={option}
                       handleOptionSelect={handleOptionSelect}
                       selectedOptions={selectedOptions}
+                      disabled={isAttempted}
+                      isCorrectAttempt={isCorrectAttempt}
                     />
                   ))
                 : currentQuestion.options.map((option) => (
@@ -249,6 +241,8 @@ const QuestionPage = () => {
                       option={option}
                       handleOptionSelect={handleOptionSelect}
                       selectedOption={selectedOption}
+                      disabled={isAttempted}
+                      isCorrectAttempt={isCorrectAttempt}
                     />
                   ))}
             </div>
@@ -265,10 +259,15 @@ const QuestionPage = () => {
             <p>Previous</p>
           </Button>
 
-          {attemptButtonVisible ? (
+          {!isAttempted ? (
             <Button
               className="mt-6 bg-blue-600 hover:bg-blue-700"
               onClick={() => handleAttemptQuestion(currentQuestion)}
+              disabled={
+                currentQuestion.option_type === "multiple"
+                 ? selectedOptions.length === 0
+                 : selectedOption === ""
+              }
             >
               Attempt
             </Button>
