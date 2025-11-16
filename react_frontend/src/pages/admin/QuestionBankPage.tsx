@@ -9,6 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
 import axiosInstance from "@/services/axios";
 import { API_ENDPOINTS } from "@/config/apiConfig";
 import { useAuth } from "@/hooks/useAuth";
@@ -16,7 +17,10 @@ import { toast } from "sonner";
 import { PenIcon, TrashIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Paginator from "@/components/Paginator";
-import { DATE_OPTIONS, LOCALE } from "@/utils/dateUtils";
+// import { DATE_OPTIONS, LOCALE } from "@/utils/dateUtils";
+import { LOCALE } from "@/utils/dateUtils";
+import Modal from "@/components/Modal";
+import EditQuestionForm from "@/pages/admin/EditQuestionPage";
 
 const QuestionBankPage = () => {
   const { token } = useAuth();
@@ -32,6 +36,10 @@ const QuestionBankPage = () => {
   const [pageSize, setPageSize] = useState(5);
   const [isLoading, setIsLoading] = useState(false);
 
+  // modal ko lagi ra question  ko lagi
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [selectedQuestion, setSelectedQuestion] = useState<any>(null);
+
   useEffect(() => {
     if (token) {
       fetchQuestions();
@@ -42,7 +50,7 @@ const QuestionBankPage = () => {
     setIsLoading(true);
     try {
       const response = await axiosInstance.get(
-        API_ENDPOINTS.adminGetAllQuestions,
+        API_ENDPOINTS.adminQuestions,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -82,6 +90,20 @@ const QuestionBankPage = () => {
     setPageSize(newPageSize);
     setCurrentPage(1); // Reset to first page when changing page size
   };
+
+  // edit button click garda, question set garne ra model open garne
+  const handleEditClick = (question: any) => {
+    setSelectedQuestion(question);
+    setEditModalOpen(true);
+    console.log("Editing question:", selectedQuestion)
+  };
+  // reset garne ani question refresh garne
+  const handleEditSuccess = () => {
+    setEditModalOpen(false);
+    setSelectedQuestion(null);
+    fetchQuestions();
+  };
+
 
   const convertToLocalDateTime = (utcDateTime: string) => {
     try {
@@ -124,11 +146,23 @@ const QuestionBankPage = () => {
             </TableHeader>
             <TableBody>
               {isLoading ? (
-                <TableRow>
-                  <TableCell colSpan={5} className="text-center">
-                    Loading...
-                  </TableCell>
-                </TableRow>
+                // <TableRow>
+                //   <TableCell colSpan={5} className="text-center">
+                //     Loading...
+                //   </TableCell>
+                // </TableRow>
+
+                // 5 rows ko 5 each cells
+                Array.from({ length: 5 }).map((_, index) => (
+                  <TableRow key={index} className="animate-pulse">
+                    {Array.from({ length: 5 }).map((_, cellIndex) => (
+                      <TableCell key={cellIndex}>
+                        <div className="h-8 bg-gray-300 rounded-md animate-pulse w-full"></div>
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+
               ) : questionList.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={5} className="text-center">
@@ -141,21 +175,48 @@ const QuestionBankPage = () => {
                     <TableCell>
                       <p className="font-normal">{question.question_text}</p>
                     </TableCell>
-                    <TableCell>
+                    {/* <TableCell>
                       {convertToLocalDateTime(
                         question.createdAt
                       ).toLocaleString(LOCALE, DATE_OPTIONS)}
+                    </TableCell> */}
+                    <TableCell>
+                      {convertToLocalDateTime(
+                        question.created_at
+                      ).toLocaleString(LOCALE)}
                     </TableCell>
                     <TableCell>
-                      <p className="text-sm text-muted-foreground">
-                        {question.category || "N/A"}
-                      </p>
+                      {/* Array ma aauxa tesaile map gareko */}
+                      <div className="flex flex-wrap gap-2">
+                        {question.category_names.map((cat: string) => (
+                          <Badge
+                            key={cat}
+                            className="py-1 px-3 text-sm bg-blue-400 text-white rounded-md"
+                          >
+                            {cat}
+                          </Badge>
+                        ))}
+                      </div>
+
                     </TableCell>
                     <TableCell>
-                      <p>{question.subCategory || "N/A"}</p>
+                      <div className="flex flex-wrap gap-2">
+                        {question.subcategory_names.map((subcat: string) => (
+                          <Badge
+                            key={subcat}
+                            className="py-1 px-3 text-sm bg-green-800 text-white rounded-md"
+                          >
+                            {subcat}
+                          </Badge>
+                        ))}
+                      </div>
                     </TableCell>
                     <TableCell className="flex gap-2">
-                      <Button className="btn-edit bg-blue-500 text-white rounded cursor-pointer">
+                      <Button className="btn-edit bg-blue-500 text-white rounded cursor-pointer"
+                        onClick={() =>
+                          handleEditClick(question)
+                        }
+                      >
                         <PenIcon size={12} />
                       </Button>
                       <Button className="btn-delete bg-red-500 text-white rounded cursor-pointer">
@@ -178,6 +239,19 @@ const QuestionBankPage = () => {
           />
         </div>
       </div>
+      <Modal
+        open={editModalOpen}
+        onOpenChange={setEditModalOpen}
+        title="Edit Question"
+      >
+        {/* Passed as children to Modal */}
+        {selectedQuestion && (
+          <EditQuestionForm
+            selectedQuestion={selectedQuestion}
+            handleEditSuccess={handleEditSuccess}
+          />
+        )}
+      </Modal>
     </div>
   );
 };

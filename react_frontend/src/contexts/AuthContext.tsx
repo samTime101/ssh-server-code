@@ -106,8 +106,8 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     email,
     username,
     phonenumber,
-    firstname,
-    lastname,
+    first_name,
+    last_name,
     password,
   }: SignupRequest) => {
     try {
@@ -115,8 +115,8 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         email,
         username,
         phonenumber,
-        firstname,
-        lastname,
+        first_name,
+        last_name,
         password,
       });
       if (response) {
