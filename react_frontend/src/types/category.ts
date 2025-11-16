@@ -19,7 +19,7 @@ export interface SubSubCategory {
 }
 
 export interface GetCategoriesResponse {
-  total_question_count?: number;
+  total_questions?: number;
   categories: Category[];
 }
 

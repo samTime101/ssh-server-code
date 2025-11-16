@@ -27,7 +27,7 @@ const QuestionBankSection = () => {
         console.log("The category response:", categoryResponse);
         setCategories(categoryResponse);
       } catch (error) {
-        setCategories({ total_question_count: 0, categories: [] });
+        setCategories({ total_questions: 0, categories: [] });
         toast.error("Failed to fetch categories");
       }
     };
@@ -52,7 +52,7 @@ const QuestionBankSection = () => {
           </div>
           <div className="flex justify-between items-center text-sm">
             <span className="text-green-600 font-medium">160 Correct</span>
-            <span className="text-gray-500">160 of 260 completed</span>
+            <span className="text-gray-500">160 of {categories?.total_questions} completed</span>
           </div>
         </div>
       </div>
@@ -147,19 +147,19 @@ const CategoryList: React.FC<{ category: Category }> = ({ category }) => {
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-3">
               <div className="bg-gray-200 h-2 w-24 rounded-full overflow-hidden">
-                {/* <div
+                <div
                   className="bg-gradient-to-r from-green-400 to-green-600 h-full rounded-full transition-all duration-300"
-                  style={{ width: `${completedPercentage}%` }}
-                ></div> */}
+                  // style={{ width: `${123}%` }}
+                ></div>
               </div>
               <div className="text-sm text-gray-600 min-w-max">
-                {/* <span className="font-medium text-gray-900">{progressData.completed}</span> */}
+                <span className="font-medium text-gray-900">{456}</span>
                 <span className="text-gray-400 mx-1">/</span>
-                {/* <span>{progressData.total}</span> */}
+                <span>{category.question_count}</span>
               </div>
             </div>
             <div className="text-sm font-medium text-gray-500">
-              {/* {Math.round(completedPercentage)}% */}
+              {Math.round(99)}%
             </div>
           </div>
         </div>
