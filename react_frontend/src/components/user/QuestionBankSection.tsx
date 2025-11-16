@@ -8,7 +8,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { useQuestions } from "@/hooks/useQuestions.tsx";
 import CategoryList from "./CategoryList";
-import type { Category } from "@/types/category";
+import type { GetCategoriesResponse } from "@/types/category";
+import { getCategories } from "@/services/user/questionService";
 
 /*
     Please note that the implementation of sub-sub-categories is currently on hold
@@ -29,12 +30,12 @@ const QuestionBankSection = () => {
     if (!token) return;
     const getCategoriesData = async () => {
       try {
-        const categoryResponse = await fetchCategories(token);
+        const categoryResponse = await getCategories(token);
         console.log("The category response:", categoryResponse);
         setCategories(categoryResponse);
       } catch (error) {
         console.error("Failed to fetch categories:", error);
-        setCategories([]);
+        setCategories({total_questions: 0, categories: [] });
         toast.error("Failed to fetch categories");
       }
     };
@@ -59,7 +60,7 @@ const QuestionBankSection = () => {
           </div>
           <div className="flex items-center justify-between text-sm">
             <span className="font-medium text-green-600">160 Correct</span>
-            <span className="text-gray-500">160 of 260 completed</span>
+            <span className="text-gray-500">160 of {categories?.total_questions} completed</span>
           </div>
         </div>
       </div>
