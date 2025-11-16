@@ -9,8 +9,9 @@ class OptionSerializer(me_serializers.EmbeddedDocumentSerializer):
     # HIDE IS_TRUE IN RESPONSES
     class Meta:
         model = Option
+        # admin lai `is_true` write read dubai enabled
         fields = ('label', 'text','is_true')
-        extra_kwargs = {'is_true': {'write_only': True}}
+        # extra_kwargs = {'is_true': {'write_only': True}}
 
 class QuestionSerializer(me_serializers.DocumentSerializer,OptionValidationMixin,ImageHandlerMixin,):
     id = serializers.CharField(read_only=True)
@@ -18,10 +19,12 @@ class QuestionSerializer(me_serializers.DocumentSerializer,OptionValidationMixin
     sub_categories = serializers.ListField(child=serializers.CharField(),write_only=True,required=True,allow_null=False)   
     image_unchanged = serializers.BooleanField(write_only=True, required=False, default=True)
     sub_categories_ids = serializers.SerializerMethodField(read_only=True) # get_subcategory_ids lai call garxa (default)
+    category_names = serializers.SerializerMethodField(read_only=True)
+    subcategory_names = serializers.SerializerMethodField(read_only=True)
     class Meta:
         model = Question
-        fields = ('id','question_text','option_type','options','description','difficulty','sub_categories','image_url','image_unchanged','sub_categories_ids')
-        extra_kwargs = {'id': {'read_only': True},'created_at': {'read_only': True},'updated_at': {'read_only': True},'image_url': {'read_only': True}}
+        fields = ('id','question_text','option_type','options','description','difficulty','sub_categories','image_url','image_unchanged','sub_categories_ids','created_at','updated_at','category_names','subcategory_names')
+        extra_kwargs = {'created_at': {'read_only': True},'updated_at': {'read_only': True},'image_url': {'read_only': True}}
         
     def validate_sub_categories(self, value):
         return validate_object_ids(value,SubCategory,'sub_categories',allow_empty=False)
@@ -39,6 +42,12 @@ class QuestionSerializer(me_serializers.DocumentSerializer,OptionValidationMixin
 
     def get_sub_categories_ids(self, obj):
         return obj.get_subcategory_ids()
+    
+    def get_category_names(self, obj):
+        return obj.get_category_names()
+    
+    def get_subcategory_names(self, obj):
+        return obj.get_subcategory_names()
 
     def create(self, validated_data):
         image_file = self.context['request'].FILES.get('image')
@@ -71,3 +80,13 @@ class QuestionSerializer(me_serializers.DocumentSerializer,OptionValidationMixin
         instance = self.handle_image_update(instance,image_file, leave_unchanged=image_leave_unchanged)
         instance.save()
         return instance
+    
+# selection ko lagi, yo chai user le access garna paune vayekale
+class OptionPublicSerializer(me_serializers.EmbeddedDocumentSerializer):
+    class Meta:
+        model = Option
+        fields = ('label', 'text')
+
+
+class QuestionPublicSerializer(QuestionSerializer):
+    options = OptionPublicSerializer(many=True)

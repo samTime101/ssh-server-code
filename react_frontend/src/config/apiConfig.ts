@@ -24,6 +24,6 @@ export const API_ENDPOINTS = {
 
   // Admin Routes
   usersList: `${API_BASE_URL}/users/`,
-  adminGetAllQuestions: `${API_BASE_URL}/questions`,
+  adminQuestions: `${API_BASE_URL}/questions`,
   
 };

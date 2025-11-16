@@ -31,6 +31,15 @@ const SignupPage = () => {
       return;
     }
     setLoading(true);
+    // await register({
+    //   email: data.email,
+    //   password: data.password,
+    //   username: data.username,
+    //   first_name: data.first_name,
+    //   last_name: data.last_name,
+    //   phonenumber: data.phonenumber,
+    // });
+    try {
     await register({
       email: data.email,
       password: data.password,
@@ -39,6 +48,11 @@ const SignupPage = () => {
       last_name: data.last_name,
       phonenumber: data.phonenumber,
     });
+    } catch (error) {
+      console.error("Registration failed:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -54,9 +68,9 @@ const SignupPage = () => {
           <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="firstname">First Name</Label>
+                <Label htmlFor="first_name">First Name</Label>
                 <Input
-                  id="firstname"
+                  id="first_name"
                   type="text"
                   placeholder="Enter your first name"
                   {...formRegister("first_name", { required: "First name is required" })}
@@ -64,9 +78,9 @@ const SignupPage = () => {
                 {errors.first_name && <FormErrorMessage message={errors.first_name.message} />}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="lastname">Last Name</Label>
+                <Label htmlFor="last_name">Last Name</Label>
                 <Input
-                  id="lastname"
+                  id="last_name"
                   type="text"
                   placeholder="Enter your last name"
                   {...formRegister("last_name", { required: "Last name is required" })}
@@ -129,7 +143,7 @@ const SignupPage = () => {
               />
               {errors.password && <FormErrorMessage message={errors.password.message} />}
             </div>
-            <Button type="submit" className="w-full">
+            <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Creating Account..." : "Create Account"}
             </Button>
           </form>

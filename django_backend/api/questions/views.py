@@ -121,7 +121,8 @@ class QuestionViewSet(viewsets.ModelViewSet):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     # For question selection
-    # /api/questions/select/
+    # /api/question/select/
+    @extend_schema(request=QuestionSelectionSerializer, responses=QuestionPublicSerializer(many=True))
     @action(detail=False, methods=['post'],url_path='select',serializer_class=QuestionSelectionSerializer,permission_classes=[IsAuthenticated],parser_classes=[JSONParser])
     def select(self, request):
         serializer = self.get_serializer(data=request.data)
@@ -131,5 +132,5 @@ class QuestionViewSet(viewsets.ModelViewSet):
         queryset = get_questions_by_selection(category_ids, sub_category_ids)
         if not queryset:
             raise NotFound("No questions found for selected categories")
-        response_data = QuestionSerializer(queryset, many=True)
+        response_data = QuestionPublicSerializer(queryset, many=True)
         return Response(response_data.data, status=status.HTTP_200_OK)

@@ -3,16 +3,10 @@ import type { LoginRequest, SignupRequest } from "@/types/auth";
 import axios from "axios";
 
 export const loginService = async ({ email, password }: LoginRequest) => {
-  try {
-    const loginResponse = await axios.post(API_ENDPOINTS.login, {
-      email,
-      password,
-    });
-
-    return loginResponse;
-  } catch (error) {
-    throw error;
-  }
+  return axios.post(API_ENDPOINTS.login, {
+    email,
+    password,
+  });
 };
 
 export const signupService = async ({
@@ -23,17 +17,12 @@ export const signupService = async ({
   last_name,
   password,
 }: SignupRequest) => {
-  try {
-    const signupResponse = await axios.post(API_ENDPOINTS.signup, {
-      email,
-      username,
-      phonenumber,
-      first_name,
-      last_name,
-      password,
-    });
-    return signupResponse;
-  } catch (error) {
-    throw error;
-  }
+  return axios.post(API_ENDPOINTS.signup, {
+    email,
+    username,
+    phonenumber,
+    first_name,
+    last_name,
+    password,
+  });
 };
