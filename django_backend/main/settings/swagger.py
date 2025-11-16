@@ -3,9 +3,14 @@ SPECTACULAR_SETTINGS = {
     "TITLE": "MCQ API",
     "DESCRIPTION": """
 
+## November 11, 2025
+- Enabled `is_true` field in options for admin users in question endpoint responses
+- Added `QuestionPublicSerializer` for non-admin users to hide `is_true` field
+    
 ### November 9, 2025
+- Added `category_names` and `subcategory_names` in response for question endpoint
 - Reverted back to manual forloops for `hierarchy`
-
+    
 ### November 8, 2025
 - Replaced manual forloops for `hierarchy` with mongo's `aggregation` 
 - New endpoint `/api/users/profile/` to get current user's profile details

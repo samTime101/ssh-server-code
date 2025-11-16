@@ -43,6 +43,13 @@ class Question(TimeStampedDocument):
 
     def get_subcategory_ids(self):
         return [str(subcat.id) for subcat in self.sub_categories]
+    
+    # extra safe huna set ma
+    def get_category_names(self):
+        return list({subcat.category.name for subcat in self.sub_categories})
+
+    def get_subcategory_names(self):
+        return [subcat.name for subcat in self.sub_categories]
 
 class QuestionClassification(TimeStampedDocument):
     sub_category = ReferenceField(SubCategory, required=True, unique=True)
