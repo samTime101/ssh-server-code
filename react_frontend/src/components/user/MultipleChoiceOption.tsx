@@ -5,21 +5,25 @@ const MultipleChoiceOption = ({
   handleOptionSelect,
   selectedOptions,
   disabled = false,
-  isCorrectAttempt,
+  correctOptions,
 }: {
   option: any;
   handleOptionSelect: (id: string) => void;
   selectedOptions: string[];
   disabled?: boolean;
   isCorrectAttempt?: boolean;
+  correctOptions: string[];
 }) => {
   const isSelected = selectedOptions.includes(option.label);
+  const isCorrect = correctOptions.includes(option.label);
 
   // statusClass for "disabled/correct/incorrect" decorations
   let statusClass = "";
   if (disabled) {
-    if (isSelected) {
-      statusClass = isCorrectAttempt ? "border-green-500 bg-green-50" : "border-red-500 bg-red-50";
+    if (isCorrect) {
+      statusClass = "border-green-500 bg-green-50";
+    } else if (isSelected) {
+      statusClass = "border-red-500 bg-red-50";
     } else {
       statusClass = "bg-gray-100";
     }

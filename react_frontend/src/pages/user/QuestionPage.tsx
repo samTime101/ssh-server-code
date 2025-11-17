@@ -124,8 +124,8 @@ const QuestionPage = () => {
           selectedOptions: selected,
           selectedOption: question.option_type === "multiple" ? undefined : selected[0],
           isAttempted: true,
-          isCorrect: result.is_correct,
           feedback: result?.feedback ?? "",
+          correctOptions: result?.correct_answers,
         },
       }));
 
@@ -164,7 +164,6 @@ const QuestionPage = () => {
   // Derived UI flags from the attempts map
   const currentAttempt = currentQuestion ? attempts[currentQuestion.id] : undefined;
   const isAttempted = !!currentAttempt?.isAttempted;
-  const isCorrectAttempt = currentAttempt?.isCorrect ?? undefined
   
   return (
     <div className="min-h-screen p-6">
@@ -202,9 +201,33 @@ const QuestionPage = () => {
             </h2>
           </CardHeader>
 
-          <CardContent>
+          <CardContent className="space-y-4">
+            <div className="space-y-4">
+              {currentQuestion.option_type === "multiple"
+                ? currentQuestion.options.map((option) => (
+                    <MultipleChoiceOption
+                      key={option.label}
+                      option={option}
+                      handleOptionSelect={handleOptionSelect}
+                      selectedOptions={selectedOptions}
+                      disabled={isAttempted}
+                      correctOptions={currentAttempt?.correctOptions ?? []}
+                    />
+                  ))
+                : currentQuestion.options.map((option) => (
+                    <SingleChoiceOption
+                      key={option.label}
+                      option={option}
+                      handleOptionSelect={handleOptionSelect}
+                      selectedOption={selectedOption}
+                      disabled={isAttempted}
+                      correctOptions={currentAttempt?.correctOptions ?? []}
+                    />
+                  ))}
+            </div>
+
             {isAttempted && (
-              <div className="mb-6 rounded-lg border-l-4 border-blue-500 bg-blue-50 p-5 dark:bg-blue-900/20">
+              <div className="rounded-lg border-l-4 border-blue-500 bg-blue-50 p-5 dark:bg-blue-900/20">
                 <div className="flex items-start gap-3">
                   <div className="flex-shrink-0 mt-1">
                     <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
@@ -218,34 +241,19 @@ const QuestionPage = () => {
                     <p className="text-sm text-blue-800 dark:text-blue-200 leading-relaxed">
                       {currentQuestion.description}
                     </p>
+                    {currentQuestion.image_url && (
+                      <div className="mt-4 flex justify-center">
+                        <img
+                          src={currentQuestion.image_url}
+                          alt="Question illustration"
+                          className="max-w-full h-auto rounded-lg shadow-md"
+                        />
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
             )}
-
-            <div className="space-y-4">
-              {currentQuestion.option_type === "multiple"
-                ? currentQuestion.options.map((option) => (
-                    <MultipleChoiceOption
-                      key={option.label}
-                      option={option}
-                      handleOptionSelect={handleOptionSelect}
-                      selectedOptions={selectedOptions}
-                      disabled={isAttempted}
-                      isCorrectAttempt={isCorrectAttempt}
-                    />
-                  ))
-                : currentQuestion.options.map((option) => (
-                    <SingleChoiceOption
-                      key={option.label}
-                      option={option}
-                      handleOptionSelect={handleOptionSelect}
-                      selectedOption={selectedOption}
-                      disabled={isAttempted}
-                      isCorrectAttempt={isCorrectAttempt}
-                    />
-                  ))}
-            </div>
           </CardContent>
         </Card>
 
