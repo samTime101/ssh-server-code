@@ -14,6 +14,18 @@ import Loader from "./components/ui/Loader";
 import ManageUsersPage from "./pages/admin/ManageUsersPage";
 import QuestionBankPage from "./pages/admin/QuestionBankPage";
 
+/*
+  The Route guard structure needs heavy refactoring to accommodate
+  multiple user roles (admin, staff, regular users) properly.
+  Current implementation is a temporary solution to ensure correct access control.
+
+  Current Flow:
+  - PrivateRoute: Checks for authentication token.
+  - UserRoute: Grants access to regular users and staff.
+  - AdminRoute: Restricts access to superusers only.
+  - RootRedirect: Directs users based on role after login.
+*/
+
 const PrivateRoute = () => {
   const { token } = useAuth();
   console.log("PrivateRoute token:", token);
@@ -30,7 +42,7 @@ const RootRedirect = () => {
 
   if (token && user) {
     if (user.is_superuser) return <Navigate to="/admin" />;
-    if (user.is_staff) return <Navigate to="/teacherpanel" />;
+    if (user.is_staff) return <Navigate to="/userpanel" />;
     return <Navigate to="/userpanel" />;
   }
 
@@ -48,7 +60,10 @@ const AdminRoute = () => {
 
 const UserRoute = () => {
   const { token, user } = useAuth();
-  return token && user && !user.is_superuser ? <Outlet /> : <Navigate to="/" />;
+  if (!token) return <Navigate to="/auth/login" />;
+  if (!user) return <Loader />;
+
+  return token && user ? <Outlet /> : <Navigate to="/" />;
 };
 
 const App = () => {
@@ -72,7 +87,6 @@ const App = () => {
           }
         ></Route>
       </Route>
-
       <Route element={<PrivateRoute />}>
         <Route element={<UserRoute />}>
           <Route
@@ -84,11 +98,7 @@ const App = () => {
             }
           >
             <Route index element={<Navigate to="question-bank" replace />} />
-            <Route
-              path="question-bank"
-              element={<QuestionBankSection />}
-              index
-            ></Route>
+            <Route path="question-bank" element={<QuestionBankSection />} index></Route>
             {<Route path="question" element={<QuestionPage />}></Route>}
           </Route>
         </Route>
@@ -104,9 +114,8 @@ const App = () => {
           </Route>
         </Route>
       </Route>
-
       <Route path="/" element={<RootRedirect />} />
-      <Route path="*" element={<Navigate to="/" />} />
+      <Route path="*" element={<div>404 - Page Not Found</div>} />{" "}
     </Routes>
   );
 };
