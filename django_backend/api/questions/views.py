@@ -52,7 +52,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     # For question selection
-    # /api/question/select/
+    # /api/questions/select/
     @extend_schema(request=QuestionSelectionSerializer, responses=QuestionPublicSerializer(many=True))
     @action(detail=False, methods=['post'],url_path='select',serializer_class=QuestionSelectionSerializer,permission_classes=[IsAuthenticated],parser_classes=[JSONParser])
     def select(self, request):
