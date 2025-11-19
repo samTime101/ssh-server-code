@@ -3,7 +3,7 @@ export interface Question {
   question_text: string;
   description: string;
   option_type: string;
-  options: { optionId: string; text: string }[];
+  options: { label: string; text: string }[];
   difficulty: string;
   category: string;
   sub_category: string[];

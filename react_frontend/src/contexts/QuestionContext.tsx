@@ -44,8 +44,8 @@ const QuestionProvider = ({ children }: { children: React.ReactNode }) => {
         return;
       }
       const payload = {
-        categoryId: selectedCategoriesId,
-        subCategoryId: selectedSubCategoryId,
+        category_ids: selectedCategoriesId,
+        sub_category_ids: selectedSubCategoryId,
         subSubCategoryId: selectedSubSubCategoryId,
       };
       const response = await getQuestions(payload, token);

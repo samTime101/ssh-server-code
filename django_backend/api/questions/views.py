@@ -37,11 +37,13 @@ class QuestionViewSet(viewsets.ModelViewSet):
     lookup_field = 'id' 
     # id field regex (was complaining when server was running)
     lookup_value_regex = '[0-9a-f]{24}'
-    # Parsing (custom under core/parser) 
+    # Parsing: accept custom multipart JSON (for file uploads) and regular JSON
+    # This allows frontend to send either multipart/form-data with a 'data' field
+    # (stringified JSON) or application/json payloads.
     parser_classes = [QuestionMultipartJsonParser]
     permission_classes = [IsAdminUser]
 
-    # For api/question/hierarchy/
+    # For api/questions/hierarchy/
     @action(detail=False,methods=['get'],url_path='hierarchy',serializer_class=HierarchySerializer,permission_classes=[IsAuthenticated])
     def hierarchy(self, request):
         # definition under core/hierarchy
@@ -50,7 +52,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     # For question selection
-    # /api/question/select/
+    # /api/questions/select/
     @extend_schema(request=QuestionSelectionSerializer, responses=QuestionPublicSerializer(many=True))
     @action(detail=False, methods=['post'],url_path='select',serializer_class=QuestionSelectionSerializer,permission_classes=[IsAuthenticated],parser_classes=[JSONParser])
     def select(self, request):

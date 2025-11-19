@@ -6,6 +6,10 @@ export interface User {
   is_superuser: boolean;
   is_staff: boolean;
   is_active: boolean;
+  total_right_attempts: string,
+  total_attempts: string,
+  accuracy_percent: string,
+  completion_percent: string
 }
 
 export interface AuthToken {

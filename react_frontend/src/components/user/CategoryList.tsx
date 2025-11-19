@@ -75,7 +75,7 @@ const CategoryList: React.FC<{ category: Category }> = ({ category }) => {
               <div className="min-w-max text-sm text-gray-600">
                 {/* <span className="font-medium text-gray-900">{progressData.completed}</span> */}
                 <span className="mx-1 text-gray-400">/</span>
-                {/* <span>{progressData.total}</span> */}
+                { <span>{category.question_count}</span> }
               </div>
             </div>
             <div className="text-sm font-medium text-gray-500">
@@ -88,7 +88,7 @@ const CategoryList: React.FC<{ category: Category }> = ({ category }) => {
         {isCategoryExpanded && (
           <div className="mt-4 border-t border-gray-100 pt-4">
             <ul className="space-y-2 pl-8">
-              {category.sub_categories.map((subCategory) => {
+              {category.sub_categories?.map((subCategory) => {
                 // const isSubCategoryExpanded = expandedSubCategories.includes(subCategory.id);
 
                 return (

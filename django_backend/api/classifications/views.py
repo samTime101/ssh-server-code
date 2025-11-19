@@ -6,7 +6,7 @@ from rest_framework.permissions import IsAdminUser
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    http_method_names = ['get', 'post', 'put', 'delete']
+    http_method_names = ['post', 'get', 'put', 'delete']
     permission_classes = [IsAdminUser]
     lookup_field = 'id'
     lookup_value_regex = '[0-9a-f]{24}'
