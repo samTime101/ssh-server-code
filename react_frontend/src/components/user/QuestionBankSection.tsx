@@ -1,5 +1,5 @@
 import { Search } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "../ui/button";
 import { useNavigate } from "react-router-dom";
@@ -10,6 +10,9 @@ import { useQuestions } from "@/hooks/useQuestions.tsx";
 import CategoryList from "./CategoryList";
 import type { GetCategoriesResponse } from "@/types/category";
 import { getCategories } from "@/services/user/questionService";
+import { AuthContext } from "@/contexts/AuthContext";
+
+
 
 /*
     Please note that the implementation of sub-sub-categories is currently on hold
@@ -23,14 +26,17 @@ const QuestionBankSection = () => {
   const { token } = useAuth();
   const { fetchQuestions } = useQuestions(); //selectedCategoriesId, selectedSubSubCategoryId, selectedSubCategoryId,
   const navigate = useNavigate();
+  const { user } = useContext(AuthContext);
 
   const [categories, setCategories] = useState<GetCategoriesResponse>();
+
 
   useEffect(() => {
     if (!token) return;
     const getCategoriesData = async () => {
       try {
         const categoryResponse = await getCategories(token);
+    
         console.log("The category response:", categoryResponse);
         setCategories(categoryResponse);
       } catch (error) {
@@ -50,7 +56,7 @@ const QuestionBankSection = () => {
         <div className="space-y-3">
           <div className="flex items-center justify-between text-sm text-gray-600">
             <span>Overall Progress</span>
-            <span className="font-medium">65% Complete</span>
+            <span className="font-medium">{user?.completion_percent}% Complete</span>
           </div>
           <div className="h-3 overflow-hidden rounded-full bg-gray-200">
             <div
@@ -59,8 +65,8 @@ const QuestionBankSection = () => {
             ></div>
           </div>
           <div className="flex items-center justify-between text-sm">
-            <span className="font-medium text-green-600">160 Correct</span>
-            <span className="text-gray-500">160 of {categories?.total_questions} completed</span>
+            <span className="font-medium text-green-600">{user?.total_right_attempts} Correct</span>
+            <span className="text-gray-500">{user?.total_attempts} of {categories?.total_questions} completed</span>
           </div>
         </div>
       </div>
