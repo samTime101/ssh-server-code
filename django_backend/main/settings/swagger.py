@@ -3,6 +3,10 @@ SPECTACULAR_SETTINGS = {
     "TITLE": "MCQ API",
     "DESCRIPTION": """
 
+## November 16, 2025
+- Added `total_right_attempts`, `total_attempts`, `completion_percent` and `accuracy_percent` fields in user profile response
+- Added `incorrect_answers`, `selected_answers` and `correct_answers` fields in submission response
+
 ## November 11, 2025
 - Enabled `is_true` field in options for admin users in question endpoint responses
 - Added `QuestionPublicSerializer` for non-admin users to hide `is_true` field
