@@ -13,13 +13,12 @@ export async function createSubCategory(
   subCategoryName: string,
   token: AuthToken
 ): Promise<{ message: string; subcategory: CreateSubCategoryResponse }> {
+  const categoryData = { category: categoryId, name: subCategoryName }; 
+  console.log("The category data being sent is ", categoryData);
   try {
     const response = await axiosInstance.post(
       API_ENDPOINTS.createSubCategory,
-      {
-        categoryID: categoryId,
-        subCategoryName,
-      },
+      categoryData,
       {
         headers: {
           "Content-Type": "application/json",
@@ -51,22 +50,16 @@ export async function getCategories(
     if (!response) {
       throw new Error("Failed to fetch categories");
     }
+    console.log("Raw response data:", response.data);
 
     const transformedData = {
       ...response.data,
-      categories: response.data.categories.map((category: any) => ({
+      categories: response.data.map((category: any) => ({
         categoryId: category.id,
-        categoryName: category.name,
-        question_count: category.question_count,
-        subCategories: category.subCategories.map((subcategory: any) => ({
-          subCategoryId: subcategory.id,
-          subCategoryName: subcategory.name,
-          subSubCategory: subcategory.subSubCategories,
-          question_count: subcategory.question_count,
-        })),
+        categoryName: category.name
       })),
     };
-    console.log(transformedData);
+    console.log("The transformed data is ", transformedData);
     return transformedData;
   } catch (error) {
     console.error(error);

@@ -52,7 +52,7 @@ const QuestionPage = () => {
       setAttemptButtonVisible(false);
     }
 
-    if (currentQuestion.questionType === "multiple") {
+    if (currentQuestion.option_type === "multiple") {
       setSelectedOptions(saved);
       setSelectedOption("");
     } else {
@@ -70,9 +70,9 @@ const QuestionPage = () => {
     }
 
     if (
-      (currentQuestion.questionType === "multiple" &&
+      (currentQuestion.option_type === "multiple" &&
         selectedOptions.length === 0) ||
-      (currentQuestion.questionType === "single" && selectedOption === "")
+      (currentQuestion.option_type === "single" && selectedOption === "")
     ) {
       toast.error("Please select an option before proceeding.");
       return;
@@ -123,7 +123,7 @@ const QuestionPage = () => {
       For single choice question: [option1] or []
     */
     let selected =
-      question.questionType === "multiple"
+      question.option_type === "multiple"
         ? selectedOptions
         : selectedOption
         ? [selectedOption]
@@ -166,7 +166,7 @@ const QuestionPage = () => {
   }
 
   const handleOptionSelect = (optionId: string) => {
-    if (currentQuestion.questionType === "multiple") {
+    if (currentQuestion.option_type === "multiple") {
       setSelectedOptions((prev) =>
         prev.includes(optionId)
           ? prev.filter((id) => id !== optionId)
@@ -204,11 +204,11 @@ const QuestionPage = () => {
                 {currentQuestion.difficulty}
               </Badge>
               <Badge variant="outline" className="capitalize">
-                {currentQuestion.questionType}
+                {currentQuestion.option_type}
               </Badge>
             </div>
             <h2 className="text-xl font-semibold text-gray-800 leading-relaxed">
-              {currentQuestion.questionText}
+              {currentQuestion.question_text}
             </h2>
           </CardHeader>
 
@@ -234,10 +234,10 @@ const QuestionPage = () => {
             )}
 
             <div className="space-y-4">
-              {currentQuestion.questionType === "multiple"
+              {currentQuestion.option_type === "multiple"
                 ? currentQuestion.options.map((option) => (
                     <MultipleChoiceOption
-                      key={option.optionId}
+                      key={option.label}
                       option={option}
                       handleOptionSelect={handleOptionSelect}
                       selectedOptions={selectedOptions}
@@ -245,7 +245,7 @@ const QuestionPage = () => {
                   ))
                 : currentQuestion.options.map((option) => (
                     <SingleChoiceOption
-                      key={option.optionId}
+                      key={option.label}
                       option={option}
                       handleOptionSelect={handleOptionSelect}
                       selectedOption={selectedOption}

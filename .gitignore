@@ -4,8 +4,8 @@ __pycache__/
 *.pyc
 migrations/
 *.log
-*.sqlite3
-/sisani/
+**/tests.py
+.venv/
 
 # FOR REACT AND NODE
 react_frontend/node_modules/
@@ -21,3 +21,4 @@ react_frontend.env.production.local
 react_frontend/npm-debug.log*
 react_frontend/yarn-debug.log*
 react_frontend/yarn-error.log*
+.vscode/launch.json

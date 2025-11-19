@@ -11,6 +11,20 @@ import QuestionPage from "./pages/user/QuestionPage";
 import AddQuestionPage from "./pages/admin/AddQuestionPage";
 import CreateCategoryPage from "./pages/admin/CreateCategoryPage";
 import Loader from "./components/ui/Loader";
+import ManageUsersPage from "./pages/admin/ManageUsersPage";
+import QuestionBankPage from "./pages/admin/QuestionBankPage";
+
+/*
+  The Route guard structure needs heavy refactoring to accommodate
+  multiple user roles (admin, staff, regular users) properly.
+  Current implementation is a temporary solution to ensure correct access control.
+
+  Current Flow:
+  - PrivateRoute: Checks for authentication token.
+  - UserRoute: Grants access to regular users and staff.
+  - AdminRoute: Restricts access to superusers only.
+  - RootRedirect: Directs users based on role after login.
+*/
 
 const PrivateRoute = () => {
   const { token } = useAuth();
@@ -28,7 +42,7 @@ const RootRedirect = () => {
 
   if (token && user) {
     if (user.is_superuser) return <Navigate to="/admin" />;
-    if (user.is_staff) return <Navigate to="/teacherpanel" />;
+    if (user.is_staff) return <Navigate to="/userpanel" />;
     return <Navigate to="/userpanel" />;
   }
 
@@ -46,7 +60,10 @@ const AdminRoute = () => {
 
 const UserRoute = () => {
   const { token, user } = useAuth();
-  return token && user && !user.is_superuser ? <Outlet /> : <Navigate to="/" />;
+  if (!token) return <Navigate to="/auth/login" />;
+  if (!user) return <Loader />;
+
+  return token && user ? <Outlet /> : <Navigate to="/" />;
 };
 
 const App = () => {
@@ -70,7 +87,6 @@ const App = () => {
           }
         ></Route>
       </Route>
-
       <Route element={<PrivateRoute />}>
         <Route element={<UserRoute />}>
           <Route
@@ -93,36 +109,15 @@ const App = () => {
           <Route path="/admin" element={<AdminLayout />}>
             <Route path="add-question" element={<AddQuestionPage />} />
             <Route path="create-category" element={<CreateCategoryPage />} />
+            <Route path="manage-users" element={<ManageUsersPage />} />
+            <Route path="question-bank" element={<QuestionBankPage />} />
           </Route>
         </Route>
       </Route>
-
       <Route path="/" element={<RootRedirect />} />
-      <Route path="*" element={<Navigate to="/" />} />
+      <Route path="*" element={<div>404 - Page Not Found</div>} />{" "}
     </Routes>
   );
 };
-// function App() {
-//   return (
-//     <BrowserRouter>
-//       <div className="flex min-h-screen w-full items-center justify-center p-6 md:p-10">
-//         <div className="w-full max-w-sm">
-//           <Routes>
-//             <Route path="/" element={<RootRedirect />} />
-//             <Route path="/login" element={<Page />} />
-//             <Route path="/questions" element={<QuestionsPage />} />
-//             <Route element={<ProtectedRoute />}>
-//               <Route path="/userpanel" element={<UserPanel />} />
-//               <Route path="/teacherpanel" element={<TeacherPanel />} />
-//               <Route path="/adminpanel" element={<AdminPanel />} />
-//               <Route path="/categories" element={<Categories />} />
-//               <Route path="/add-questions" element={<AddQuestions />} />
-//             </Route>
-//           </Routes>
-//         </div>
-//       </div>
-//     </BrowserRouter>
-//   );
-// }
 
 export default App;

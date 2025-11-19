@@ -23,7 +23,16 @@ const LoginPage = () => {
       return;
     }
     setLoading(true);
-    await login({ email: data.email, password: data.password });
+    // await login({ email: data.email, password: data.password });
+
+    // reset garna ko lagi
+    try{
+      await login({ email: data.email, password: data.password });
+    }catch(error){
+      console.error("Login failed:", error);
+    }finally{
+      setLoading(false);
+    }
   };
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
@@ -64,7 +73,8 @@ const LoginPage = () => {
               />
               {errors.password && <FormErrorMessage message={errors.password.message} />}
             </div>
-            <Button type="submit" className="w-full">
+            {/* TODO: Signup ma pani */}
+            <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Signing In..." : "Sign In"}
             </Button>
           </form>

@@ -19,12 +19,15 @@ const CreateCategoryPage = () => {
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState<"success" | "error" | "">("");
 
+  
+
   // Fetch categories and subcategories
   useEffect(() => {
     async function fetchCategories() {
       if (!token) return;
       try {
         const data = await getCategories(token);
+        console.log("The data is :", data );
         setCategories(data.categories);
       } catch (err) {
         setMessage("Failed to fetch categories");
@@ -47,13 +50,14 @@ const CreateCategoryPage = () => {
     setMessageType("");
     try {
       if (!token) throw new Error("Authentication token not found");
-      //TODO: Implement createCategory service function
+      const categoryData = { name: categoryName };
+      
       const result = await axiosInstance.post(
         API_ENDPOINTS.createCategory,
-        { categoryName },
+        categoryData,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setMessage(`Category \"${result.data.category.name}\" created successfully!`);
+      setMessage(`Category \"${result.data.name}\" created successfully!`);
       setMessageType("success");
       setCategoryName("");
       // Refresh categories
@@ -61,7 +65,8 @@ const CreateCategoryPage = () => {
       const data = await getCategories(token);
       setCategories(data.categories);
     } catch (error: any) {
-      setMessage(error.message || "Failed to create category. Please try again.");
+      const errorMsg = error.response?.data?.detail || error.response?.data?.name?.[0] || error.message || "Failed to create category. Please try again.";
+      setMessage(errorMsg);
       setMessageType("error");
     } finally {
       setIsLoading(false);
@@ -85,7 +90,9 @@ const CreateCategoryPage = () => {
         access: token,
         refresh: "",
       });
-      setMessage(`Subcategory \"${result.subcategory.subCategoryName}\" created successfully!`);
+    
+
+      setMessage(`Subcategory \"${result.message}\" created successfully!`);
       setMessageType("success");
       setSubCategoryName("");
       // Refresh categories
