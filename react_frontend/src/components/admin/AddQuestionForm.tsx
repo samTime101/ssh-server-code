@@ -132,7 +132,9 @@ const AddQuestionForm = () => {
                 value={questionFormData.categoryId}
                 onChange={handleInputChange}
               >
-                <option value="">Select category</option>
+                <option value="" disabled>
+                  Select category
+                </option>
                 {categories.map((cat) => (
                   <option key={cat.id} value={cat.id}>
                     {cat.name}
@@ -156,12 +158,18 @@ const AddQuestionForm = () => {
                     }
                   }}
                 >
-                  <option value="">Select subcategory</option>
-                  {subCategories.map((subCat) => (
-                    <option key={subCat.id} value={subCat.id.toString()}>
-                      {subCat.name}
-                    </option>
-                  ))}
+                  <option value="" disabled>
+                    Select subcategory
+                  </option>
+                  {subCategories
+                    .filter(
+                      (subCat) => !questionFormData.subCategories.includes(subCat.id.toString())
+                    )
+                    .map((subCat) => (
+                      <option key={subCat.id} value={subCat.id.toString()}>
+                        {subCat.name}
+                      </option>
+                    ))}
                 </select>
 
                 {/* Dynamic Chips based on actual selected data */}
@@ -177,9 +185,7 @@ const AddQuestionForm = () => {
                         <span className="text-xs">{subCat?.name || subCatId}</span>
                         <button
                           type="button"
-                          onClick={() => {
-                            () => handleRemoveSubCategory(subCatId);
-                          }}
+                          onClick={() => handleRemoveSubCategory(subCatId)}
                           className="ml-1 rounded-full p-0.5 hover:bg-gray-300 dark:hover:bg-slate-600"
                         >
                           <X size={12} />
@@ -191,6 +197,7 @@ const AddQuestionForm = () => {
               </div>
             </div>
           </div>
+
           {/* Sub-subcategory Selection */}
           {/* <div className="space-y-2">
             <Label htmlFor="subsubcategory">Sub-subcategory</Label>
