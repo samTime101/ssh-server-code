@@ -47,7 +47,8 @@ class QuestionViewSet(viewsets.ModelViewSet):
     @action(detail=False,methods=['get'],url_path='hierarchy',serializer_class=HierarchySerializer,permission_classes=[IsAuthenticated])
     def hierarchy(self, request):
         # definition under core/hierarchy
-        hierarchy_data = get_heirarchy()
+        user_guid = getattr(request.user, "user_guid", None)
+        hierarchy_data = get_heirarchy(user_guid=user_guid)
         serializer = self.get_serializer(hierarchy_data)
         return Response(serializer.data, status=status.HTTP_200_OK)
 

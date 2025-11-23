@@ -73,7 +73,7 @@ const CategoryList: React.FC<{ category: Category }> = ({ category }) => {
                 ></div> */}
               </div>
               <div className="min-w-max text-sm text-gray-600">
-                {/* <span className="font-medium text-gray-900">{progressData.completed}</span> */}
+                { <span className="font-medium text-gray-900">{category.attempted_count}</span> }
                 <span className="mx-1 text-gray-400">/</span>
                 { <span>{category.question_count}</span> }
               </div>

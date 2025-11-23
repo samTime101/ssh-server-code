@@ -3,6 +3,7 @@ export interface Category {
   name: string;
   sub_categories?: SubCategory[];
   question_count?: number;
+  attempted_count?: number;
 }
 
 export interface SubCategory {
@@ -10,6 +11,7 @@ export interface SubCategory {
   name: string;
   subSubCategories: SubSubCategory[];
   question_count: number;
+  attempted_count?: number; 
 }
 
 export interface SubSubCategory {
