@@ -3,6 +3,7 @@
 # Selection file
 # Endpoint /api/question/select_questions
 
+import random
 from mongo.models import Question, SubCategory
 
 def get_questions_by_selection(category_ids, sub_category_ids) -> list[Question]:
@@ -21,4 +22,5 @@ def get_questions_by_selection(category_ids, sub_category_ids) -> list[Question]
         sub_category_ids = [sc.id for sc in result]
         # return question matching with id
         questions = Question.objects(sub_categories__in=sub_category_ids)
+        random.shuffle(questions)
     return list(questions)

@@ -65,6 +65,38 @@ class SubmissionCollectionViewSet(ModelViewSet):
         # if submission exists for user with requested guid
         # update the attempt
         # else append to it
-        Submissions.objects(user_guid=user_guid).update_one(add_to_set__attempts=attempt_doc,set__started_at=datetime.utcnow(),upsert=True)
-        response_data = SubmissionResponseSerializer(attempt_doc)
-        return Response(response_data.data, status=status.HTTP_201_CREATED)
+        # try to find an existing submission with an attempt for the same question
+        question = validated_attempt.get('question')
+        # if a submission exists and has an attempt for this question, update that embedded attempt
+        existing_match = Submissions.objects(user_guid=user_guid, attempts__question=question).first()
+
+        if existing_match:
+            # update the matched embedded attempt fields using a raw pymongo update
+            Submissions._get_collection().update_one(
+                {"_id": existing_match.id, "attempts.question": question.id},
+                {
+                    "$set": {
+                        "attempts.$.selected_answers": validated_attempt.get("selected_answers", []),
+                        "attempts.$.is_correct": validated_attempt.get("is_correct", False),
+                        "attempts.$.attempted_at": datetime.utcnow(),
+                        "started_at": datetime.utcnow(),
+                    }
+                },
+            )
+            # fetch the updated attempt to return
+            submission_doc = Submissions.objects(user_guid=user_guid).first()
+            updated_attempt = None
+            for a in submission_doc.attempts:
+                try:
+                    if a.question.id == question.id:
+                        updated_attempt = a
+                        break
+                except Exception:
+                    continue
+            response_data = SubmissionResponseSerializer(updated_attempt)
+            return Response(response_data.data, status=status.HTTP_200_OK)
+        else:
+            # no existing attempt for this question — append as before
+            Submissions.objects(user_guid=user_guid).update_one(add_to_set__attempts=attempt_doc, set__started_at=datetime.utcnow(), upsert=True)
+            response_data = SubmissionResponseSerializer(attempt_doc)
+            return Response(response_data.data, status=status.HTTP_201_CREATED)
