@@ -199,6 +199,15 @@ const QuestionPage = () => {
             <h2 className="text-xl font-semibold text-gray-800 leading-relaxed">
               {currentQuestion.question_text}
             </h2>
+            {currentQuestion.question_image_url && (
+              <div className="flex justify-center">
+                <img
+                  src={currentQuestion.question_image_url}
+                  alt="Question illustration"
+                  className="border max-w-full h-auto rounded-lg shadow-md"
+                  />
+              </div>
+            )}
           </CardHeader>
 
           <CardContent className="space-y-4">
@@ -234,20 +243,20 @@ const QuestionPage = () => {
                       <Lightbulb size={18} className="text-white" />
                     </div>
                   </div>
-                  <div className="flex-1">
-                    <h3 className="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-2 flex items-center gap-2">
+                  <div className="flex-1 space-y-2">
+                    <h3 className="text-sm font-semibold text-blue-900 dark:text-blue-100 flex items-center">
                       Explanation
                     </h3>
                     <p className="text-sm text-blue-800 dark:text-blue-200 leading-relaxed">
                       {currentQuestion.description}
                     </p>
-                    {currentQuestion.image_url && (
-                      <div className="mt-4 flex justify-center">
+                    {currentQuestion.description_image_url && (
+                      <div className="flex justify-center">
                         <img
-                          src={currentQuestion.image_url}
+                          src={currentQuestion.description_image_url}
                           alt="Question illustration"
                           className="max-w-full h-auto rounded-lg shadow-md"
-                        />
+                          />
                       </div>
                     )}
                   </div>

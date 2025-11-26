@@ -10,7 +10,8 @@ export interface Question {
   subSubCategory: string[];
   createdAt: string;
   updatedAt: string;
-  image_url?: string;
+  question_image_url?: string;
+  description_image_url?: string;
 }
 
 export interface QuestionAttemptState {
