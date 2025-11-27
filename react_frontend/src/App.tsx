@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { Navigate, Routes, Route, Outlet } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import LoginPage from "@/pages/LoginPage";
@@ -13,6 +13,7 @@ import CreateCategoryPage from "./pages/admin/CreateCategoryPage";
 import Loader from "./components/ui/Loader";
 import ManageUsersPage from "./pages/admin/ManageUsersPage";
 import QuestionBankPage from "./pages/admin/QuestionBankPage";
+import AddRolePage from "./pages/admin/AddRolePage";
 
 /*
   The Route guard structure needs heavy refactoring to accommodate
@@ -111,6 +112,7 @@ const App = () => {
             <Route path="create-category" element={<CreateCategoryPage />} />
             <Route path="manage-users" element={<ManageUsersPage />} />
             <Route path="question-bank" element={<QuestionBankPage />} />
+            <Route path="add-role" element={<AddRolePage />} />
           </Route>
         </Route>
       </Route>

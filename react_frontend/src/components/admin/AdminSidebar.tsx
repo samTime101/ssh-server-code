@@ -29,6 +29,7 @@ const AdminSidebar = ({ isOpen, onClose }: AdminSidebarProps) => {
     { icon: Users, text: "Manage Users", path: "/admin/manage-users" },
     { icon: BarChart3, text: "Analytics", path: "/admin/analytics" },
     { icon: FileText, text: "Question Bank", path: "/admin/question-bank" },
+    { icon: Plus, text: "Add Role", path: "/admin/add-role" },
   ];
 
   const handleLogout = () => {
