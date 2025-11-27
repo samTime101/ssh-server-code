@@ -35,7 +35,7 @@ export interface CreateQuestionResponse {
 
 export const createQuestion = async (
   questionData: CreateQuestionPayload,
-  questionImage: File | null,
+  images: { question: File | null; description: File | null },
   token: string
 ): Promise<CreateQuestionResponse> => {
   console.log(JSON.stringify(questionData));
@@ -43,8 +43,11 @@ export const createQuestion = async (
 
   const formData = new FormData();
   formData.append("data", JSON.stringify(questionData));
-  if (questionImage) {
-    formData.append("image", questionImage);
+  if (images.question) {
+    formData.append("question_image", images.question);
+  }
+  if (images.description) {
+    formData.append("description_image", images.description);
   }
   try {
     const response = await axiosInstance.post(
@@ -65,7 +68,7 @@ export const createQuestion = async (
 export const updateQuestion = async (
   questionId: string,
   questionData: CreateQuestionPayload,
-  questionImage: File | null,
+  images: { question: File | null; description: File | null },
   token: string
 ): Promise<CreateQuestionResponse> => {
   console.log(JSON.stringify(questionData));
@@ -73,8 +76,11 @@ export const updateQuestion = async (
   try {
     const formData = new FormData();
     formData.append("data", JSON.stringify(questionData));
-    if (questionImage) {
-      formData.append("image", questionImage);
+    if (images.question) {
+      formData.append("question_image", images.question);
+    }
+    if (images.description) {
+      formData.append("description_image", images.description);
     }
     const response = await axiosInstance.putForm(
       `${API_ENDPOINTS.adminQuestions}/${questionId}/`,

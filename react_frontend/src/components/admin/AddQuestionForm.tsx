@@ -13,7 +13,7 @@ const AddQuestionForm = () => {
     subCategories,
     handleAddSubCategory,
     handleRemoveSubCategory,
-    selectedImage,
+    selectedImages,
     handleImageChange,
     handleInputChange,
     handleOptionTypeChange,
@@ -59,52 +59,104 @@ const AddQuestionForm = () => {
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="questionImage">Question Image (Optional)</Label>
-            <div className="flex items-center gap-4">
-              <input
-                type="file"
-                id="questionImage"
-                accept="image/*"
-                onChange={(e) => handleImageChange(e.target.files?.[0] || null)}
-                className="hidden"
-              />
-              <label
-                htmlFor="questionImage"
-                className="flex cursor-pointer items-center gap-2 rounded-md border border-gray-300 px-4 py-2 text-sm transition-colors hover:bg-gray-50 dark:border-slate-600 dark:hover:bg-slate-700"
-              >
-                <Upload size={16} />
-                Choose Image
-              </label>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            {/* Question Image */}
+            <div className="space-y-2">
+              <Label htmlFor="questionImage">Question Image (Optional)</Label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="file"
+                  id="questionImage"
+                  accept="image/*"
+                  onChange={(e) => handleImageChange('question', e.target.files?.[0] || null)}
+                  className="hidden"
+                />
+                <label
+                  htmlFor="questionImage"
+                  className="flex cursor-pointer items-center gap-2 rounded-md border border-gray-300 px-4 py-2 text-sm transition-colors hover:bg-gray-50 dark:border-slate-600 dark:hover:bg-slate-700"
+                >
+                  <Upload size={16} />
+                  Choose Question Image
+                </label>
 
-              {selectedImage && (
-                <div className="flex items-center gap-2">
-                  <ImageIcon size={16} className="text-green-600" />
-                  <span className="text-sm text-gray-600 dark:text-gray-400">
-                    {selectedImage.name}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => handleImageChange(null)}
-                    className="ml-2 text-red-500 hover:text-red-700"
-                  >
-                    <X size={14} />
-                  </button>
+                {selectedImages.question && (
+                  <div className="flex items-center gap-2">
+                    <ImageIcon size={16} className="text-green-600" />
+                    <span className="text-sm text-gray-600 dark:text-gray-400">
+                      {selectedImages.question.name}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => handleImageChange('question', null)}
+                      className="ml-2 text-red-500 hover:text-red-700"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Question Image Preview */}
+              {selectedImages.question && (
+                <div className="mt-3">
+                  <img
+                    src={URL.createObjectURL(selectedImages.question)}
+                    alt="Question preview"
+                    className="max-h-48 max-w-xs rounded-md border border-gray-200 dark:border-slate-600"
+                  />
                 </div>
               )}
             </div>
 
-            {/* Image Preview */}
-            {selectedImage && (
-              <div className="mt-3">
-                <img
-                  src={URL.createObjectURL(selectedImage)}
-                  alt="Question preview"
-                  className="max-h-48 max-w-xs rounded-md border border-gray-200 dark:border-slate-600"
+            {/* Description Image */}
+            <div className="space-y-2">
+              <Label htmlFor="descriptionImage">Description Image (Optional)</Label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="file"
+                  id="descriptionImage"
+                  accept="image/*"
+                  onChange={(e) => handleImageChange('description', e.target.files?.[0] || null)}
+                  className="hidden"
                 />
+                <label
+                  htmlFor="descriptionImage"
+                  className="flex cursor-pointer items-center gap-2 rounded-md border border-gray-300 px-4 py-2 text-sm transition-colors hover:bg-gray-50 dark:border-slate-600 dark:hover:bg-slate-700"
+                >
+                  <Upload size={16} />
+                  Choose Description Image
+                </label>
+
+                {selectedImages.description && (
+                  <div className="flex items-center gap-2">
+                    <ImageIcon size={16} className="text-green-600" />
+                    <span className="text-sm text-gray-600 dark:text-gray-400">
+                      {selectedImages.description.name}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => handleImageChange('description', null)}
+                      className="ml-2 text-red-500 hover:text-red-700"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                )}
               </div>
-            )}
+
+              {/* Description Image Preview */}
+              {selectedImages.description && (
+                <div className="mt-3">
+                  <img
+                    src={URL.createObjectURL(selectedImages.description)}
+                    alt="Description preview"
+                    className="max-h-48 max-w-xs rounded-md border border-gray-200 dark:border-slate-600"
+                  />
+                </div>
+              )}
+            </div>
           </div>
+
           {/* Description */}
           <div className="space-y-2">
             <Label htmlFor="description">Description (Optional)</Label>

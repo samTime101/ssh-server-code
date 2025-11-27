@@ -58,7 +58,10 @@ export const useQuestionForm = ({
   const [categories, setCategories] = useState<Category[]>([]);
   const [subCategories, setSubCategories] = useState<SubCategory[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [selectedImages, setSelectedImages] = useState<{ question: File | null; description: File | null }>({
+    question: null,
+    description: null,
+  });
 
   useEffect(() => {
     const loadCategories = async () => {
@@ -189,8 +192,8 @@ export const useQuestionForm = ({
     );
   };
 
-  const handleImageChange = (file: File | null) => {
-    setSelectedImage(file);
+  const handleImageChange = (type: 'question' | 'description', file: File | null) => {
+    setSelectedImages((prev) => ({ ...prev, [type]: file }));
   };
 
   const validateForm = (): string[] => {
@@ -255,13 +258,13 @@ export const useQuestionForm = ({
       let response;
       console.log("Running in mode:", mode);
       if (mode === "create") {
-        response = await createQuestion(apiData, selectedImage, token!);
+        response = await createQuestion(apiData, selectedImages, token!);
         toast.success("Question created successfully");
       } else {
         if (!questionId) {
           throw new Error("Question ID is required for editing");
         }
-        response = await updateQuestion(questionId, apiData, selectedImage, token!);
+        response = await updateQuestion(questionId, apiData, selectedImages, token!);
         toast.success("Question updated successfully");
       }
 
@@ -289,7 +292,7 @@ export const useQuestionForm = ({
     handleAddSubCategory,
     handleRemoveSubCategory,
 
-    selectedImage,
+    selectedImages,
     handleImageChange,
 
     handleInputChange,
