@@ -12,6 +12,7 @@ export interface Question {
   updatedAt: string;
   question_image_url?: string;
   description_image_url?: string;
+  contributor: string;
 }
 
 export interface QuestionAttemptState {

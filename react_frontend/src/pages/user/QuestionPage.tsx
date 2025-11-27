@@ -167,14 +167,14 @@ const QuestionPage = () => {
   
   return (
     <div className="min-h-screen p-6">
-      <div className="max-w-4xl mx-auto">
-        <div className="mb-6">
+      <div className="max-w-4xl mx-auto space-y-6">
+        <div className="">
           <h1 className="text-3xl font-bold text-gray-800 mb-2">
             Entrance Preparation Test
           </h1>
         </div>
 
-        <Card className="mb-6 shadow-lg">
+        <Card className="shadow-lg">
           <CardHeader className="pb-4">
             <div className="flex flex-wrap gap-2 mb-4">
               <Badge variant="secondary" className="capitalize">
@@ -266,6 +266,13 @@ const QuestionPage = () => {
           </CardContent>
         </Card>
 
+        {/* Contributor Display */}
+        {currentQuestion?.contributor && (
+          <div className="text-sm text-gray-600 dark:text-gray-400">
+            Contributor: {currentQuestion.contributor}
+          </div>
+        )}
+        
         <div className="flex justify-between items-center">
           <Button
             variant="outline"
@@ -299,7 +306,7 @@ const QuestionPage = () => {
           )}
         </div>
 
-        <div className="mt-8 text-center">
+        <div className="text-center">
           <Button variant="destructive" size="lg" className="px-8 py-3">
             Submit Quiz
           </Button>
