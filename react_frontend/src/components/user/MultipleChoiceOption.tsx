@@ -35,7 +35,6 @@ const MultipleChoiceOption = ({
         "flex items-center space-x-3 p-3 rounded-lg border border-gray-200 transition-all duration-200 " +
         (disabled ? ` cursor-not-allowed opacity-90 ${statusClass}` : " hover:bg-blue-50 hover:border-blue-300 cursor-pointer")
       }
-      onClick={() => !disabled && handleOptionSelect(option.label)}
     >
       <Checkbox
         id={`option-${option.label}`}
