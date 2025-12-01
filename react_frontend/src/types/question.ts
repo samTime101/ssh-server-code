@@ -13,6 +13,7 @@ export interface Question {
   question_image_url?: string;
   description_image_url?: string;
   contributor: string;
+  contributor_specialization: string;
 }
 
 export interface QuestionAttemptState {
@@ -21,4 +22,53 @@ export interface QuestionAttemptState {
   isAttempted: boolean;
   feedback?: string;
   correctOptions?: string[];
+}
+
+interface Option {
+  label: string;
+  text: string;
+  is_true: boolean;
+}
+export interface CreateQuestionPayload {
+  question_text: string;
+  option_type: "single" | "multiple";
+  options: Option[];
+  // correctAnswers: string[];
+  difficulty: string;
+  categoryId: number;
+  sub_categories: string[];
+  // subSubCategoryIds: string[];
+  description?: string;
+  contributor?: string;
+  contributor_specialization?: string;
+}
+
+import type { Category } from "@/types/category";
+export interface CreateQuestionResponse {
+  message: string;
+  category: Category;
+}
+
+export interface QuestionFormData {
+  questionText: string;
+  description: string;
+  categoryId: string;
+  subCategories: string[];
+  optionType: "single" | "multiple";
+  difficulty: "easy" | "medium" | "hard";
+  options: Array<{
+    label: string;
+    text: string;
+    isCorrect: boolean;
+  }>;
+  contributor: string;
+  contributorSpecialization: string;
+}
+
+export interface UseQuestionFormProps {
+  mode: "create" | "edit";
+  initialData?: Partial<QuestionFormData>;
+  questionId?: string;
+  onSuccess?: (response: any) => void;
+  onError?: (error: Error) => void;
 }

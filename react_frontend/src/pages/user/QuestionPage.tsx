@@ -269,7 +269,7 @@ const QuestionPage = () => {
         {/* Contributor Display */}
         {currentQuestion?.contributor && (
           <div className="text-sm text-gray-600 dark:text-gray-400">
-            Contributor: {currentQuestion.contributor}
+            {currentQuestion.contributor } - {currentQuestion.contributor_specialization}
           </div>
         )}
         

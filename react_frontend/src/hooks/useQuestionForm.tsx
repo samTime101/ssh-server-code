@@ -6,30 +6,8 @@ import { toast } from "sonner";
 import {
   createQuestion,
   updateQuestion,
-  type CreateQuestionPayload,
 } from "@/services/admin/addquestion-service";
-
-export interface QuestionFormData {
-  questionText: string;
-  description: string;
-  categoryId: string;
-  subCategories: string[];
-  optionType: "single" | "multiple";
-  difficulty: "easy" | "medium" | "hard";
-  options: Array<{
-    label: string;
-    text: string;
-    isCorrect: boolean;
-  }>;
-}
-
-export interface UseQuestionFormProps {
-  mode: "create" | "edit";
-  initialData?: Partial<QuestionFormData>;
-  questionId?: string;
-  onSuccess?: (response: any) => void;
-  onError?: (error: Error) => void;
-}
+import type { CreateQuestionPayload, QuestionFormData, UseQuestionFormProps } from "@/types/question";
 
 export const useQuestionForm = ({
   mode,
@@ -51,6 +29,8 @@ export const useQuestionForm = ({
       { label: "A", text: "", isCorrect: false },
       { label: "B", text: "", isCorrect: false },
     ],
+    contributor: "",
+    contributorSpecialization: "",
   };
   console.log("squiggly lines lai banda garum", initialData);
 
@@ -253,6 +233,8 @@ export const useQuestionForm = ({
         categoryId: parseInt(questionFormData.categoryId),
         sub_categories: questionFormData.subCategories.map((id) => id),
         // subSubCategoryIds: questionFormData.subSubCategoryIds.map((id) => id),
+        contributor: questionFormData.contributor,
+        contributor_specialization: questionFormData.contributorSpecialization,
       };
       console.log("Question created successfully API:", apiData);
       let response;

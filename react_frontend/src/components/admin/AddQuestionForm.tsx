@@ -41,7 +41,7 @@ const AddQuestionForm = () => {
         </p>
       </CardHeader>
 
-      <CardContent className="pt-6">
+      <CardContent>
         <form className="space-y-6">
           {/* Question Text */}
           <div className="space-y-2">
@@ -223,9 +223,10 @@ const AddQuestionForm = () => {
                       </option>
                     ))}
                 </select>
+              </div>
 
                 {/* Dynamic Chips based on actual selected data */}
-                <div className="mt-2 flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-2">
                   {questionFormData.subCategories.map((subCatId) => {
                     const subCat = subCategories.find((sc) => sc.id.toString() === subCatId);
                     return (
@@ -246,7 +247,6 @@ const AddQuestionForm = () => {
                     );
                   })}
                 </div>
-              </div>
             </div>
           </div>
 
@@ -411,6 +411,34 @@ const AddQuestionForm = () => {
               + Add Another Answer
             </Button>
           </div>
+
+          {/* Contributor */}
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="contributor">Contributor (Optional)</Label>
+              <Input
+                id="contributor"
+                name="contributor"
+                type="text"
+                placeholder="Enter contributor name"
+                value={questionFormData?.contributor || ""}
+                onChange={handleInputChange}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="contributorSpecialization">Specialization (Optional)</Label>
+              <Input
+                id="contributorSpecialization"
+                name="contributorSpecialization"
+                type="text"
+                placeholder="Enter contributor specialization"
+                value={questionFormData?.contributorSpecialization || ""}
+                onChange={handleInputChange}
+              />
+            </div>
+          </div>
+
 
           {/* Submit Button */}
           <div className="flex justify-end border-t border-gray-200 pt-4 dark:border-slate-700">

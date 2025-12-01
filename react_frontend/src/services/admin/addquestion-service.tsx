@@ -1,37 +1,6 @@
 import axiosInstance from "../axios";
 import { API_ENDPOINTS } from "@/config/apiConfig";
-
-// TODO: Refactor types and interfaces into separate files
-
-export interface Category {
-  id: string;
-  name: string;
-  subCategories?: Category[];
-}
-
-// Define types for the API request
-interface Option {
-  label: string;
-  text: string;
-  is_true: boolean;
-}
-
-export interface CreateQuestionPayload {
-  question_text: string;
-  option_type: "single" | "multiple";
-  options: Option[];
-  // correctAnswers: string[];
-  difficulty: string;
-  categoryId: number;
-  sub_categories: string[];
-  // subSubCategoryIds: string[];
-  description?: string;
-}
-
-export interface CreateQuestionResponse {
-  message: string;
-  category: Category;
-}
+import type { CreateQuestionPayload, CreateQuestionResponse } from "@/types/question";
 
 export const createQuestion = async (
   questionData: CreateQuestionPayload,
