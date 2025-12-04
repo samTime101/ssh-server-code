@@ -1,4 +1,4 @@
-import React, { createContext,  useState } from "react"; //useContext,
+import React, { createContext, useState } from "react"; //useContext,
 import { useAuth } from "@/hooks/useAuth.tsx";
 import { getQuestions } from "@/services/user/questionService.ts";
 
@@ -7,19 +7,19 @@ export const QuestionContext = createContext<any>(null);
 const QuestionProvider = ({ children }: { children: React.ReactNode }) => {
   const { token } = useAuth();
 
-  const [selectedCategoriesId, setSelectedCategoriesId] = useState<number[]>([]);
-  const [selectedSubCategoryId, setSelectedSubCategoryId] = useState<number[]>([]);
-  const [selectedSubSubCategoryId, setSelectedSubSubCategoryId] = useState<number[]>([]);
+  const [selectedCategoriesId, setSelectedCategoriesId] = useState<string[]>([]);
+  const [selectedSubCategoryId, setSelectedSubCategoryId] = useState<string[]>([]);
+  const [selectedSubSubCategoryId, setSelectedSubSubCategoryId] = useState<string[]>([]);
   const [questionData, setQuestionData] = useState<any>([]);
 
-  const handleCategorySelection = (categoryId: number) => {
+  const handleCategorySelection = (categoryId: string) => {
     // Filters and removes duplicates and adds the selected category ID
     setSelectedCategoriesId((prev) =>
       prev.includes(categoryId) ? prev.filter((id) => id !== categoryId) : [...prev, categoryId]
     );
   };
 
-  const handleSubCategorySelection = (subCategoryId: number) => {
+  const handleSubCategorySelection = (subCategoryId: string) => {
     // Toggles selection of sub-category IDs
     setSelectedSubCategoryId((prev) =>
       prev.includes(subCategoryId)
@@ -28,7 +28,7 @@ const QuestionProvider = ({ children }: { children: React.ReactNode }) => {
     );
   };
 
-  const handleSubSubCategorySelection = (subSubCategoryId: number) => {
+  const handleSubSubCategorySelection = (subSubCategoryId: string) => {
     // Toggles selection of sub-sub-category IDs
     setSelectedSubSubCategoryId((prev) =>
       prev.includes(subSubCategoryId)
@@ -37,7 +37,7 @@ const QuestionProvider = ({ children }: { children: React.ReactNode }) => {
     );
   };
 
-  const fetchQuestions = async () => {
+  const fetchQuestions = async (wrong_only?: boolean) => {
     try {
       if (!token) {
         console.error("No token available");
@@ -47,13 +47,14 @@ const QuestionProvider = ({ children }: { children: React.ReactNode }) => {
         category_ids: selectedCategoriesId,
         sub_category_ids: selectedSubCategoryId,
         subSubCategoryId: selectedSubSubCategoryId,
+        ...(wrong_only && { wrong_only }),
       };
       const response = await getQuestions(payload, token);
       console.log("Questions fetched in context:", response);
     //   if (response) {
     //     setQuestionData(response);
     //   }
-        setQuestionData(response);
+      setQuestionData(response);
     } catch (e) {
       console.error(e);
       setQuestionData([]);
