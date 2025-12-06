@@ -1,5 +1,6 @@
 import { Input } from "@/components/ui/input";
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Table,
   TableBody,
@@ -19,6 +20,7 @@ import Paginator from "@/components/Paginator";
 
 const ManageUsersPage = () => {
   const { token } = useAuth();
+  const navigate = useNavigate();
 
   const [usersList, setUsersList] = useState([]);
   const [pagination, setPagination] = useState({
@@ -50,7 +52,7 @@ const ManageUsersPage = () => {
           page_size: pageSize,
         },
       });
-
+      console.log("Fetched users response:", response);
       if (!response) {
         console.error("No response from server");
         throw new Error("No response from server");
@@ -165,7 +167,10 @@ const ManageUsersPage = () => {
                       </span>
                     </TableCell>
                     <TableCell className="flex gap-2">
-                      <Button className="btn-edit bg-blue-500 text-white rounded cursor-pointer">
+                      <Button 
+                        className="btn-edit bg-blue-500 text-white rounded cursor-pointer"
+                        onClick={() => navigate(`/admin/manage-users/${user.user_guid}`)}
+                      >
                         <PenIcon size={12} />
                       </Button>
                       <Button className="btn-delete bg-red-500 text-white rounded cursor-pointer">

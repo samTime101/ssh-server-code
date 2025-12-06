@@ -27,5 +27,8 @@ export const API_ENDPOINTS = {
   // Admin Routes
   usersList: `${API_BASE_URL}/users/`,
   adminQuestions: `${API_BASE_URL}/questions`,
+  // Roles (backend endpoint should expose /roles/)
+  roles: `${API_BASE_URL}/roles/`,
+  userRoles: `${API_BASE_URL}/user-roles/`,
   
 };

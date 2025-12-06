@@ -3,7 +3,6 @@
 import { API_ENDPOINTS } from "@/config/apiConfig";
 import type { AuthToken } from "@/types/auth";
 import type { Category, CreateSubCategoryResponse } from "@/types/category";
-import axios from "axios";
 import axiosInstance from "../axios";
 
 // Force re-evaluation of this module

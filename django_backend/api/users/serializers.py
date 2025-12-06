@@ -1,4 +1,4 @@
-from sql.models import User
+from sql.models import User, Role, UserRole
 from rest_framework import serializers
 from rest_framework_mongoengine import serializers as me_serializers
 from mongo.models import Question, Submissions, Attempt
@@ -85,3 +85,18 @@ class SubmissionResponseSerializer(me_serializers.EmbeddedDocumentSerializer):
         correct_answers = question.correct_answers()
         selected_answers = set(obj.selected_answers)
         return list(selected_answers & correct_answers)
+
+class RoleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Role
+        fields = ('id', 'name', 'created_at', 'updated_at')
+        read_only_fields = ('id', 'created_at', 'updated_at')
+
+class UserRoleSerializer(serializers.ModelSerializer):
+    role_name = serializers.CharField(source='role.name', read_only=True)
+    username = serializers.CharField(source='user.username', read_only=True)
+    
+    class Meta:
+        model = UserRole
+        fields = ('id', 'user', 'role', 'username', 'role_name', 'assigned_at')
+        read_only_fields = ('id', 'assigned_at')

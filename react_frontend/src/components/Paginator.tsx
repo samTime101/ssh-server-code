@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { Button } from "./ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import {
@@ -23,7 +23,6 @@ const Paginator: React.FC<PaginatorProps> = ({
   currentPage,
   totalPages,
   pageSize,
-  totalCount,
   onPageChange,
   onPageSizeChange,
   isLoading = false,
