@@ -2,9 +2,10 @@ import { API_ENDPOINTS } from "@/config/apiConfig";
 import axiosInstance from "@/services/axios";
 
 interface FetchQuestionsPayload {
-  category_ids: number[];
-  sub_category_ids: number[];
-  subSubCategoryId: number[];
+  category_ids: string[];
+  sub_category_ids: string[];
+  subSubCategoryId: string[];
+  wrong_only?: boolean;
 }
 
 export const getCategories = async (token: string) => {

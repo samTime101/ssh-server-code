@@ -6,30 +6,8 @@ import { toast } from "sonner";
 import {
   createQuestion,
   updateQuestion,
-  type CreateQuestionPayload,
 } from "@/services/admin/addquestion-service";
-
-export interface QuestionFormData {
-  questionText: string;
-  description: string;
-  categoryId: string;
-  subCategories: string[];
-  optionType: "single" | "multiple";
-  difficulty: "easy" | "medium" | "hard";
-  options: Array<{
-    label: string;
-    text: string;
-    isCorrect: boolean;
-  }>;
-}
-
-export interface UseQuestionFormProps {
-  mode: "create" | "edit";
-  initialData?: Partial<QuestionFormData>;
-  questionId?: string;
-  onSuccess?: (response: any) => void;
-  onError?: (error: Error) => void;
-}
+import type { CreateQuestionPayload, QuestionFormData, UseQuestionFormProps } from "@/types/question";
 
 export const useQuestionForm = ({
   mode,
@@ -51,6 +29,8 @@ export const useQuestionForm = ({
       { label: "A", text: "", isCorrect: false },
       { label: "B", text: "", isCorrect: false },
     ],
+    contributor: "",
+    contributorSpecialization: "",
   };
   console.log("squiggly lines lai banda garum", initialData);
 
@@ -58,7 +38,10 @@ export const useQuestionForm = ({
   const [categories, setCategories] = useState<Category[]>([]);
   const [subCategories, setSubCategories] = useState<SubCategory[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [selectedImages, setSelectedImages] = useState<{ question: File | null; description: File | null }>({
+    question: null,
+    description: null,
+  });
 
   useEffect(() => {
     const loadCategories = async () => {
@@ -189,8 +172,8 @@ export const useQuestionForm = ({
     );
   };
 
-  const handleImageChange = (file: File | null) => {
-    setSelectedImage(file);
+  const handleImageChange = (type: 'question' | 'description', file: File | null) => {
+    setSelectedImages((prev) => ({ ...prev, [type]: file }));
   };
 
   const validateForm = (): string[] => {
@@ -250,18 +233,20 @@ export const useQuestionForm = ({
         categoryId: parseInt(questionFormData.categoryId),
         sub_categories: questionFormData.subCategories.map((id) => id),
         // subSubCategoryIds: questionFormData.subSubCategoryIds.map((id) => id),
+        contributor: questionFormData.contributor,
+        contributor_specialization: questionFormData.contributorSpecialization,
       };
       console.log("Question created successfully API:", apiData);
       let response;
       console.log("Running in mode:", mode);
       if (mode === "create") {
-        response = await createQuestion(apiData, selectedImage, token!);
+        response = await createQuestion(apiData, selectedImages, token!);
         toast.success("Question created successfully");
       } else {
         if (!questionId) {
           throw new Error("Question ID is required for editing");
         }
-        response = await updateQuestion(questionId, apiData, selectedImage, token!);
+        response = await updateQuestion(questionId, apiData, selectedImages, token!);
         toast.success("Question updated successfully");
       }
 
@@ -289,7 +274,7 @@ export const useQuestionForm = ({
     handleAddSubCategory,
     handleRemoveSubCategory,
 
-    selectedImage,
+    selectedImages,
     handleImageChange,
 
     handleInputChange,
