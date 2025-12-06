@@ -1,7 +1,9 @@
 services:
-  # MySQL Database
-  - type: pserv  # PostgreSQL service (Render doesn't have MySQL service type)
+  # MySQL Database (as web service)
+  - type: web
     name: mysql
+    env: docker
+    image: mysql:8.0
     plan: standard
     disk:
       name: mysql_data
@@ -9,16 +11,18 @@ services:
       sizeGB: 10
     envVars:
       - key: MYSQL_ROOT_PASSWORD
-        generateValue: true
+        value: rootpassword  # Change this in production!
       - key: MYSQL_DATABASE
         value: sisani
       - key: MYSQL_USER
         value: sisani
       - key: MYSQL_PASSWORD
-        generateValue: true
+        value: sisani_password  # Change this in production!
+    healthCheckPath: /
+    autoDeploy: true
 
   # MongoDB Database
-  - type: mongo  # MongoDB service is available in Render
+  - type: mongo
     name: mongo
     plan: standard
     disk:
@@ -45,11 +49,11 @@ services:
       - key: DB_USER
         value: sisani
       - key: DB_PASSWORD
-        sync: false  # Will be set in Render dashboard
+        value: sisani_password
       - key: HOST
         fromService:
           name: mysql
-          type: pserv
+          type: web
           property: host
       - key: DB_PORT
         value: 3306
@@ -64,20 +68,36 @@ services:
         value: production
       - key: SECRET_KEY
         generateValue: true
+      - key: ALLOWED_HOSTS
+        value: ".onrender.com,localhost,127.0.0.1"
+    healthCheckPath: /health/
+    buildCommand: |
+      pip install -r requirements.txt
+      python manage.py migrate
+    startCommand: gunicorn django_backend.wsgi:application
 
-  # Frontend Service
+  # Frontend Service (React/Vue/Angular)
   - type: web
     name: frontend
     env: docker
     dockerfilePath: ./Dockerfile.frontend
     plan: starter
     numInstances: 1
-    buildCommand: "npm run build"
+    buildCommand: |
+      npm install
+      npm run build
     startCommand: "nginx -g 'daemon off;'"
     envVars:
-      # API endpoint - using Render's service discovery
-      - key: BACKEND_HOST
-        fromService:
-          name: backend
-          type: web
-          property: host
+      # API endpoint - use Render's internal service URL
+      - key: REACT_APP_API_URL  # or VUE_APP_API_URL, etc.
+        value: https://backend.onrender.com
+      # Or for internal communication:
+      # - key: BACKEND_HOST
+      #   fromService:
+      #     name: backend
+      #     type: web
+      #     property: host
+    routes:
+      - type: rewrite
+        source: /api/*
+        destination: https://backend.onrender.com/api/*
