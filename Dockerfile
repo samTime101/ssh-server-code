@@ -3,20 +3,34 @@
 ########################
 # Stage 1: Build frontend
 ########################
-FROM node:18-bullseye-slim AS node-builder
+# Multi-stage Dockerfile to build React (Vite) and serve with nginx
+
+# build stage
+FROM node:20-alpine AS builder
 WORKDIR /app/react_frontend
 
-# Copy package files first for caching
-COPY react_frontend/package*.json ./
+# copy package manifests and install
+COPY react_frontend/package.json react_frontend/package-lock.json* ./
+RUN npm ci --legacy-peer-deps || npm install --legacy-peer-deps
 
-# Install deps and build
-RUN apt-get update \
-    && apt-get install -y ca-certificates curl --no-install-recommends \
-    && rm -rf /var/lib/apt/lists/*
-
-COPY react_frontend/ ./
-RUN npm ci --silent
+COPY react_frontend .
 RUN npm run build
+
+# production nginx stage
+FROM nginx:stable-alpine
+
+# remove default nginx static content
+RUN rm -rf /usr/share/nginx/html/*
+
+# copy built frontend
+COPY --from=builder /app/react_frontend/dist /usr/share/nginx/html
+
+# copy nginx config
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]
 
 ########################
 # Stage 2: Final image (Python)
