@@ -3,7 +3,7 @@ set -e
 
 # Wait for MySQL to be ready
 echo "Waiting for MySQL..."
-while ! nc -z $HOST 3306 2>/dev/null; do
+while ! nc -z mysql 3306 2>/dev/null; do
   sleep 1
 done
 echo "MySQL is ready!"
