@@ -35,46 +35,53 @@ CMD ["nginx", "-g", "daemon off;"]
 ########################
 # Stage 2: Final image (Python)
 ########################
-FROM python:3.11-slim
-
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
-ENV PATH="/opt/venv/bin:$PATH"
+# Dockerfile for Django backend (web)
+FROM python:3.14-slim-trixie
 
 WORKDIR /app
 
-# System deps required for some Python packages (mysqlclient, psycopg)
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
-       build-essential \
-       default-libmysqlclient-dev \
-       libpq-dev \
-       netcat \
-    && rm -rf /var/lib/apt/lists/*
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 
-# Copy and install Python dependencies
-COPY requirements.txt ./
-RUN python -m venv /opt/venv
-RUN pip install --upgrade pip
-RUN pip install -r requirements.txt
+# Create and use a virtual environment to isolate Python dependencies
+ENV VIRTUAL_ENV=/opt/venv
+RUN python -m venv $VIRTUAL_ENV
+# Ensure pip, wheel are available and use the venv's pip
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+ENV PIP_NO_CACHE_DIR=1
 
-# Copy Django project
-COPY django_backend/ ./django_backend/
+# System deps for mysqlclient and build tools
+RUN apt-get update -y && \
+    apt-get install -y --no-install-recommends \
+      build-essential \
+      python3-dev \
+      default-libmysqlclient-dev \
+      pkg-config \
+      netcat-traditional \
+      ca-certificates && \
+    rm -rf /var/lib/apt/lists/*
 
-# Make sure static folder exists and copy frontend build into it
-RUN mkdir -p django_backend/static/frontend
-COPY --from=node-builder /app/react_frontend/dist ./django_backend/static/frontend
+# Copy requirements and install
+COPY requirements.txt /app/requirements.txt
+# Upgrade pip inside the venv and install requirements there
+RUN python -m pip install --upgrade pip setuptools wheel && \
+  pip install -r /app/requirements.txt
 
-# Copy entrypoint and give execute permission
-COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
-
+# Copy django backend
+COPY django_backend /app/django_backend
 WORKDIR /app/django_backend
 
-# Environment defaults (can be overridden at runtime)
-ENV DJANGO_SETTINGS_MODULE=main.settings.base
-ENV PORT=8000
+# Ensure a server.log file exists and is writable by the container
+# Use permissive permissions because the directory may be mounted from the host
+RUN touch /app/django_backend/server.log && \
+    chmod 666 /app/django_backend/server.log || true
 
+# Copy entrypoint script
+COPY entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
+
+# Expose port for gunicorn
 EXPOSE 8000
 
-CMD ["/entrypoint.sh"]
+# Default command - run entrypoint which handles migrations and superuser creation
+ENTRYPOINT ["/app/entrypoint.sh"]
