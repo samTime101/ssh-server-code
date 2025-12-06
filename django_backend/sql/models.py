@@ -2,6 +2,8 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 import uuid
 
+# TODO: populate college ko enum from mongo ko model ani college filed ma choices = enum rakhda hunxa, TODO
+
 class Role(models.Model):
     name = models.CharField(max_length=100, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -20,6 +22,8 @@ class User(AbstractUser):
     phonenumber = models.CharField(max_length=10, unique=True)
     first_name = models.CharField(max_length=20)
     last_name = models.CharField(max_length=20)
+    # aaileko lagi null allowed xa, that means college filed napathuada pani hunxa
+    college = models.CharField(max_length=100, null=True, blank=True)
 
     # LOGIN WITH EMAIL
     USERNAME_FIELD = "email" 

@@ -15,15 +15,6 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ('id','user_guid','username', 'email', 'first_name', 'last_name', 'is_active','is_staff','is_superuser','total_right_attempts','total_attempts', 'accuracy_percent', 'completion_percent')
 
-        # Nov 16
-        # TODO: fix the logic , total_questions = Question.objects.count()
-        # yesari vanda unique question haru compute gareko ramro
-
-        # unique question le compute garda chai hunthyo
-        # eeutai question nai multiple choti attempt garda
-        # question1 chai 1000000 choti attempt xa ra total question 5 xa vaney
-        # completion percent chai 1000000/5 *100 = 20000000% huncha which is logically incorrect
-
     def get_total_right_attempts(self, obj):
         submission = Submissions.objects(user_guid=obj.user_guid).first()
         if not submission:

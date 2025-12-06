@@ -167,14 +167,14 @@ const QuestionPage = () => {
   
   return (
     <div className="min-h-screen p-6">
-      <div className="max-w-4xl mx-auto">
-        <div className="mb-6">
+      <div className="max-w-4xl mx-auto space-y-6">
+        <div className="">
           <h1 className="text-3xl font-bold text-gray-800 mb-2">
             Entrance Preparation Test
           </h1>
         </div>
 
-        <Card className="mb-6 shadow-lg">
+        <Card className="shadow-lg">
           <CardHeader className="pb-4">
             <div className="flex flex-wrap gap-2 mb-4">
               <Badge variant="secondary" className="capitalize">
@@ -199,6 +199,15 @@ const QuestionPage = () => {
             <h2 className="text-xl font-semibold text-gray-800 leading-relaxed">
               {currentQuestion.question_text}
             </h2>
+            {currentQuestion.question_image_url && (
+              <div className="flex justify-center">
+                <img
+                  src={currentQuestion.question_image_url}
+                  alt="Question illustration"
+                  className="border max-w-full h-auto rounded-lg shadow-md"
+                  />
+              </div>
+            )}
           </CardHeader>
 
           <CardContent className="space-y-4">
@@ -234,20 +243,20 @@ const QuestionPage = () => {
                       <Lightbulb size={18} className="text-white" />
                     </div>
                   </div>
-                  <div className="flex-1">
-                    <h3 className="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-2 flex items-center gap-2">
+                  <div className="flex-1 space-y-2">
+                    <h3 className="text-sm font-semibold text-blue-900 dark:text-blue-100 flex items-center">
                       Explanation
                     </h3>
                     <p className="text-sm text-blue-800 dark:text-blue-200 leading-relaxed">
                       {currentQuestion.description}
                     </p>
-                    {currentQuestion.image_url && (
-                      <div className="mt-4 flex justify-center">
+                    {currentQuestion.description_image_url && (
+                      <div className="flex justify-center">
                         <img
-                          src={currentQuestion.image_url}
+                          src={currentQuestion.description_image_url}
                           alt="Question illustration"
                           className="max-w-full h-auto rounded-lg shadow-md"
-                        />
+                          />
                       </div>
                     )}
                   </div>
@@ -257,6 +266,13 @@ const QuestionPage = () => {
           </CardContent>
         </Card>
 
+        {/* Contributor Display */}
+        {currentQuestion?.contributor && (
+          <div className="text-sm text-gray-600 dark:text-gray-400">
+            {currentQuestion.contributor } - {currentQuestion.contributor_specialization}
+          </div>
+        )}
+        
         <div className="flex justify-between items-center">
           <Button
             variant="outline"
@@ -290,7 +306,7 @@ const QuestionPage = () => {
           )}
         </div>
 
-        <div className="mt-8 text-center">
+        <div className="text-center">
           <Button variant="destructive" size="lg" className="px-8 py-3">
             Submit Quiz
           </Button>

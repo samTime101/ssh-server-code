@@ -8,6 +8,8 @@ export const API_ENDPOINTS = {
   login: `${API_BASE_URL}/auth/signin/`,
   signup: `${API_BASE_URL}/auth/signup/`,
 
+  colleges: `${API_BASE_URL}/colleges/`,
+
   accountInfo: `${API_BASE_URL}/users/profile/`,
 
   createCategory: `${API_BASE_URL}/categories/`,

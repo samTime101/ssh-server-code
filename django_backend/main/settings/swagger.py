@@ -3,6 +3,17 @@ SPECTACULAR_SETTINGS = {
     "TITLE": "MCQ API",
     "DESCRIPTION": """
 
+## November 30, 2025
+- Added `wrong_only` query parameter to `/api/questions/select/` endpoint to select only
+- Added fields `contributor_speclaization` in Question model and serializers 
+
+## November 25, 2025
+- Added `question_image_unchanged` and `description_image_unchanged` fields in question endpoint to handle image updates properly.
+- Seperated image upload and deletion logic for question and description images.
+- Added `contributor` field in question endpoint responses.
+- Added `college` in signup request body.
+- Required image fileds are `question_image` and `description_image` in multipart/form-data for question creation.
+
 ## November 16, 2025
 - Added `total_right_attempts`, `total_attempts`, `completion_percent` and `accuracy_percent` fields in user profile response
 - Added `incorrect_answers`, `selected_answers` and `correct_answers` fields in submission response
@@ -46,6 +57,7 @@ To use these endpoints:
 2. Send requests as **multipart/form-data**.
 3. Include the following fields:
    - `data`: JSON string containing the question metadata.
-   - `image`: The associated image file.
+   - `question_image`: The associated image file for question.
+   - `description_image`: The associated image file for description
 """
 }
