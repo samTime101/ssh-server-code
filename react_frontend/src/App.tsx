@@ -12,6 +12,7 @@ import AddQuestionPage from "./pages/admin/AddQuestionPage";
 import CreateCategoryPage from "./pages/admin/CreateCategoryPage";
 import Loader from "./components/ui/Loader";
 import ManageUsersPage from "./pages/admin/ManageUsersPage";
+import EditUserPage from "./pages/admin/EditUserPage";
 import QuestionBankPage from "./pages/admin/QuestionBankPage";
 import AddRolePage from "./pages/admin/AddRolePage";
 
@@ -111,6 +112,7 @@ const App = () => {
             <Route path="add-question" element={<AddQuestionPage />} />
             <Route path="create-category" element={<CreateCategoryPage />} />
             <Route path="manage-users" element={<ManageUsersPage />} />
+            <Route path="manage-users/:id" element={<EditUserPage />} />
             <Route path="question-bank" element={<QuestionBankPage />} />
             <Route path="add-role" element={<AddRolePage />} />
           </Route>

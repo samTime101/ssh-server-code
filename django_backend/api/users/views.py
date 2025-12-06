@@ -1,10 +1,10 @@
 from datetime import datetime
-from sql.models import User
+from sql.models import User, Role, UserRole
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import UserSerializer, SubmissionsSerializer, SubmissionResponseSerializer, AttemptSerializer
+from .serializers import UserSerializer, SubmissionsSerializer, SubmissionResponseSerializer, AttemptSerializer, RoleSerializer, UserRoleSerializer
 from core.pagination import StandardResultsSetPagination
 from mongo.models import Attempt, Submissions
 from drf_spectacular.utils import extend_schema 
@@ -16,7 +16,7 @@ class UserViewSet(ModelViewSet):
     serializer_class = UserSerializer
     pagination_class = StandardResultsSetPagination
     permission_classes = [IsAdminUser]
-    http_method_names = ['get', 'put', 'delete']
+    http_method_names = ['get', 'put', 'delete', 'patch']
     lookup_field = 'user_guid'
 
     @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated], url_path='profile')
@@ -100,3 +100,24 @@ class SubmissionCollectionViewSet(ModelViewSet):
             Submissions.objects(user_guid=user_guid).update_one(add_to_set__attempts=attempt_doc, set__started_at=datetime.utcnow(), upsert=True)
             response_data = SubmissionResponseSerializer(attempt_doc)
             return Response(response_data.data, status=status.HTTP_201_CREATED)
+
+class RoleViewSet(ModelViewSet):
+    queryset = Role.objects.all()
+    serializer_class = RoleSerializer
+    permission_classes = [IsAdminUser]
+    http_method_names = ['get', 'post']
+
+class UserRoleViewSet(ModelViewSet):
+    """ViewSet for managing user role assignments."""
+    queryset = UserRole.objects.all()
+    serializer_class = UserRoleSerializer
+    permission_classes = [IsAdminUser]
+    http_method_names = ['get', 'post', 'delete']
+    
+    def get_queryset(self):
+        """Filter user roles by user_id if provided in query params."""
+        queryset = UserRole.objects.all()
+        user_id = self.request.query_params.get('user_guid')
+        if user_id:
+            queryset = queryset.filter(user_id=user_id)
+        return queryset
