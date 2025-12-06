@@ -13,10 +13,13 @@ class CategorySerializer(me_serializers.DocumentSerializer):
 
 class SubCategorySerializer(me_serializers.DocumentSerializer):
     id = serializers.CharField(read_only=True)
-    category = serializers.CharField()
+    category = serializers.SerializerMethodField()
     class Meta:
         model = SubCategory
         fields = '__all__'
         extra_kwargs = { 'created_at': {'read_only': True},'updated_at': {'read_only': True},'id': {'read_only': True}}
     def validate_category(self, value):
         return validate_object_id(value,Category,"category")
+    
+    def get_category(self, obj):
+        return str(obj.category.name)

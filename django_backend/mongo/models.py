@@ -31,8 +31,10 @@ class Question(TimeStampedDocument):
     description = StringField()
     difficulty = StringField(choices=["easy", "medium", "hard"], default="easy")
     sub_categories = ListField(ReferenceField(SubCategory))
-    image_url = StringField(required=False)
-    
+    contributor = StringField(required=False)
+    contributor_specialization = StringField(required=False)
+    question_image_url = StringField(required=False)
+    description_image_url = StringField(required=False)
     meta = {'collection': 'questions','indexes': ['sub_categories']}
 
     def correct_answers(self):
@@ -69,3 +71,11 @@ class Submissions(Document):
     started_at = DateTimeField(default=datetime.utcnow)
 
     meta = {'collection': 'user_submissions'}
+
+class College(TimeStampedDocument):
+    name = StringField(required=True, unique=True)
+    city = StringField(required=True)
+    state = StringField(required=True)
+    country = StringField(required=True)
+    postal_code = StringField(required=True)
+    meta = {'collection': 'colleges'}

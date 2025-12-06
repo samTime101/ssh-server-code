@@ -48,6 +48,11 @@ const QuestionBankSection = () => {
     getCategoriesData();
   }, [token]);
 
+  const handleStartSession = async (reattemptWrongOnly: boolean) => {
+    await fetchQuestions(reattemptWrongOnly);
+    navigate("/userpanel/question");
+  };
+
   return (
     <section className="mx-auto flex min-h-full max-w-[1500px] flex-1 flex-col gap-8 p-8">
       {/* Header Section */}
@@ -93,15 +98,19 @@ const QuestionBankSection = () => {
           </ul>
         </div>
 
-        <div className="mt-8 border-t border-gray-200 pt-6">
+        <div className="mt-8 flex gap-4 border-t border-gray-200 pt-6">
           <Button
             className="cursor-pointer rounded-lg px-8 py-6 font-medium shadow-sm transition-all duration-200 hover:shadow-md"
-            onClick={async () => {
-              await fetchQuestions();
-              navigate("/userpanel/question");
-            }}
+            onClick={() => handleStartSession(false)}
           >
             Start Session
+          </Button>
+          <Button
+            variant="destructive"
+            className="cursor-pointer rounded-lg px-8 py-6 font-medium shadow-sm transition-all duration-200 hover:shadow-md"
+            onClick={() => handleStartSession(true)}
+          >
+            Reattempt Wrong Only
           </Button>
         </div>
       </div>

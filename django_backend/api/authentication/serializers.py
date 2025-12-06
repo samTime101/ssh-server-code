@@ -11,7 +11,7 @@ User = get_user_model()
 class SignUpSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('username', 'password', 'email', 'first_name', 'last_name','phonenumber')
+        fields = ('username', 'password', 'email', 'first_name', 'last_name','phonenumber', 'college')
         extra_kwargs = { 'password': {'write_only': True} }
     
     def create(self, validated_data):
@@ -26,5 +26,5 @@ class SignupResponseSerializer(serializers.ModelSerializer):
     detail = serializers.CharField(default="User registered successfully")
     class Meta:
         model = User
-        fields = ('detail','user_guid','email','username','phonenumber','first_name','last_name')
+        fields = ('detail','user_guid','email','username','phonenumber','first_name','last_name','college')
         read_only_fields = fields

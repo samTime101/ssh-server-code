@@ -1,24 +1,26 @@
 import cloudinary.uploader
 import cloudinary.api
 
-def upload_question_image(image_file, question_id):
+def upload_question_image(image_file, question_id, image_type):
     folder_path = f"Images/{question_id}"
+    public_id = f"{image_type}"
+
     result = cloudinary.uploader.upload(
         image_file,
         folder=folder_path,
-        public_id="question_image",
+        public_id=public_id,
         overwrite=True,
         resource_type="image"
     )
     return result.get("secure_url")
 
-
-def delete_question_image(question_id):
+def delete_question_image(question_id, image_type):
     try:
-        public_id = f"Images/{question_id}/question_image"
+        public_id = f"Images/{question_id}/{image_type}"
         cloudinary.uploader.destroy(public_id)
-    except cloudinary.exceptions.Error as e:
-        print(f'error in cloudinary {e}')
+    except Exception as e:
+        print("cloudinary delete error:", e)
+
 
 def delete_question_folder(question_id):
     folder_path = f"Images/{question_id}"

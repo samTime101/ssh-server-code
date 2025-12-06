@@ -1,10 +1,10 @@
 from datetime import datetime
-from sql.models import User
+from sql.models import User, Role, UserRole
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import UserSerializer, SubmissionsSerializer, SubmissionResponseSerializer, AttemptSerializer
+from .serializers import UserSerializer, SubmissionsSerializer, SubmissionResponseSerializer, AttemptSerializer, RoleSerializer, UserRoleSerializer
 from core.pagination import StandardResultsSetPagination
 from mongo.models import Attempt, Submissions
 from drf_spectacular.utils import extend_schema 
@@ -16,7 +16,7 @@ class UserViewSet(ModelViewSet):
     serializer_class = UserSerializer
     pagination_class = StandardResultsSetPagination
     permission_classes = [IsAdminUser]
-    http_method_names = ['get', 'put', 'delete']
+    http_method_names = ['get', 'put', 'delete', 'patch']
     lookup_field = 'user_guid'
 
     @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated], url_path='profile')
@@ -62,41 +62,39 @@ class SubmissionCollectionViewSet(ModelViewSet):
         validated_attempt = serializer.validated_data
         attempt_doc = Attempt(**validated_attempt)
 
+        # previous implementation for backup if the below one fails
+        # https://github.com/sisani9/sisani-eps/commit/8cde3f499ca223ff2e81a27d619645d619610936#diff-b1c10dba86a71748c7df2c1f941f80313fb6792e0e6ee92e31ba7da26e23142f
+        
+
+        # In new implementation, one question can have only one attempt per user, if attempt exists, 
+        # remove any existing attempt for the question
+        Submissions.objects(user_guid=user_guid).update_one(pull__attempts__question=attempt_doc.question.id)
+
+        # @see: https://github.com/samTime101/sisani-eps-samip/blob/e92a536bb1fd961b4fa0f6fa563ca1febd10077a/django_backend/api/users/views.py
         # if submission exists for user with requested guid
         # update the attempt
         # else append to it
-        # try to find an existing submission with an attempt for the same question
-        question = validated_attempt.get('question')
-        # if a submission exists and has an attempt for this question, update that embedded attempt
-        existing_match = Submissions.objects(user_guid=user_guid, attempts__question=question).first()
+        Submissions.objects(user_guid=user_guid).update_one(add_to_set__attempts=attempt_doc,set__started_at=datetime.utcnow(),upsert=True)
+        response_data = SubmissionResponseSerializer(attempt_doc)
+        return Response(response_data.data, status=status.HTTP_201_CREATED)
 
-        if existing_match:
-            # update the matched embedded attempt fields using a raw pymongo update
-            Submissions._get_collection().update_one(
-                {"_id": existing_match.id, "attempts.question": question.id},
-                {
-                    "$set": {
-                        "attempts.$.selected_answers": validated_attempt.get("selected_answers", []),
-                        "attempts.$.is_correct": validated_attempt.get("is_correct", False),
-                        "attempts.$.attempted_at": datetime.utcnow(),
-                        "started_at": datetime.utcnow(),
-                    }
-                },
-            )
-            # fetch the updated attempt to return
-            submission_doc = Submissions.objects(user_guid=user_guid).first()
-            updated_attempt = None
-            for a in submission_doc.attempts:
-                try:
-                    if a.question.id == question.id:
-                        updated_attempt = a
-                        break
-                except Exception:
-                    continue
-            response_data = SubmissionResponseSerializer(updated_attempt)
-            return Response(response_data.data, status=status.HTTP_200_OK)
-        else:
-            # no existing attempt for this question — append as before
-            Submissions.objects(user_guid=user_guid).update_one(add_to_set__attempts=attempt_doc, set__started_at=datetime.utcnow(), upsert=True)
-            response_data = SubmissionResponseSerializer(attempt_doc)
-            return Response(response_data.data, status=status.HTTP_201_CREATED)
+class RoleViewSet(ModelViewSet):
+    queryset = Role.objects.all()
+    serializer_class = RoleSerializer
+    permission_classes = [IsAdminUser]
+    http_method_names = ['get', 'post']
+
+class UserRoleViewSet(ModelViewSet):
+    """ViewSet for managing user role assignments."""
+    queryset = UserRole.objects.all()
+    serializer_class = UserRoleSerializer
+    permission_classes = [IsAdminUser]
+    http_method_names = ['get', 'post', 'delete']
+    
+    def get_queryset(self):
+        """Filter user roles by user_id if provided in query params."""
+        queryset = UserRole.objects.all()
+        user_id = self.request.query_params.get('user_guid')
+        if user_id:
+            queryset = queryset.filter(user_id=user_id)
+        return queryset

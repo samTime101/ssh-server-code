@@ -17,7 +17,7 @@ const EditQuestionForm = ({ selectedQuestion, handleEditSuccess }: EditQuestionF
   const {
     questionFormData,
     setQuestionFormData,
-    selectedImage,
+    selectedImages,
     handleImageChange,
     handleInputChange,
     handleOptionTypeChange,
@@ -89,43 +89,85 @@ const EditQuestionForm = ({ selectedQuestion, handleEditSuccess }: EditQuestionF
             />
           </div>
 
-          {/* Image Upload */}
-          <div className="space-y-2">
-            <Label>Question Image</Label>
-            <div className="flex items-center gap-4">
-              <input
-                type="file"
-                id="questionImage"
-                accept="image/*"
-                onChange={(e) => handleImageChange(e.target.files?.[0] || null)}
-                className="hidden"
-              />
-              <label
-                htmlFor="questionImage"
-                className="flex cursor-pointer items-center gap-2 rounded-md border border-gray-300 px-4 py-2 text-sm transition-colors hover:bg-gray-50 dark:border-slate-600 dark:hover:bg-slate-700"
-              >
-                <Upload size={16} /> Choose Image
-              </label>
-
-              {selectedImage ? (
-                <div className="flex items-center gap-2">
-                  <ImageIcon size={16} className="text-green-600" />
-                  <span className="text-sm text-gray-600 dark:text-gray-400">{selectedImage.name}</span>
-                  <button
-                    type="button"
-                    onClick={() => handleImageChange(null)}
-                    className="ml-2 text-red-500 hover:text-red-700"
-                  >
-                    <X size={14} />
-                  </button>
-                </div>
-              ) : selectedQuestion?.image_url ? (
-                <img
-                  src={selectedQuestion.image_url}
-                  alt="Current question"
-                  className="h-20 rounded border border-gray-200 dark:border-slate-600"
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            {/* Image Upload */}
+            <div className="space-y-2">
+              <Label>Question Image</Label>
+              <div className="flex items-center gap-4">
+                <input
+                  type="file"
+                  id="questionImage"
+                  accept="image/*"
+                  onChange={(e) => handleImageChange('question', e.target.files?.[0] || null)}
+                  className="hidden"
                 />
-              ) : null}
+                <label
+                  htmlFor="questionImage"
+                  className="flex cursor-pointer items-center gap-2 rounded-md border border-gray-300 px-4 py-2 text-sm transition-colors hover:bg-gray-50 dark:border-slate-600 dark:hover:bg-slate-700"
+                >
+                  <Upload size={16} /> Choose Question Image
+                </label>
+
+                {selectedImages.question ? (
+                  <div className="flex items-center gap-2">
+                    <ImageIcon size={16} className="text-green-600" />
+                    <span className="text-sm text-gray-600 dark:text-gray-400">{selectedImages.question.name}</span>
+                    <button
+                      type="button"
+                      onClick={() => handleImageChange('question', null)}
+                      className="ml-2 text-red-500 hover:text-red-700"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                ) : selectedQuestion?.question_image_url ? (
+                  <img
+                    src={selectedQuestion.question_image_url}
+                    alt="Current question"
+                    className="h-20 rounded border border-gray-200 dark:border-slate-600"
+                  />
+                ) : null}
+              </div>
+            </div>
+
+            {/* Description Image */}
+            <div className="space-y-2">
+              <Label>Description Image</Label>
+              <div className="flex items-center gap-4">
+                <input
+                  type="file"
+                  id="descriptionImage"
+                  accept="image/*"
+                  onChange={(e) => handleImageChange('description', e.target.files?.[0] || null)}
+                  className="hidden"
+                />
+                <label
+                  htmlFor="descriptionImage"
+                  className="flex cursor-pointer items-center gap-2 rounded-md border border-gray-300 px-4 py-2 text-sm transition-colors hover:bg-gray-50 dark:border-slate-600 dark:hover:bg-slate-700"
+                >
+                  <Upload size={16} /> Choose Description Image
+                </label>
+
+                {selectedImages.description ? (
+                  <div className="flex items-center gap-2">
+                    <ImageIcon size={16} className="text-green-600" />
+                    <span className="text-sm text-gray-600 dark:text-gray-400">{selectedImages.description.name}</span>
+                    <button
+                      type="button"
+                      onClick={() => handleImageChange('description', null)}
+                      className="ml-2 text-red-500 hover:text-red-700"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                ) : selectedQuestion?.description_image_url ? (
+                  <img
+                    src={selectedQuestion.description_image_url}
+                    alt="Current description"
+                    className="h-20 rounded border border-gray-200 dark:border-slate-600"
+                  />
+                ) : null}
+              </div>
             </div>
           </div>
 

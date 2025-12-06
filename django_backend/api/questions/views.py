@@ -54,15 +54,25 @@ class QuestionViewSet(viewsets.ModelViewSet):
 
     # For question selection
     # /api/questions/select/
-    @extend_schema(request=QuestionSelectionSerializer, responses=QuestionPublicSerializer(many=True))
+    @extend_schema(request=QuestionSelectionSerializer, responses=QuestionPublicSerializer(many=True), parameters=[WrongOnlyQuerySerializer])
     @action(detail=False, methods=['post'],url_path='select',serializer_class=QuestionSelectionSerializer,permission_classes=[IsAuthenticated],parser_classes=[JSONParser])
     def select(self, request):
+        query_serializer = WrongOnlyQuerySerializer(data=request.query_params)
+        query_serializer.is_valid(raise_exception=True)
+        wrong_only = query_serializer.validated_data.get('wrong_only', False)
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         category_ids = request.data.get('category_ids', [])
         sub_category_ids = request.data.get('sub_category_ids', [])
-        queryset = get_questions_by_selection(category_ids, sub_category_ids)
+
+        # query param, wrong_only = true/false, default false
+        wrong_only = request.query_params.get('wrong_only', 'false').lower() == "true"
+        user_guid = getattr(request.user, "user_guid")
+        queryset = get_questions_by_selection(category_ids, sub_category_ids, wrong_only=wrong_only, user_guid=user_guid)
         if not queryset:
-            raise NotFound("No questions found for selected categories")
+            raise NotFound("No questions found for requested criteria.")
+        # page = self.paginate_queryset(queryset)
+        # serializer = QuestionPublicSerializer(page, many=True)
+        # return self.get_paginated_response(serializer.data)
         response_data = QuestionPublicSerializer(queryset, many=True)
-        return Response(response_data.data, status=status.HTTP_200_OK)
+        return Response(response_data.data, status=status.HTTP_200_OK)        

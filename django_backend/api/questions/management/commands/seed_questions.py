@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from mongo.models import Category, SubCategory, Question, Option, QuestionClassification
+from mongo.models import Category, SubCategory, Question, Option, QuestionClassification, Submissions, College
 
 # python manage.py seed_questions garera bulk question , cat, sub cli bata insert garna milxa
 class Command(BaseCommand):
@@ -22,6 +22,8 @@ class Command(BaseCommand):
         Question.drop_collection()
         SubCategory.drop_collection()
         Category.drop_collection()
+        Submissions.drop_collection();
+        College.drop_collection();
 
     def create_categories_and_subcategories(self):
         physics = Category(name="Physics").save()

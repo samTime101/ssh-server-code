@@ -1,4 +1,4 @@
-from sql.models import User
+from sql.models import User, Role, UserRole
 from rest_framework import serializers
 from rest_framework_mongoengine import serializers as me_serializers
 from mongo.models import Question, Submissions, Attempt
@@ -14,15 +14,6 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id','user_guid','username', 'email', 'first_name', 'last_name', 'is_active','is_staff','is_superuser','total_right_attempts','total_attempts', 'accuracy_percent', 'completion_percent')
-
-        # Nov 16
-        # TODO: fix the logic , total_questions = Question.objects.count()
-        # yesari vanda unique question haru compute gareko ramro
-
-        # unique question le compute garda chai hunthyo
-        # eeutai question nai multiple choti attempt garda
-        # question1 chai 1000000 choti attempt xa ra total question 5 xa vaney
-        # completion percent chai 1000000/5 *100 = 20000000% huncha which is logically incorrect
 
     def get_total_right_attempts(self, obj):
         submission = Submissions.objects(user_guid=obj.user_guid).first()
@@ -94,3 +85,18 @@ class SubmissionResponseSerializer(me_serializers.EmbeddedDocumentSerializer):
         correct_answers = question.correct_answers()
         selected_answers = set(obj.selected_answers)
         return list(selected_answers & correct_answers)
+
+class RoleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Role
+        fields = ('id', 'name', 'created_at', 'updated_at')
+        read_only_fields = ('id', 'created_at', 'updated_at')
+
+class UserRoleSerializer(serializers.ModelSerializer):
+    role_name = serializers.CharField(source='role.name', read_only=True)
+    username = serializers.CharField(source='user.username', read_only=True)
+    
+    class Meta:
+        model = UserRole
+        fields = ('id', 'user', 'role', 'username', 'role_name', 'assigned_at')
+        read_only_fields = ('id', 'assigned_at')
