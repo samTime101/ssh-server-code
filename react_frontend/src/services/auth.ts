@@ -16,6 +16,7 @@ export const signupService = async ({
   first_name,
   last_name,
   password,
+  college,
 }: SignupRequest) => {
   return axios.post(API_ENDPOINTS.signup, {
     email,
@@ -24,5 +25,6 @@ export const signupService = async ({
     first_name,
     last_name,
     password,
+    college,
   });
 };

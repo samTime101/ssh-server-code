@@ -109,6 +109,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     first_name,
     last_name,
     password,
+    college,
   }: SignupRequest) => {
     try {
       const response = await signupService({
@@ -118,6 +119,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         first_name,
         last_name,
         password,
+        college,
       });
       if (response) {
         toast.success("Registration successful! Welcome aboard.");
