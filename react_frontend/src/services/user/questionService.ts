@@ -8,13 +8,9 @@ interface FetchQuestionsPayload {
   wrong_only?: boolean;
 }
 
-export const getCategories = async (token: string) => {
+export const getCategories = async () => {
   try {
-    const response = await axiosInstance.get(API_ENDPOINTS.getCategoriesWithHierarchy, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const response = await axiosInstance.get(API_ENDPOINTS.getCategoriesWithHierarchy);
 
     if (!response) {
       return [];
@@ -27,14 +23,10 @@ export const getCategories = async (token: string) => {
   }
 };
 
-export const getQuestions = async (payload: FetchQuestionsPayload, token: string) => {
+export const getQuestions = async (payload: FetchQuestionsPayload) => {
   console.log("the category payload", payload);
   try {
-    const response = await axiosInstance.post(API_ENDPOINTS.selectQuestions, payload, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const response = await axiosInstance.post(API_ENDPOINTS.selectQuestions, payload);
 
     if (!response) {
       return [];
@@ -50,7 +42,6 @@ export const getQuestions = async (payload: FetchQuestionsPayload, token: string
 export const attemptQuestion = async (
   questionId: string,
   selectedOptions: string[],
-  token: string
 ) => {
   try {
     const response = await axiosInstance.post(
@@ -59,11 +50,6 @@ export const attemptQuestion = async (
         question: questionId,
         selected_answers: selectedOptions,
       },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
     );
 
     if (!response) {

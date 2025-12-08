@@ -2,6 +2,8 @@ export interface User {
   userId: string;
   email: string;
   username: string;
+  first_name: string;
+  last_name: string;
   phonenumber: string;
   is_superuser: boolean;
   is_staff: boolean;

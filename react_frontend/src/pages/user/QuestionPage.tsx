@@ -109,7 +109,7 @@ const QuestionPage = () => {
     }
 
     try {
-      const result = await attemptQuestion(question.id, selected, token);
+      const result = await attemptQuestion(question.id, selected);
 
       if (!result) {
         toast.error("Something wrong occurred. Try again.")

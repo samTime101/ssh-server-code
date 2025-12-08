@@ -35,7 +35,7 @@ const QuestionBankSection = () => {
     if (!token) return;
     const getCategoriesData = async () => {
       try {
-        const categoryResponse = await getCategories(token);
+        const categoryResponse = await getCategories();
     
         console.log("The category response:", categoryResponse);
         setCategories(categoryResponse);
