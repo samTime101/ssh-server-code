@@ -4,12 +4,7 @@ import type { College } from "@/types/college";
 
 export const fetchColleges = async (): Promise<College[]> => {
   try {
-    const token = localStorage.getItem("accessToken");
-    const response = await axiosInstance.get(API_ENDPOINTS.colleges, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const response = await axiosInstance.get(API_ENDPOINTS.colleges);
     return response.data.results;
   } catch (error) {
     console.error("Failed to fetch colleges:", error);
@@ -19,12 +14,7 @@ export const fetchColleges = async (): Promise<College[]> => {
 
 export const createCollege = async (collegeData: Omit<College, "id">): Promise<College> => {
   try {
-    const token = localStorage.getItem("accessToken");
-    const response = await axiosInstance.post(API_ENDPOINTS.colleges, collegeData, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const response = await axiosInstance.post(API_ENDPOINTS.colleges, collegeData);
     return response.data;
   } catch (error) {
     console.error("Failed to create college:", error);
@@ -37,12 +27,7 @@ export const updateCollege = async (
   collegeData: Partial<Omit<College, "id">>
 ): Promise<College> => {
   try {
-    const token = localStorage.getItem("accessToken");
-    const response = await axiosInstance.patch(`${API_ENDPOINTS.colleges}${id}/`, collegeData, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const response = await axiosInstance.patch(`${API_ENDPOINTS.colleges}${id}/`, collegeData);
     return response.data;
   } catch (error) {
     console.error("Failed to update college:", error);
@@ -52,12 +37,7 @@ export const updateCollege = async (
 
 export const deleteCollege = async (id: string): Promise<void> => {
   try {
-    const token = localStorage.getItem("accessToken");
-    await axiosInstance.delete(`${API_ENDPOINTS.colleges}${id}/`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    await axiosInstance.delete(`${API_ENDPOINTS.colleges}${id}/`);
   } catch (error) {
     console.error("Failed to delete college:", error);
     throw error;

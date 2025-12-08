@@ -55,7 +55,10 @@ const EditQuestionForm = ({ selectedQuestion, handleEditSuccess }: EditQuestionF
         label: opt.label,
         text: opt.text,
         isCorrect: opt.is_true,
-        })) || [],
+      })) || [],
+      contributor: selectedQuestion.contributor,
+      contributorSpecialization: selectedQuestion.contributor_specializations,
+
     });
     }, [selectedQuestion, setQuestionFormData]);
 

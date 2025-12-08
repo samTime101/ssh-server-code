@@ -48,7 +48,7 @@ export const useQuestionForm = ({
       if (!token) return;
 
       try {
-        const fetchedCategories = await fetchCategories(token);
+        const fetchedCategories = await fetchCategories();
         setCategories(fetchedCategories?.categories || []);
       } catch (error) {
         console.error("Failed to load categories:", error);
@@ -240,13 +240,13 @@ export const useQuestionForm = ({
       let response;
       console.log("Running in mode:", mode);
       if (mode === "create") {
-        response = await createQuestion(apiData, selectedImages, token!);
+        response = await createQuestion(apiData, selectedImages);
         toast.success("Question created successfully");
       } else {
         if (!questionId) {
           throw new Error("Question ID is required for editing");
         }
-        response = await updateQuestion(questionId, apiData, selectedImages, token!);
+        response = await updateQuestion(questionId, apiData, selectedImages);
         toast.success("Question updated successfully");
       }
 
