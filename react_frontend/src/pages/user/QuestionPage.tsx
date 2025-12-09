@@ -30,6 +30,8 @@ const QuestionPage = () => {
     questionData && questionData.length > 0 ? questionData[currentIndex] || null : null;
 
   useEffect(() => {
+    window.scrollTo(0, 0);
+
     // reset index and UI if questionData changes
     if (!questionData || questionData.length === 0) {
       setCurrentIndex(0);
@@ -100,8 +102,8 @@ const QuestionPage = () => {
       question.option_type === "multiple"
         ? selectedOptions
         : selectedOption
-        ? [selectedOption]
-        : [];
+          ? [selectedOption]
+          : [];
 
     if (!selected || selected.length === 0) {
       toast.error("Please select an option before attempting the question.");
@@ -112,9 +114,9 @@ const QuestionPage = () => {
       const result = await attemptQuestion(question.id, selected);
 
       if (!result) {
-        toast.error("Something wrong occurred. Try again.")
-        navigate("/")
-        return
+        toast.error("Something wrong occurred. Try again.");
+        navigate("/");
+        return;
       }
 
       // save the attempt (selected choices, attempt flag, correctness)
@@ -139,12 +141,14 @@ const QuestionPage = () => {
     }
   };
 
+  const handleBack = () => {
+    navigate("/userpanel");
+  };
+
   if (!currentQuestion) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-600 text-lg">
-          No questions available. Please select categories.
-        </p>
+      <div className="flex min-h-screen items-center justify-center">
+        <p className="text-lg text-gray-600">No questions available. Please select categories.</p>
       </div>
     );
   }
@@ -152,9 +156,7 @@ const QuestionPage = () => {
   const handleOptionSelect = (label: string) => {
     if (currentQuestion.option_type === "multiple") {
       setSelectedOptions((prev) =>
-        prev.includes(label)
-          ? prev.filter((id) => id !== label)
-          : [...prev, label]
+        prev.includes(label) ? prev.filter((id) => id !== label) : [...prev, label]
       );
     } else {
       setSelectedOption(label);
@@ -164,19 +166,19 @@ const QuestionPage = () => {
   // Derived UI flags from the attempts map
   const currentAttempt = currentQuestion ? attempts[currentQuestion.id] : undefined;
   const isAttempted = !!currentAttempt?.isAttempted;
-  
+
   return (
     <div className="min-h-screen p-6">
-      <div className="max-w-4xl mx-auto space-y-6">
-        <div className="">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">
-            Entrance Preparation Test
-          </h1>
-        </div>
+      <div className="mx-auto max-w-4xl space-y-6">
+        <Button variant="outline" onClick={handleBack} className="px-4 py-2 hover:bg-gray-100">
+          <ArrowLeft />
+          Back
+        </Button>
+        <h1 className="text-3xl font-bold text-gray-800">Entrance Preparation Test</h1>
 
         <Card className="shadow-lg">
           <CardHeader className="pb-4">
-            <div className="flex flex-wrap gap-2 mb-4">
+            <div className="mb-4 flex flex-wrap gap-2">
               <Badge variant="secondary" className="capitalize">
                 {currentQuestion.category}
               </Badge>
@@ -185,8 +187,8 @@ const QuestionPage = () => {
                   currentQuestion.difficulty === "easy"
                     ? "default"
                     : currentQuestion.difficulty === "medium"
-                    ? "secondary"
-                    : "destructive"
+                      ? "secondary"
+                      : "destructive"
                 }
                 className="capitalize"
               >
@@ -196,7 +198,7 @@ const QuestionPage = () => {
                 {currentQuestion.option_type}
               </Badge>
             </div>
-            <h2 className="text-xl font-semibold text-gray-800 leading-relaxed">
+            <h2 className="text-xl leading-relaxed font-semibold text-gray-800">
               {currentQuestion.question_text}
             </h2>
             {currentQuestion.question_image_url && (
@@ -204,8 +206,8 @@ const QuestionPage = () => {
                 <img
                   src={currentQuestion.question_image_url}
                   alt="Question illustration"
-                  className="border max-w-full h-auto rounded-lg shadow-md"
-                  />
+                  className="h-auto max-w-full rounded-lg border shadow-md"
+                />
               </div>
             )}
           </CardHeader>
@@ -238,16 +240,16 @@ const QuestionPage = () => {
             {isAttempted && (
               <div className="rounded-lg border-l-4 border-blue-500 bg-blue-50 p-5 dark:bg-blue-900/20">
                 <div className="flex items-start gap-3">
-                  <div className="flex-shrink-0 mt-1">
-                    <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                  <div className="mt-1 flex-shrink-0">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-500">
                       <Lightbulb size={18} className="text-white" />
                     </div>
                   </div>
                   <div className="flex-1 space-y-2">
-                    <h3 className="text-sm font-semibold text-blue-900 dark:text-blue-100 flex items-center">
+                    <h3 className="flex items-center text-sm font-semibold text-blue-900 dark:text-blue-100">
                       Explanation
                     </h3>
-                    <p className="text-sm text-blue-800 dark:text-blue-200 leading-relaxed">
+                    <p className="text-sm leading-relaxed text-blue-800 dark:text-blue-200">
                       {currentQuestion.description}
                     </p>
                     {currentQuestion.description_image_url && (
@@ -255,8 +257,8 @@ const QuestionPage = () => {
                         <img
                           src={currentQuestion.description_image_url}
                           alt="Question illustration"
-                          className="max-w-full h-auto rounded-lg shadow-md"
-                          />
+                          className="h-auto max-w-full rounded-lg shadow-md"
+                        />
                       </div>
                     )}
                   </div>
@@ -269,11 +271,11 @@ const QuestionPage = () => {
         {/* Contributor Display */}
         {currentQuestion?.contributor && (
           <div className="text-sm text-gray-600 dark:text-gray-400">
-            {currentQuestion.contributor } - {currentQuestion.contributor_specialization}
+            {currentQuestion.contributor} - {currentQuestion.contributor_specialization}
           </div>
         )}
-        
-        <div className="flex justify-between items-center">
+
+        <div className="flex items-center justify-between">
           <Button
             variant="outline"
             onClick={handlePreviousQuestion}
@@ -289,8 +291,8 @@ const QuestionPage = () => {
               onClick={() => handleAttemptQuestion(currentQuestion)}
               disabled={
                 currentQuestion.option_type === "multiple"
-                 ? selectedOptions.length === 0
-                 : selectedOption === ""
+                  ? selectedOptions.length === 0
+                  : selectedOption === ""
               }
             >
               Attempt
@@ -298,7 +300,7 @@ const QuestionPage = () => {
           ) : (
             <Button
               onClick={handleNextQuestion}
-              className="px-6 py-2 bg-blue-600 hover:bg-blue-700"
+              className="bg-blue-600 px-6 py-2 hover:bg-blue-700"
             >
               <p>Next</p>
               <ArrowRight />
@@ -307,8 +309,8 @@ const QuestionPage = () => {
         </div>
 
         <div className="text-center">
-          <Button variant="destructive" size="lg" className="px-8 py-3">
-            Submit Quiz
+          <Button variant="destructive" size="lg" className="px-8 py-3" onClick={handleBack}>
+            Cancel
           </Button>
         </div>
       </div>
