@@ -25,8 +25,13 @@ export const getCategories = async () => {
 
 export const getQuestions = async (payload: FetchQuestionsPayload) => {
   console.log("the category payload", payload);
+  const { wrong_only, ...bodyPayload } = payload;
   try {
-    const response = await axiosInstance.post(API_ENDPOINTS.selectQuestions, payload);
+    const response = await axiosInstance.post(API_ENDPOINTS.selectQuestions, bodyPayload, {
+      params: {
+        wrong_only: wrong_only || false,
+      },
+    });
 
     if (!response) {
       return [];
@@ -39,18 +44,12 @@ export const getQuestions = async (payload: FetchQuestionsPayload) => {
   }
 };
 
-export const attemptQuestion = async (
-  questionId: string,
-  selectedOptions: string[],
-) => {
+export const attemptQuestion = async (questionId: string, selectedOptions: string[]) => {
   try {
-    const response = await axiosInstance.post(
-      API_ENDPOINTS.attemptQuestion,
-      {
-        question: questionId,
-        selected_answers: selectedOptions,
-      },
-    );
+    const response = await axiosInstance.post(API_ENDPOINTS.attemptQuestion, {
+      question: questionId,
+      selected_answers: selectedOptions,
+    });
 
     if (!response) {
       return null;

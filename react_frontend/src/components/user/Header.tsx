@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 const Header = () => {
   const { user } = useAuth();
   return (
-    <header className="flex justify-between px-8 py-4 border-b">
+    <header className="flex justify-between px-8 py-4 border-b sticky top-0 bg-gray-50">
       <div className="header-left">
         <div className="header-logo">
           <img

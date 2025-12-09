@@ -12,7 +12,7 @@ import {
 import { fetchColleges, createCollege, deleteCollege } from "@/services/admin/college-service";
 import type { College } from "@/types/college";
 import { toast } from "sonner";
-import { Trash2 } from "lucide-react";
+import { PenIcon, TrashIcon } from "lucide-react";
 
 const AddCollegePage = () => {
   const [colleges, setColleges] = useState<College[]>([]);
@@ -79,8 +79,8 @@ const AddCollegePage = () => {
   }
 
   return (
-    <section className="p-6 space-y-6">
-      <h1 className="mb-4 text-2xl font-semibold">Add College</h1>
+    <section className="space-y-6 p-6">
+      <h1 className="text-2xl font-semibold">Add College</h1>
 
       <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
         <Input
@@ -143,9 +143,15 @@ const AddCollegePage = () => {
               <TableCell>{college.state}</TableCell>
               <TableCell>{college.country}</TableCell>
               <TableCell>{college.postal_code}</TableCell>
-              <TableCell>
-                <Button variant="outline" size="sm" onClick={() => handleDelete(college.id)}>
-                  <Trash2 className="h-4 w-4" />
+              <TableCell className="flex gap-2">
+                <Button className="btn-edit cursor-pointer rounded bg-blue-500 text-white">
+                  <PenIcon size={12} />
+                </Button>
+                <Button
+                  className="btn-delete cursor-pointer rounded bg-red-500 text-white"
+                  onClick={() => handleDelete(college.id)}
+                >
+                  <TrashIcon size={12} />
                 </Button>
               </TableCell>
             </TableRow>
