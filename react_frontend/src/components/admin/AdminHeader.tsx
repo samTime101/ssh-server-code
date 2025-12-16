@@ -1,10 +1,13 @@
 import { Bell, Menu } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 interface AdminHeaderProps {
   onMenuClick: () => void;
 }
 
 const AdminHeader = ({ onMenuClick }: AdminHeaderProps) => {
+  const { user } = useAuth();
+
   return (
     <header className="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-600 px-4 lg:px-6 py-4">
       <div className="flex justify-between items-center">
@@ -36,11 +39,11 @@ const AdminHeader = ({ onMenuClick }: AdminHeaderProps) => {
           {/* Admin Profile */}
           <div className="flex items-center gap-2 lg:gap-3">
             <div className="text-right hidden sm:block">
-              <div className="text-sm font-medium text-gray-800 dark:text-white">Admin User</div>
+              <div className="text-sm font-medium text-gray-800 dark:text-white">{user?.username}</div>
               <div className="text-xs text-gray-500 dark:text-slate-400">Administrator</div>
             </div>
             <div className="w-8 h-8 lg:w-10 lg:h-10 bg-blue-600 dark:bg-emerald-600 rounded-full flex items-center justify-center">
-              <span className="text-white text-xs lg:text-sm font-semibold">AU</span>
+              <span className="text-white text-xs lg:text-sm font-semibold">{user?.first_name[0]}{user?.last_name[0]}</span>
             </div>
           </div>
         </div>
