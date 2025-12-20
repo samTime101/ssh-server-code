@@ -47,13 +47,13 @@ const QuestionProvider = ({ children }: { children: React.ReactNode }) => {
         category_ids: selectedCategoriesId,
         sub_category_ids: selectedSubCategoryId,
         subSubCategoryId: selectedSubSubCategoryId,
-        ...(wrong_only && { wrong_only }),
+        wrong_only,
       };
-      const response = await getQuestions(payload, token);
+      const response = await getQuestions(payload);
       console.log("Questions fetched in context:", response);
-    //   if (response) {
-    //     setQuestionData(response);
-    //   }
+      //   if (response) {
+      //     setQuestionData(response);
+      //   }
       setQuestionData(response);
     } catch (e) {
       console.error(e);

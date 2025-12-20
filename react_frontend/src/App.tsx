@@ -15,6 +15,7 @@ import ManageUsersPage from "./pages/admin/ManageUsersPage";
 import EditUserPage from "./pages/admin/EditUserPage";
 import QuestionBankPage from "./pages/admin/QuestionBankPage";
 import AddRolePage from "./pages/admin/AddRolePage";
+import AddCollegePage from "./pages/admin/AddCollegePage";
 
 /*
   The Route guard structure needs heavy refactoring to accommodate
@@ -115,6 +116,7 @@ const App = () => {
             <Route path="manage-users/:id" element={<EditUserPage />} />
             <Route path="question-bank" element={<QuestionBankPage />} />
             <Route path="add-role" element={<AddRolePage />} />
+            <Route path="add-college" element={<AddCollegePage />} />
           </Route>
         </Route>
       </Route>
