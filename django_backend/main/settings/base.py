@@ -36,6 +36,7 @@ LOCAL_APPS = [
     'api.classifications',
     'api.users',
     'api.colleges',
+    'api.roles',
 ]
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',

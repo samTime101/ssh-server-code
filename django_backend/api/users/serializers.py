@@ -13,8 +13,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('id','user_guid','username', 'email', 'first_name', 'last_name', 'is_active','is_staff','is_superuser','total_right_attempts','total_attempts', 'accuracy_percent', 'completion_percent')
-
+        fields = ('id','user_guid','username', 'email', 'first_name', 'last_name', 'is_active','total_right_attempts','total_attempts', 'accuracy_percent', 'completion_percent')
     def get_total_right_attempts(self, obj):
         submission = Submissions.objects(user_guid=obj.user_guid).first()
         if not submission:
@@ -34,7 +33,6 @@ class UserSerializer(serializers.ModelSerializer):
         total_right_attempts = self.get_total_right_attempts(obj)
         return (total_right_attempts / total_attempts) * 100
     
-    # TODO: logic fix
     def get_completion_percent(self, obj):
         total_questions = Question.objects.count()
         if total_questions == 0:
@@ -85,7 +83,7 @@ class SubmissionResponseSerializer(me_serializers.EmbeddedDocumentSerializer):
         correct_answers = question.correct_answers()
         selected_answers = set(obj.selected_answers)
         return list(selected_answers & correct_answers)
-
+    
 class RoleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Role
@@ -93,10 +91,16 @@ class RoleSerializer(serializers.ModelSerializer):
         read_only_fields = ('id', 'created_at', 'updated_at')
 
 class UserRoleSerializer(serializers.ModelSerializer):
-    role_name = serializers.CharField(source='role.name', read_only=True)
-    username = serializers.CharField(source='user.username', read_only=True)
-    
     class Meta:
         model = UserRole
-        fields = ('id', 'user', 'role', 'username', 'role_name', 'assigned_at')
+        fields = ('user', 'role', 'user', 'role', 'assigned_at')
         read_only_fields = ('id', 'assigned_at')
+
+class AssignRoleSerializer(serializers.Serializer):
+    role_ids = serializers.ListField(child=serializers.IntegerField(), allow_empty=False)
+
+    def validate_role_ids(self, value):
+        for role_id in value:
+            if not Role.objects.filter(id=role_id).exists():
+                raise serializers.ValidationError(f"Role with id {role_id} does not exist.")
+        return value

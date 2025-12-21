@@ -3,6 +3,15 @@ SPECTACULAR_SETTINGS = {
     "TITLE": "MCQ API",
     "DESCRIPTION": """
 
+## December 12, 2025
+- Custom UserManager is now used for User model to handle user creation and management.
+- ``/api/questions/select/`` endpoint now supports `wrong_only` and `non_attempted` query parameters to filter questions based on user's previous attempts.
+- Admin now can assign multiple roles to a user using the `/api/users/{user_guid}/assign-role/` endpoint.
+- Admin can view all roles assigned to a user using the `/api/users/{user_guid}/roles/` endpoint.
+- Admin can view all user-role assignments using the `/api/users/roles/` endpoint.
+- Admin can also do CRUD operation on `roles` using `/api/roles/` endpoint.
+
+
 ## November 30, 2025
 - Added `wrong_only` query parameter to `/api/questions/select/` endpoint to select only
 - Added fields `contributor_speclaization` in Question model and serializers 
