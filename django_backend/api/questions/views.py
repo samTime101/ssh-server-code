@@ -12,9 +12,10 @@ from api.questions.serializers.question import *
 from api.questions.serializers.hierarchy import *
 from api.questions.serializers.selection import *
 from core.heirarchy import get_heirarchy
-from core.selection import get_questions_by_selection
+from core.selection.selection import get_questions_by_selection
 from core.pagination import StandardResultsSetPagination
-from rest_framework.permissions import IsAdminUser, IsAuthenticated
+# from rest_framework.permissions import IsAdminUser, IsAuthenticated
+from core.permissions.permissions import IsAdminUser, IsContributor, IsAuthenticated
 from rest_framework.parsers import JSONParser
 from core.parser import QuestionMultipartJsonParser
 from drf_spectacular.utils import extend_schema, extend_schema_view
@@ -41,6 +42,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
     # This allows frontend to send either multipart/form-data with a 'data' field
     # (stringified JSON) or application/json payloads.
     parser_classes = [QuestionMultipartJsonParser]
+    # both admin and contributor can access
     permission_classes = [IsAdminUser]
 
     # For api/questions/hierarchy/
@@ -54,7 +56,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
 
     # For question selection
     # /api/questions/select/
-    @extend_schema(request=QuestionSelectionSerializer, responses=QuestionPublicSerializer(many=True), parameters=[WrongOnlyQuerySerializer])
+    @extend_schema(request=QuestionSelectionSerializer, responses=QuestionPublicSerializer(many=True), parameters=[WrongOnlyQuerySerializer, NonAttemptedQuerySerializer ])
     @action(detail=False, methods=['post'],url_path='select',serializer_class=QuestionSelectionSerializer,permission_classes=[IsAuthenticated],parser_classes=[JSONParser])
     def select(self, request):
         query_serializer = WrongOnlyQuerySerializer(data=request.query_params)
@@ -67,8 +69,20 @@ class QuestionViewSet(viewsets.ModelViewSet):
 
         # query param, wrong_only = true/false, default false
         wrong_only = request.query_params.get('wrong_only', 'false').lower() == "true"
+        not_attempted = request.query_params.get('non_attempted', 'true').lower() == "true"
+
+         # definition under core/selection/selection.py
         user_guid = getattr(request.user, "user_guid")
-        queryset = get_questions_by_selection(category_ids, sub_category_ids, wrong_only=wrong_only, user_guid=user_guid)
+
+        # cant get both wrong_only and non_attempted true at the same time
+        # Kina vaney suppose "What is 2+2?" question was answered wrong by user
+        # if wrong_only = true, it will return that question
+        # if non_attempted = true, it will NOT return that question
+        # logically conflict hunxa
+        if wrong_only and not_attempted:
+            raise NotFound("Cannot filter both wrong_only and non_attempted questions at the same time.")
+
+        queryset = get_questions_by_selection(category_ids, sub_category_ids, wrong_only=wrong_only, user_guid=user_guid, non_attempted=not_attempted)
         if not queryset:
             raise NotFound("No questions found for requested criteria.")
         # page = self.paginate_queryset(queryset)
