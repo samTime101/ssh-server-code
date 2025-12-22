@@ -1,6 +1,6 @@
 import React, { createContext, useState } from "react"; //useContext,
 import { useAuth } from "@/hooks/useAuth.tsx";
-import { getQuestions } from "@/services/user/questionService.ts";
+import { getQuestions } from "@/services/user/question-service";
 
 export const QuestionContext = createContext<any>(null);
 

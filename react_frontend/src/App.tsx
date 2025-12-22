@@ -5,17 +5,19 @@ import LoginPage from "@/pages/LoginPage";
 import SignupPage from "@/pages/SignupPage";
 import UserLayout from "@/layouts/UserLayout";
 import AdminLayout from "@/layouts/AdminLayout";
-import QuestionBankSection from "./components/user/QuestionBankSection";
+import QuestionBankSection from "@/components/user/QuestionBankSection";
 import QuestionProvider from "@/contexts/QuestionContext.tsx";
-import QuestionPage from "./pages/user/QuestionPage";
-import AddQuestionPage from "./pages/admin/AddQuestionPage";
-import CreateCategoryPage from "./pages/admin/CreateCategoryPage";
-import Loader from "./components/ui/Loader";
-import ManageUsersPage from "./pages/admin/ManageUsersPage";
-import EditUserPage from "./pages/admin/EditUserPage";
-import QuestionBankPage from "./pages/admin/QuestionBankPage";
-import AddRolePage from "./pages/admin/AddRolePage";
-import AddCollegePage from "./pages/admin/AddCollegePage";
+import QuestionPage from "@/pages/user/QuestionPage";
+import AddQuestionPage from "@/pages/admin/AddQuestionPage";
+import CreateCategoryPage from "@/pages/admin/CreateCategoryPage";
+import Loader from "@/components/ui/Loader";
+import ManageUsersPage from "@/pages/admin/ManageUsersPage";
+import EditUserPage from "@/pages/admin/EditUserPage";
+import QuestionBankPage from "@/pages/admin/QuestionBankPage";
+import AddRolePage from "@/pages/admin/AddRolePage";
+import AddCollegePage from "@/pages/admin/AddCollegePage";
+import ProfilePage from "@/pages/user/ProfilePage";
+import HistoryPage from "@/pages/user/HistoryPage";
 
 /*
   The Route guard structure needs heavy refactoring to accommodate
@@ -102,7 +104,9 @@ const App = () => {
           >
             <Route index element={<Navigate to="question-bank" replace />} />
             <Route path="question-bank" element={<QuestionBankSection />} index></Route>
-            {<Route path="question" element={<QuestionPage />}></Route>}
+            <Route path="question" element={<QuestionPage />}></Route>
+            <Route path="profile" element={<ProfilePage />}></Route>
+            <Route path="history" element={<HistoryPage />}></Route>
           </Route>
         </Route>
 

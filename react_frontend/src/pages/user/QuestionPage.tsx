@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"; //React,
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, ArrowRight, Lightbulb } from "lucide-react";
-import { attemptQuestion } from "@/services/user/questionService";
+import { attemptQuestion } from "@/services/user/question-service";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import type { Question, QuestionAttemptState } from "@/types/question";
