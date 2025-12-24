@@ -5,9 +5,8 @@ export interface User {
   first_name: string;
   last_name: string;
   phonenumber: string;
-  is_superuser: boolean;
-  is_staff: boolean;
   is_active: boolean;
+  roles: string[];
   total_right_attempts: string,
   total_attempts: string,
   accuracy_percent: string,

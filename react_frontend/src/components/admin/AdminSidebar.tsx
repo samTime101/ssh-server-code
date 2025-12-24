@@ -18,20 +18,53 @@ interface AdminSidebarProps {
   onClose: () => void;
 }
 
+interface MenuItem {
+  icon: typeof Plus;
+  text: string;
+  path: string;
+  allowedRoles: string[];
+}
+
 const AdminSidebar = ({ isOpen, onClose }: AdminSidebarProps) => {
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   const [activeItem, setActiveItem] = useState("Dashboard");
 
-  const menuItems = [
-    { icon: LayoutDashboard, text: "Dashboard", path: "/admin/dashboard" },
-    { icon: Plus, text: "Add Question", path: "/admin/add-question" },
-    { icon: Folder, text: "Create Category", path: "/admin/create-category" },
-    { icon: Users, text: "Manage Users", path: "/admin/manage-users" },
-    { icon: BarChart3, text: "Analytics", path: "/admin/analytics" },
-    { icon: FileText, text: "Question Bank", path: "/admin/question-bank" },
-    { icon: Plus, text: "Add Role", path: "/admin/add-role" },
-    { icon: Folder, text: "Manage Colleges", path: "/admin/add-college" },
+  // Define all available menu items with their required roles
+  const allMenuItems: MenuItem[] = [
+    {
+      icon: LayoutDashboard,
+      text: "Dashboard",
+      path: "/admin/",
+      allowedRoles: ["ADMIN", "CONTRIBUTOR", "DOCTOR"],
+    },
+    {
+      icon: Plus,
+      text: "Add Question",
+      path: "/admin/add-question",
+      allowedRoles: ["ADMIN", "CONTRIBUTOR", "DOCTOR"],
+    },
+    {
+      icon: Folder,
+      text: "Create Category",
+      path: "/admin/create-category",
+      allowedRoles: ["ADMIN"],
+    },
+    { icon: Users, text: "Manage Users", path: "/admin/manage-users", allowedRoles: ["ADMIN"] },
+    { icon: BarChart3, text: "Analytics", path: "/admin/analytics", allowedRoles: ["ADMIN"] },
+    {
+      icon: FileText,
+      text: "Question Bank",
+      path: "/admin/question-bank",
+      allowedRoles: ["ADMIN", "DOCTOR"],
+    },
+    { icon: Plus, text: "Add Role", path: "/admin/add-role", allowedRoles: ["ADMIN"] },
+    { icon: Folder, text: "Manage Colleges", path: "/admin/add-college", allowedRoles: ["ADMIN"] },
   ];
+
+  // Filter menu items based on user's roles
+  const menuItems = allMenuItems.filter((item) =>
+    user?.roles?.some((role: string) => item.allowedRoles.includes(role))
+  );
 
   const handleLogout = () => {
     logout();
