@@ -26,7 +26,7 @@ const CreateCategoryPage = () => {
     async function fetchCategories() {
       if (!token) return;
       try {
-        const data = await getCategories(token);
+        const data = await getCategories();
         console.log("The data is :", data );
         setCategories(data.categories);
       } catch (err) {
@@ -62,7 +62,7 @@ const CreateCategoryPage = () => {
       setCategoryName("");
       // Refresh categories
       // TODO: Refactor to use fetchCategories function
-      const data = await getCategories(token);
+      const data = await getCategories();
       setCategories(data.categories);
     } catch (error: any) {
       const errorMsg = error.response?.data?.detail || error.response?.data?.name?.[0] || error.message || "Failed to create category. Please try again.";
@@ -86,17 +86,14 @@ const CreateCategoryPage = () => {
     setMessageType("");
     try {
       if (!token) throw new Error("Authentication token not found");
-      const result = await createSubCategory(selectedCategoryId, subCategoryName, {
-        access: token,
-        refresh: "",
-      });
+      const result = await createSubCategory(selectedCategoryId, subCategoryName);
     
 
       setMessage(`Subcategory \"${result.message}\" created successfully!`);
       setMessageType("success");
       setSubCategoryName("");
       // Refresh categories
-      const data = await getCategories(token);
+      const data = await getCategories();
       setCategories(data.categories);
     } catch (error: any) {
       setMessage(error.message || "Failed to create subcategory. Please try again.");
@@ -119,17 +116,14 @@ const CreateCategoryPage = () => {
     setMessageType("");
     try {
       if (!token) throw new Error("Authentication token not found");
-      const result = await createSubSubCategory(selectedSubCategoryId, subSubCategoryName, {
-        access: token,
-        refresh: "",
-      });
+      const result = await createSubSubCategory(selectedSubCategoryId, subSubCategoryName);
       setMessage(
         `Subsubcategory \"${result.subsubcategory.subSubCategoryName}\" created successfully!`
       );
       setMessageType("success");
       setSubSubCategoryName("");
       // Refresh categories
-      const data = await getCategories(token);
+      const data = await getCategories();
       setCategories(data.categories);
     } catch (error: any) {
       setMessage(error.message || "Failed to create subsubcategory. Please try again.");
