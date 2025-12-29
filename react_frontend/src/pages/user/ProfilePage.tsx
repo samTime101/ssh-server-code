@@ -35,14 +35,14 @@ const ProfilePage = () => {
             </div>
           </div>
         </CardHeader>
-        <CardContent className="pt-6">
+        <CardContent>
           <div className="grid gap-6 md:grid-cols-2">
             {profileFields.map((field) => (
               <div key={field.label}>
                 <Label className="text-xs font-semibold uppercase text-gray-600">
                   {field.label}
                 </Label>
-                <p className="mt-2 text-lg text-gray-900">{field.value}</p>
+                <p className="text-gray-900">{field.value}</p>
               </div>
             ))}
           </div>

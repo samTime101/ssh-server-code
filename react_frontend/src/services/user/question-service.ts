@@ -29,7 +29,8 @@ export const getQuestions = async (payload: FetchQuestionsPayload) => {
   try {
     const response = await axiosInstance.post(API_ENDPOINTS.selectQuestions, bodyPayload, {
       params: {
-        wrong_only: wrong_only || false,
+        wrong_only: wrong_only,
+        non_attempted: false
       },
     });
 
