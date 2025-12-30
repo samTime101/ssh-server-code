@@ -3,6 +3,20 @@ SPECTACULAR_SETTINGS = {
     "TITLE": "MCQ API",
     "DESCRIPTION": """
 
+## December 30, 2025
+- Added `is_email_verified` field in User model to track email verification status.
+- Email verification is now required during user signup. Verification email is sent upon successful registration.
+- Created `/api/auth/verify-email/<token>/` endpoint to handle email verification using tokens
+- Added caching mechanism to store email verification tokens with a 30-minute expiry time.
+- Question id bug fixed in AttemptSerializer to return string representation of ObjectId.
+
+
+## December 22, 2025
+- /users/profile endpoint now includes `roles` field listing all roles assigned to the user.
+- added category_name field in SubCategorySerializer to include the name of the parent category.
+- Fixed issue with SubCategorySerializer where category field was not being serialized correctly.
+
+
 ## December 12, 2025
 - Custom UserManager is now used for User model to handle user creation and management.
 - ``/api/questions/select/`` endpoint now supports `wrong_only` and `non_attempted` query parameters to filter questions based on user's previous attempts.

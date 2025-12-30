@@ -10,10 +10,11 @@ class UserSerializer(serializers.ModelSerializer):
     total_attempts = serializers.SerializerMethodField()
     accuracy_percent = serializers.SerializerMethodField()
     completion_percent = serializers.SerializerMethodField()
+    roles = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ('id','user_guid','username', 'email', 'first_name', 'last_name', 'is_active','total_right_attempts','total_attempts', 'accuracy_percent', 'completion_percent')
+        fields = ('id','user_guid','username', 'email', 'first_name', 'last_name', 'is_active','total_right_attempts','total_attempts', 'accuracy_percent', 'completion_percent', 'roles','is_email_verified')
     def get_total_right_attempts(self, obj):
         submission = Submissions.objects(user_guid=obj.user_guid).first()
         if not submission:
@@ -40,12 +41,19 @@ class UserSerializer(serializers.ModelSerializer):
         total_attempts = self.get_total_attempts(obj)
         return (total_attempts / total_questions) * 100
     
+    def get_roles(self, obj):
+        user_roles = UserRole.objects.filter(user=obj)
+        return [user_role.role.name for user_role in user_roles]
+    
 class AttemptSerializer(me_serializers.EmbeddedDocumentSerializer):
-    question = serializers.CharField()
+    question = serializers.SerializerMethodField()
     class Meta:
         model = Attempt
         fields = ('question', 'selected_answers','is_correct')
         extra_kwargs = {'is_correct':{'read_only':True}}
+    
+    def get_question(self, obj):
+        return str(obj.question.id)
 
     def validate_question(self, value):
         print('value: ',value)
