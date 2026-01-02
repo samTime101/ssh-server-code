@@ -1,7 +1,6 @@
 # python manage.py reset_sql , sabai sql tables haru drop garxa
 from django.core.management.base import BaseCommand
 from sql.models import User, Role, UserRole
-# , Role, UserRole
 
 class Command(BaseCommand):
     help = "RESET SQL DB BY DROPPING ALL TABLES"

@@ -20,7 +20,7 @@ class SignUpSerializer(serializers.ModelSerializer):
 
 # Response ma k send garne
 class SignupResponseSerializer(serializers.ModelSerializer):
-    detail = serializers.CharField(default="User registered successfully")
+    detail = serializers.CharField(default="Verification Email sent.")
     class Meta:
         model = User
         fields = ('detail','user_guid','email','username','phonenumber','first_name','last_name','college')

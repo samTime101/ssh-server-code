@@ -6,40 +6,49 @@ from django.contrib.auth.models import BaseUserManager
 # REFERNCE LINK : https://testdriven.io/blog/django-custom-user-model/
 
 class UserManager(BaseUserManager):
-    def create_user(self, email, username, phonenumber, first_name, last_name, password,role=None, **extra_fields):
-        if not email:
-            raise ValueError("The Email field must be set")
-        email = self.normalize_email(email)
-        user = self.model(
-            email=email,
-            username=username,
-            phonenumber=phonenumber,
-            first_name=first_name,
-            last_name=last_name,
-        )
-        user.set_password(password)
-        user.save(using=self._db)
+    try:
+        def create_user(self, email, username, phonenumber, first_name, last_name, password,college=None,role=None,email_verified = False,**extra_fields):
+            if not email:
+                raise ValueError("The Email field must be set")
+            email = self.normalize_email(email)
+            user = self.model(
+                email=email,
+                username=username,
+                phonenumber=phonenumber,
+                first_name=first_name,
+                last_name=last_name,
+                college=college,
+            )
+            user.set_password(password)
+            user.is_email_verified = email_verified
+            user.save(using=self._db)
 
-        # Default role
-        if role is None:
-            role, created = Role.objects.get_or_create(name='USER')
-        else:
-            role, created = Role.objects.get_or_create(name=role)
-        UserRole.objects.create(user=user, role=role)
-        return user
+            # Default role
+            if role is None:
+                role, created = Role.objects.get_or_create(name='USER')
+            else:
+                role, created = Role.objects.get_or_create(name=role)
+            UserRole.objects.create(user=user, role=role)
+            return user
+    except Exception as e:
+        raise ValueError(f"User creation failed: {e}")
 
     def create_superuser(self, email, username, phonenumber, first_name, last_name, password, **extra_fields):
-        user = self.create_user(
-            email,
-            username,
-            phonenumber,
-            first_name,
-            last_name,
-            password,
-            role="ADMIN",
-            **extra_fields
-        )
-        return user
+        try:
+            user = self.create_user(
+                email,
+                username,
+                phonenumber,
+                first_name,
+                last_name,
+                password,
+                role="ADMIN",
+                email_verified=True,
+                **extra_fields
+            )
+            return user
+        except Exception as e:
+            raise ValueError(f"Superuser creation failed: {e}")
     
 class Role(models.Model):
     name = models.CharField(max_length=20, unique=True)
@@ -65,7 +74,7 @@ class User(AbstractUser):
     # Disabling is_active, is_staff, is_superuser from AbstractUser
     is_staff = None
     is_superuser = None
-
+    is_email_verified = models.BooleanField(default=False)
 
     # LOGIN WITH EMAIL
     USERNAME_FIELD = "email" 
