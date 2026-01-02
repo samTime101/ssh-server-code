@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import { useQuestions } from "@/hooks/useQuestions.tsx";
 import CategoryList from "./CategoryList";
 import type { GetCategoriesResponse } from "@/types/category";
-import { getCategories } from "@/services/user/questionService";
+import { getCategories } from "@/services/user/question-service";
 import { AuthContext } from "@/contexts/AuthContext";
 
 /*

@@ -26,27 +26,29 @@ export async function updateUser(userId: string, data: UserUpdate): Promise<User
   }
 }
 
+
+// Already getting roles directly from user profile by id
 /**
  * Get roles for a specific user
  */
-export async function fetchUserRoles(userId: string): Promise<any[]> {
-  try {
-    const response = await axiosInstance.get(`${API_ENDPOINTS.userRoles}?user_id=${userId}`);
-    return Array.isArray(response.data) ? response.data : response.data.results || [];
-  } catch (error: any) {
-    throw new Error(error.response?.data?.detail || "Failed to fetch user roles");
-  }
-}
+// export async function fetchUserRoles(userId: string): Promise<any[]> {
+//   try {
+//     const response = await axiosInstance.get(`${API_ENDPOINTS.userRoles}?user_id=${userId}`);
+//     return Array.isArray(response.data) ? response.data : response.data.results || [];
+//   } catch (error: any) {
+//     throw new Error(error.response?.data?.detail || "Failed to fetch user roles");
+//   }
+// }
 
 /**
  * Assign a role to a user
  */
-export async function assignRoleToUser(userId: string, roleId: string): Promise<any> {
+export async function assignRoleToUser(userGuid: string, roleId: string): Promise<any> {
   try {
-    const response = await axiosInstance.post(`${API_ENDPOINTS.userRoles}`, {
-      user: userId,
-      role: roleId,
-    });
+    const response = await axiosInstance.post(
+      `/users/${userGuid}/assign-role/`,  // Adjusted endpoint manually for now
+      { role_ids: [roleId] }
+    );
     return response.data;
   } catch (error: any) {
     throw new Error(error.response?.data?.detail || "Failed to assign role");

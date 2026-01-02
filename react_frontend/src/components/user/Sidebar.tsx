@@ -1,75 +1,90 @@
-import { useState } from "react"; //React,
+import { useLocation, Link } from "react-router-dom";
 import { Book, Stethoscope, Folder, FileText, User, Settings, LogOut } from "lucide-react";
-import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+
+const menuItems = [
+  { icon: Book, text: "Question Bank", path: "/userpanel/question-bank" },
+  { icon: Stethoscope, text: "CEE Practice", path: "/userpanel/cee-practice" },
+  { icon: Folder, text: "Case Studies", path: "/userpanel/case-studies" },
+  { icon: FileText, text: "Mock Exams", path: "/userpanel/mock-exams" },
+];
+
+const otherItems = [
+  { icon: User, text: "Profile", path: "/userpanel/profile", type: "link" },
+  { icon: User, text: "History", path: "/userpanel/history", type: "link" },
+  { icon: Settings, text: "Settings", path: "/userpanel/settings", type: "link" },
+  { icon: LogOut, text: "Logout", type: "button" },
+];
+
+const baseItemClass =
+  "flex items-center gap-4 rounded-lg px-6 py-3 transition-all duration-200 cursor-pointer border border-transparent";
+const activeClass = "bg-blue-600 text-white shadow-md";
+const inactiveClass = "text-gray-700 hover:bg-white hover:shadow-sm hover:border-gray-200";
+const iconActiveClass = "text-white";
+const iconInactiveClass = "text-gray-500 group-hover:text-blue-600";
 
 const Sidebar = () => {
   const { logout } = useAuth();
-  const [activeItem, setActiveItem] = useState("Question Bank");
+  const location = useLocation();
 
-  const menuItems = [
-    { icon: Book, text: "Question Bank", path: "/userpanel/question-bank" },
-    { icon: Stethoscope, text: "CEE Practice", path: "/userpanel/cee-practice" },
-    { icon: Folder, text: "Case Studies", path: "/userpanel/case-studies" },
-    { icon: FileText, text: "Mock Exams", path: "/userpanel/mock-exams" },
-  ];
-
-  const handleLogout = () => {
-    logout();
-  };
+  const isActive = (path: string) => location.pathname.startsWith(path);
 
   return (
-    <aside className="fixed top-[64px] left-0 h-[calc(100vh-64px)] w-64 bg-gray-50 border-r border-gray-200 z-10 flex flex-col">
-      <div className="px-4 py-6 border-b border-gray-200 flex-shrink-0">
-        <h2 className="text-xl font-bold text-blue-600 text-center">SISANI-EPS</h2>
+    <aside className="fixed top-[64px] left-0 z-10 flex h-[calc(100vh-64px)] w-64 flex-col border-r border-gray-200 bg-gray-50">
+      <div className="flex-shrink-0 border-b border-gray-200 px-4 py-6">
+        <h2 className="text-center text-xl font-bold text-blue-600">SISANI-EPS</h2>
       </div>
 
-      <nav className="flex-1 py-6 overflow-y-auto">
+      <nav className="flex-1 overflow-y-auto py-6">
         <ul className="flex flex-col gap-2 px-3">
-          {menuItems.map((item, index) => {
+          {menuItems.map((item, idx) => {
             const IconComponent = item.icon;
-            const isActive = item.text === activeItem;
-
+            const active = isActive(item.path);
             return (
               <Link
-                key={index}
+                key={idx}
                 to={item.path}
-                onClick={() => setActiveItem(item.text)}
-                className={`flex items-center gap-4 px-6 py-3 rounded-lg transition-all duration-200 cursor-pointer ${
-                  isActive
-                    ? "bg-blue-600 text-white shadow-md"
-                    : "text-gray-700 hover:bg-white hover:shadow-sm border border-transparent hover:border-gray-200"
-                }`}
+                className={`${baseItemClass} ${active ? activeClass : inactiveClass}`}
               >
                 <IconComponent
                   size={20}
-                  className={`${
-                    isActive ? "text-white" : "text-gray-500 group-hover:text-blue-600"
-                  } transition-colors duration-200`}
+                  className={`${active ? iconActiveClass : iconInactiveClass} transition-colors duration-200`}
                 />
-                <p className="font-medium text-sm">{item.text}</p>
+                <p className="text-sm font-medium">{item.text}</p>
               </Link>
             );
           })}
         </ul>
       </nav>
 
-      <div className="flex-shrink-0 px-3 py-6 border-t border-gray-200 bg-gray-50">
-        <div className="flex items-center gap-4 px-6 py-3 rounded-lg hover:bg-white hover:shadow-sm cursor-pointer transition-all duration-200 text-gray-700 border border-transparent hover:border-gray-200">
-          <User size={20} className="text-gray-500" />
-          <p className="font-medium text-sm">Profile</p>
-        </div>
-        <div className="flex items-center gap-4 px-6 py-3 rounded-lg hover:bg-white hover:shadow-sm cursor-pointer transition-all duration-200 text-gray-700 border border-transparent hover:border-gray-200 mt-2">
-          <Settings size={20} className="text-gray-500" />
-          <p className="font-medium text-sm">Settings</p>
-        </div>
-        <button
-          onClick={handleLogout}
-          className="w-full flex items-center gap-4 px-6 py-3 rounded-lg hover:bg-red-50 hover:shadow-sm cursor-pointer transition-all duration-200 text-red-600 border border-transparent hover:border-red-200 mt-2"
-        >
-          <LogOut size={20} className="text-red-500" />
-          <p className="font-medium text-sm">Logout</p>
-        </button>
+      <div className="flex-shrink-0 border-t border-gray-200 bg-gray-50 px-3 py-6">
+        {otherItems.map((item, idx) => {
+          const IconComponent = item.icon;
+          if (item.type === "link" && item.path) {
+            const active = isActive(item.path);
+            return (
+              <Link
+                key={idx}
+                to={item.path}
+                className={`mt-2 ${baseItemClass} ${active ? activeClass : inactiveClass}`}
+              >
+                <IconComponent size={20} className={active ? iconActiveClass : iconInactiveClass} />
+                <p className="text-sm font-medium">{item.text}</p>
+              </Link>
+            );
+          }
+          // Logout button
+          return (
+            <button
+              key={idx}
+              onClick={logout}
+              className="mt-2 flex w-full items-center gap-4 rounded-lg border border-transparent px-6 py-3 text-red-600 transition-all duration-200 hover:border-red-200 hover:bg-red-50 hover:shadow-sm"
+            >
+              <IconComponent size={20} className="text-red-500" />
+              <p className="text-sm font-medium">{item.text}</p>
+            </button>
+          );
+        })}
       </div>
     </aside>
   );

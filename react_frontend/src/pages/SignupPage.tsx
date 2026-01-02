@@ -12,7 +12,13 @@ import { fetchColleges } from "@/services/admin/college-service";
 import type { College } from "@/types/college";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+} from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 const SignupPage = () => {
@@ -23,7 +29,7 @@ const SignupPage = () => {
   const [collegeValue, setCollegeValue] = useState("");
 
   useEffect(() => {
-    async function getColleges(){
+    async function getColleges() {
       try {
         const data = await fetchColleges();
         setColleges(data);
@@ -31,8 +37,8 @@ const SignupPage = () => {
         console.error("Error fetching colleges:", error);
       }
     }
-    getColleges()
-  }, [])
+    getColleges();
+  }, []);
 
   const {
     register: formRegister,
@@ -55,15 +61,15 @@ const SignupPage = () => {
     }
     setLoading(true);
     try {
-    await register({
-      email: data.email,
-      password: data.password,
-      username: data.username,
-      first_name: data.first_name,
-      last_name: data.last_name,
-      phonenumber: data.phonenumber,
-      college: data.college
-    });
+      await register({
+        email: data.email,
+        password: data.password,
+        username: data.username,
+        first_name: data.first_name,
+        last_name: data.last_name,
+        phonenumber: data.phonenumber,
+        college: data.college,
+      });
     } catch (error) {
       console.error("Registration failed:", error);
     } finally {
@@ -76,7 +82,7 @@ const SignupPage = () => {
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1 text-center">
           <h1 className="text-2xl font-bold">Create an account</h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-muted-foreground text-sm">
             Enter your information to create your account
           </p>
         </CardHeader>
@@ -174,7 +180,11 @@ const SignupPage = () => {
             {/* College */}
             <div className="space-y-2">
               <Label htmlFor="college">College</Label>
-              <Popover open={open} onOpenChange={setOpen}>
+              <Popover
+                open={open}
+                onOpenChange={setOpen}
+                {...formRegister("college", { required: "College is required" })}
+              >
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
@@ -224,11 +234,11 @@ const SignupPage = () => {
             </Button>
           </form>
         </CardContent>
-        
+
         <CardFooter className="flex justify-center">
-          <p className="text-sm text-muted-foreground">
+          <p className="text-muted-foreground text-sm">
             Already have an account?{" "}
-            <Link to="/auth/login" className="font-medium text-primary hover:underline">
+            <Link to="/auth/login" className="text-primary font-medium hover:underline">
               Sign in
             </Link>
           </p>

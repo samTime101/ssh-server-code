@@ -14,60 +14,39 @@ import { useAuth } from "@/hooks/useAuth";
 import {
   fetchUserById,
   updateUser,
-  fetchUserRoles,
   assignRoleToUser,
   removeRoleFromUser,
-  type User,
 } from "@/services/admin/user-service";
-import { fetchRoles, type Role } from "@/services/admin/role-service";
+import type { User } from "@/types/user";
+import { fetchRoles } from "@/services/admin/role-service";
+import type { Role } from "@/types/role";
 
 const EditUserPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { token } = useAuth();
 
-  // User data
   const [user, setUser] = useState<User | null>(null);
-  const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [isActive, setIsActive] = useState(true);
-
-  // Role management
   const [roles, setRoles] = useState<Role[]>([]);
-  const [userRoles, setUserRoles] = useState<any[]>([]);
   const [selectedRoleId, setSelectedRoleId] = useState("");
-
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  // Load user data on mount
   useEffect(() => {
     if (!id || !token) return;
     loadUserData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, token]);
 
   const loadUserData = async () => {
     if (!id || !token) return;
     try {
       setLoading(true);
-      const userData = await fetchUserById(id, token);
-      setUser(userData);
-      setUsername(userData.username);
-      setEmail(userData.email);
-      setFirstName(userData.first_name);
-      setLastName(userData.last_name);
-      setIsActive(userData.is_active);
-
-      // Load roles using the user's actual ID (pk), not user_guid
-      const [rolesData, userRolesData] = await Promise.all([
-        fetchRoles(token),
-        fetchUserRoles(userData.id.toString(), token),
+      const [userData, rolesData] = await Promise.all([
+        fetchUserById(id),
+        fetchRoles(),
       ]);
+      setUser(userData);
       setRoles(rolesData);
-      setUserRoles(userRolesData);
     } catch (err: any) {
       console.error(err);
       toast.error("Failed to load user data");
@@ -78,23 +57,19 @@ const EditUserPage = () => {
 
   const handleSaveChanges = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!id || !token) return toast.error("Missing user ID or token");
-    if (!username.trim()) return toast.error("Username is required");
-    if (!email.trim()) return toast.error("Email is required");
+    if (!id || !token || !user) return toast.error("Missing user ID or token");
+    if (!user.username.trim()) return toast.error("Username is required");
+    if (!user.email.trim()) return toast.error("Email is required");
 
     try {
       setSaving(true);
-      await updateUser(
-        id,
-        {
-          username: username.trim(),
-          email: email.trim(),
-          first_name: firstName.trim(),
-          last_name: lastName.trim(),
-          is_active: isActive,
-        },
-        token
-      );
+      await updateUser(id, {
+        username: user.username.trim(),
+        email: user.email.trim(),
+        first_name: user.first_name.trim(),
+        last_name: user.last_name.trim(),
+        is_active: user.is_active,
+      });
       toast.success("User updated successfully");
       await loadUserData();
     } catch (err: any) {
@@ -105,14 +80,21 @@ const EditUserPage = () => {
     }
   };
 
+  const handleInputChange = (field: keyof User, value: string | boolean) => {
+    if (!user) return;
+    setUser({ ...user, [field]: value });
+  };
+
   const handleAddRole = async () => {
     if (!user || !token || !selectedRoleId) {
       return toast.error("Please select a role");
     }
-
+    if (user.roles.includes(selectedRoleId)) {
+      return toast.error("User already has this role");
+    }
     try {
       setSaving(true);
-      await assignRoleToUser(user.id.toString(), selectedRoleId, token);
+      await assignRoleToUser(user.user_guid || user.id.toString(), selectedRoleId);
       toast.success("Role assigned successfully");
       setSelectedRoleId("");
       await loadUserData();
@@ -124,12 +106,14 @@ const EditUserPage = () => {
     }
   };
 
-  const handleRemoveRole = async (userRoleId: string) => {
-    if (!token) return;
-
+  const handleRemoveRole = async (roleName: string) => {
+    if (!user || !token) return;
+    // Find the user-role relation ID (if needed) or use a backend endpoint that removes by user+role
     try {
       setSaving(true);
-      await removeRoleFromUser(userRoleId, token);
+      // You may need to adjust this if your backend expects a user-role ID
+      // Here, assuming removeRoleFromUser can take userId and roleName
+      await removeRoleFromUser(`${user.id}:${roleName}`);
       toast.success("Role removed successfully");
       await loadUserData();
     } catch (err: any) {
@@ -174,8 +158,8 @@ const EditUserPage = () => {
           <div>
             <label className="block text-sm font-medium mb-2">Username</label>
             <Input
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              value={user.username}
+              onChange={(e) => handleInputChange("username", e.target.value)}
               placeholder="Username"
               disabled={saving}
             />
@@ -184,8 +168,8 @@ const EditUserPage = () => {
           <div>
             <label className="block text-sm font-medium mb-2">Email Address</label>
             <Input
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={user.email}
+              onChange={(e) => handleInputChange("email", e.target.value)}
               placeholder="Email address"
               type="email"
               disabled={saving}
@@ -196,8 +180,8 @@ const EditUserPage = () => {
             <div>
               <label className="block text-sm font-medium mb-2">First Name</label>
               <Input
-                value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
+                value={user.first_name}
+                onChange={(e) => handleInputChange("first_name", e.target.value)}
                 placeholder="First name"
                 disabled={saving}
               />
@@ -206,8 +190,8 @@ const EditUserPage = () => {
             <div>
               <label className="block text-sm font-medium mb-2">Last Name</label>
               <Input
-                value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
+                value={user.last_name}
+                onChange={(e) => handleInputChange("last_name", e.target.value)}
                 placeholder="Last name"
                 disabled={saving}
               />
@@ -216,20 +200,20 @@ const EditUserPage = () => {
 
           <div>
             <label className="block text-sm font-medium mb-2">Status</label>
-            <Select value={isActive ? "active" : "inactive"}>
+            <Select value={user.is_active ? "active" : "inactive"}>
               <SelectTrigger disabled={saving}>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem
                   value="active"
-                  onClick={() => setIsActive(true)}
+                  onClick={() => handleInputChange("is_active", true)}
                 >
                   Active
                 </SelectItem>
                 <SelectItem
                   value="inactive"
-                  onClick={() => setIsActive(false)}
+                  onClick={() => handleInputChange("is_active", false)}
                 >
                   Inactive
                 </SelectItem>
@@ -259,11 +243,13 @@ const EditUserPage = () => {
               <SelectValue placeholder="Select a role to assign" />
             </SelectTrigger>
             <SelectContent>
-              {roles.map((role) => (
-                <SelectItem key={role.id} value={role.id}>
-                  {role.name}
-                </SelectItem>
-              ))}
+              {roles
+                .filter((role) => !user.roles.includes(role.name))
+                .map((role) => (
+                  <SelectItem key={role.id} value={role.id}>
+                    {role.name}
+                  </SelectItem>
+                ))}
             </SelectContent>
           </Select>
           <Button onClick={handleAddRole} disabled={saving || !selectedRoleId}>
@@ -274,24 +260,22 @@ const EditUserPage = () => {
         {/* Current Roles */}
         <div>
           <h3 className="text-sm font-medium mb-3">Current Roles</h3>
-          {userRoles.length === 0 ? (
+          {user.roles.length === 0 ? (
             <div className="text-sm text-gray-500 p-3 bg-gray-50 rounded">
               No roles assigned
             </div>
           ) : (
             <div className="space-y-2">
-              {userRoles.map((userRole) => (
+              {user.roles.map((roleName) => (
                 <div
-                  key={userRole.id}
+                  key={roleName}
                   className="flex items-center justify-between p-3 bg-gray-50 rounded border"
                 >
-                  <span className="text-sm font-medium">
-                    {userRole.role_name || userRole.role}
-                  </span>
+                  <span className="text-sm font-medium">{roleName}</span>
                   <Button
                     size="sm"
                     variant="destructive"
-                    onClick={() => handleRemoveRole(userRole.id)}
+                    onClick={() => handleRemoveRole(roleName)}
                     disabled={saving}
                   >
                     Remove
@@ -307,3 +291,4 @@ const EditUserPage = () => {
 };
 
 export default EditUserPage;
+// ...existing code...

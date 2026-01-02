@@ -44,9 +44,6 @@ const ManageUsersPage = () => {
     setIsLoading(true);
     try {
       const response = await axiosInstance.get(API_ENDPOINTS.usersList, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
         params: {
           page: currentPage,
           page_size: pageSize,
