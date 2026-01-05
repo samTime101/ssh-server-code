@@ -19,6 +19,7 @@ import ProfilePage from "@/pages/user/ProfilePage";
 import HistoryPage from "@/pages/user/HistoryPage";
 import RoleRoute from "@/components/RoleRoute";
 import Loader from "@/components/ui/Loader";
+import ROLE_CONFIG from "@/config/roleConfig";
 
 // Redirect user to correct panel based on role
 const RootRedirect = () => {
@@ -31,7 +32,7 @@ const RootRedirect = () => {
 
   if (!user) return <Navigate to="/auth/login" replace />;
   // Admins, Contributors, and Doctors can access admin panel
-  if (user.roles?.some((role: string) => ["ADMIN", "CONTRIBUTOR", "DOCTOR"].includes(role))) {
+  if (user.roles?.some((role: string) => ROLE_CONFIG.ADMIN_PANEL.includes(role))) {
     return <Navigate to="/admin" replace />;
   }
   return <Navigate to="/userpanel" replace />;
@@ -86,18 +87,18 @@ const App = () => {
         </Route>
 
         {/* Admin Panel - accessible by ADMIN, CONTRIBUTOR, and DOCTOR */}
-        <Route element={<RoleRoute allowedRoles={["ADMIN", "CONTRIBUTOR", "DOCTOR"]} />}>
+        <Route element={<RoleRoute allowedRoles={ROLE_CONFIG.ADMIN_PANEL} />}>
           <Route path="/admin" element={<AdminLayout />}>
             {/* Available to all admin roles */}
             <Route path="add-question" element={<AddQuestionPage />} />
 
             {/* Available to ADMIN and DOCTOR only */}
-            <Route element={<RoleRoute allowedRoles={["ADMIN", "DOCTOR"]} />}>
+            <Route element={<RoleRoute allowedRoles={ROLE_CONFIG.ADMIN_AND_DOCTOR} />}>
               <Route path="question-bank" element={<QuestionBankPage />} />
             </Route>
 
             {/* Available to ADMIN only */}
-            <Route element={<RoleRoute allowedRoles={["ADMIN"]} />}>
+            <Route element={<RoleRoute allowedRoles={ROLE_CONFIG.ADMIN_ONLY} />}>
               <Route path="create-category" element={<CreateCategoryPage />} />
               <Route path="manage-users" element={<ManageUsersPage />} />
               <Route path="manage-users/:id" element={<EditUserPage />} />

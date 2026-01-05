@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import ROLE_CONFIG from "@/config/roleConfig";
 
 interface AdminSidebarProps {
   isOpen: boolean;
@@ -35,30 +36,45 @@ const AdminSidebar = ({ isOpen, onClose }: AdminSidebarProps) => {
       icon: LayoutDashboard,
       text: "Dashboard",
       path: "/admin/",
-      allowedRoles: ["ADMIN", "CONTRIBUTOR", "DOCTOR"],
+      allowedRoles: ROLE_CONFIG.ADMIN_PANEL,
     },
     {
       icon: Plus,
       text: "Add Question",
       path: "/admin/add-question",
-      allowedRoles: ["ADMIN", "CONTRIBUTOR", "DOCTOR"],
+      allowedRoles: ROLE_CONFIG.ADMIN_PANEL,
     },
     {
       icon: Folder,
       text: "Create Category",
       path: "/admin/create-category",
-      allowedRoles: ["ADMIN"],
+      allowedRoles: ROLE_CONFIG.ADMIN_ONLY,
     },
-    { icon: Users, text: "Manage Users", path: "/admin/manage-users", allowedRoles: ["ADMIN"] },
-    { icon: BarChart3, text: "Analytics", path: "/admin/analytics", allowedRoles: ["ADMIN"] },
+    {
+      icon: Users,
+      text: "Manage Users",
+      path: "/admin/manage-users",
+      allowedRoles: ROLE_CONFIG.ADMIN_ONLY,
+    },
+    {
+      icon: BarChart3,
+      text: "Analytics",
+      path: "/admin/analytics",
+      allowedRoles: ROLE_CONFIG.ADMIN_ONLY,
+    },
     {
       icon: FileText,
       text: "Question Bank",
       path: "/admin/question-bank",
-      allowedRoles: ["ADMIN", "DOCTOR"],
+      allowedRoles: ROLE_CONFIG.ADMIN_AND_DOCTOR,
     },
-    { icon: Plus, text: "Add Role", path: "/admin/add-role", allowedRoles: ["ADMIN"] },
-    { icon: Folder, text: "Manage Colleges", path: "/admin/add-college", allowedRoles: ["ADMIN"] },
+    { icon: Plus, text: "Add Role", path: "/admin/add-role", allowedRoles: ROLE_CONFIG.ADMIN_ONLY },
+    {
+      icon: Folder,
+      text: "Manage Colleges",
+      path: "/admin/add-college",
+      allowedRoles: ROLE_CONFIG.ADMIN_ONLY,
+    },
   ];
 
   // Filter menu items based on user's roles

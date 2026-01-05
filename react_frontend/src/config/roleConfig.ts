@@ -1,0 +1,7 @@
+const ROLE_CONFIG = {
+  ADMIN_PANEL: ["ADMIN", "CONTRIBUTOR", "DOCTOR"],
+  ADMIN_AND_DOCTOR: ["ADMIN", "DOCTOR"],
+  ADMIN_ONLY: ["ADMIN"],
+};
+
+export default ROLE_CONFIG;
