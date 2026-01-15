@@ -32,7 +32,7 @@ const RootRedirect = () => {
 
   if (!user) return <Navigate to="/auth/login" replace />;
   // Admins, Contributors, and Doctors can access admin panel
-  if (user.roles?.some((role: string) => ROLE_CONFIG.ADMIN_PANEL.includes(role))) {
+  if (user.roles?.some((role: string) => role in ROLE_CONFIG)) {
     return <Navigate to="/admin" replace />;
   }
   return <Navigate to="/userpanel" replace />;
@@ -86,25 +86,34 @@ const App = () => {
           <Route path="history" element={<HistoryPage />} />
         </Route>
 
-        {/* Admin Panel - accessible by ADMIN, CONTRIBUTOR, and DOCTOR */}
-        <Route element={<RoleRoute allowedRoles={ROLE_CONFIG.ADMIN_PANEL} />}>
-          <Route path="/admin" element={<AdminLayout />}>
-            {/* Available to all admin roles */}
+        {/* Admin Panel */}
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route element={<RoleRoute allowedPermissions={["add-question"]} />}>
             <Route path="add-question" element={<AddQuestionPage />} />
+          </Route>
 
-            {/* Available to ADMIN and DOCTOR only */}
-            <Route element={<RoleRoute allowedRoles={ROLE_CONFIG.ADMIN_AND_DOCTOR} />}>
-              <Route path="question-bank" element={<QuestionBankPage />} />
-            </Route>
+          <Route element={<RoleRoute allowedPermissions={["question-bank"]} />}>
+            <Route path="question-bank" element={<QuestionBankPage />} />
+          </Route>
+          
+          <Route element={<RoleRoute allowedPermissions={["create-category"]} />}>
+            <Route path="create-category" element={<CreateCategoryPage />} />
+          </Route>
 
-            {/* Available to ADMIN only */}
-            <Route element={<RoleRoute allowedRoles={ROLE_CONFIG.ADMIN_ONLY} />}>
-              <Route path="create-category" element={<CreateCategoryPage />} />
-              <Route path="manage-users" element={<ManageUsersPage />} />
-              <Route path="manage-users/:id" element={<EditUserPage />} />
-              <Route path="add-role" element={<AddRolePage />} />
-              <Route path="add-college" element={<AddCollegePage />} />
-            </Route>
+          <Route element={<RoleRoute allowedPermissions={["manage-users"]} />}>
+            <Route path="manage-users" element={<ManageUsersPage />} />
+          </Route>
+
+          <Route element={<RoleRoute allowedPermissions={["manage-users/:id"]} />}>
+            <Route path="manage-users/:id" element={<EditUserPage />} />
+          </Route>
+
+          <Route element={<RoleRoute allowedPermissions={["add-role"]} />}>
+            <Route path="add-role" element={<AddRolePage />} />
+          </Route>
+
+          <Route element={<RoleRoute allowedPermissions={["add-college"]} />}>
+            <Route path="add-college" element={<AddCollegePage />} />
           </Route>
         </Route>
       </Route>

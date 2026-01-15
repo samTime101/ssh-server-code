@@ -1,7 +1,22 @@
 const ROLE_CONFIG = {
-  ADMIN_PANEL: ["ADMIN", "CONTRIBUTOR", "DOCTOR"],
-  ADMIN_AND_DOCTOR: ["ADMIN", "DOCTOR"],
-  ADMIN_ONLY: ["ADMIN"],
+  ADMIN: [
+    "dashboard",
+    "add-question",
+    "create-category",
+    "manage-users",
+    "manage-users/:id",
+    "add-role",
+    "add-college",
+    "question-bank",
+    "analytics",
+  ],
+  CONTRIBUTOR: [
+    "add-question",
+  ],
+  DOCTOR: [
+    "add-question",
+    "question-bank",
+  ],
 };
 
 export default ROLE_CONFIG;

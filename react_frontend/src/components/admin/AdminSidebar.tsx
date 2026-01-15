@@ -1,4 +1,3 @@
-import { useState } from "react";
 import {
   LayoutDashboard,
   Plus,
@@ -10,7 +9,7 @@ import {
   LogOut,
   X,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import ROLE_CONFIG from "@/config/roleConfig";
 
@@ -23,12 +22,12 @@ interface MenuItem {
   icon: typeof Plus;
   text: string;
   path: string;
-  allowedRoles: string[];
+  allowedPermissions: string[];
 }
 
 const AdminSidebar = ({ isOpen, onClose }: AdminSidebarProps) => {
   const { logout, user } = useAuth();
-  const [activeItem, setActiveItem] = useState("Dashboard");
+  const location = useLocation();
 
   // Define all available menu items with their required roles
   const allMenuItems: MenuItem[] = [
@@ -36,50 +35,52 @@ const AdminSidebar = ({ isOpen, onClose }: AdminSidebarProps) => {
       icon: LayoutDashboard,
       text: "Dashboard",
       path: "/admin/",
-      allowedRoles: ROLE_CONFIG.ADMIN_PANEL,
+      allowedPermissions: ["dashboard"],
     },
     {
       icon: Plus,
       text: "Add Question",
       path: "/admin/add-question",
-      allowedRoles: ROLE_CONFIG.ADMIN_PANEL,
+      allowedPermissions: ["add-question"],
     },
     {
       icon: Folder,
       text: "Create Category",
       path: "/admin/create-category",
-      allowedRoles: ROLE_CONFIG.ADMIN_ONLY,
+      allowedPermissions: ["create-category"],
     },
     {
       icon: Users,
       text: "Manage Users",
       path: "/admin/manage-users",
-      allowedRoles: ROLE_CONFIG.ADMIN_ONLY,
+      allowedPermissions: ["manage-users"],
     },
     {
       icon: BarChart3,
       text: "Analytics",
       path: "/admin/analytics",
-      allowedRoles: ROLE_CONFIG.ADMIN_ONLY,
+      allowedPermissions: ["analytics"],
     },
     {
       icon: FileText,
       text: "Question Bank",
       path: "/admin/question-bank",
-      allowedRoles: ROLE_CONFIG.ADMIN_AND_DOCTOR,
+      allowedPermissions: ["question-bank"],
     },
-    { icon: Plus, text: "Add Role", path: "/admin/add-role", allowedRoles: ROLE_CONFIG.ADMIN_ONLY },
+    { icon: Plus, text: "Add Role", path: "/admin/add-role", allowedPermissions: ["add-role"] },
     {
       icon: Folder,
       text: "Manage Colleges",
       path: "/admin/add-college",
-      allowedRoles: ROLE_CONFIG.ADMIN_ONLY,
+      allowedPermissions: ["add-college"],
     },
   ];
 
-  // Filter menu items based on user's roles
+  // Filter menu items based on user's roles and permissions
   const menuItems = allMenuItems.filter((item) =>
-    user?.roles?.some((role: string) => item.allowedRoles.includes(role))
+    user?.roles?.some((role: string) =>
+      item.allowedPermissions.every((perm) => ROLE_CONFIG[role as keyof typeof ROLE_CONFIG]?.includes(perm))
+    )
   );
 
   const handleLogout = () => {
@@ -119,14 +120,13 @@ const AdminSidebar = ({ isOpen, onClose }: AdminSidebarProps) => {
           <ul className="flex flex-col gap-2 px-4">
             {menuItems.map((item, index) => {
               const IconComponent = item.icon;
-              const isActive = item.text === activeItem;
+              const isActive = location.pathname === item.path;
 
               return (
                 <Link
                   key={index}
                   to={item.path}
                   onClick={() => {
-                    setActiveItem(item.text);
                     onClose(); // Close sidebar on mobile after selecting
                   }}
                   className={`flex items-center gap-4 rounded-lg px-4 py-3 transition-all duration-200 ${

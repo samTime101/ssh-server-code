@@ -1,20 +1,24 @@
 import { Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import ROLE_CONFIG from "@/config/roleConfig";
 import Loader from "@/components/ui/Loader";
 
 interface RoleRouteProps {
-  allowedRoles: string[];
+  allowedPermissions: string[];
 }
 
-const RoleRoute = ({ allowedRoles }: RoleRouteProps) => {
+const RoleRoute = ({ allowedPermissions }: RoleRouteProps) => {
   const { token, user } = useAuth();
 
   if (!token) return <Navigate to="/auth/login" />;
   if (!user) return <Loader />;
 
-  const hasRole = user.roles?.some((role: string) => allowedRoles.includes(role));
+  // Check if user has a role that includes ALL required permissions
+  const hasAccess = user?.roles?.some((role: string) =>
+    allowedPermissions.every((perm) => ROLE_CONFIG[role as keyof typeof ROLE_CONFIG]?.includes(perm))
+  );
 
-  return hasRole ? <Outlet /> : <Navigate to="/" />;
+  return hasAccess ? <Outlet /> : <Navigate to="/" replace />;
 };
 
 export default RoleRoute;
