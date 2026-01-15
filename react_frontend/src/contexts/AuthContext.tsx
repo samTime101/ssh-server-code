@@ -82,6 +82,15 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       const response = await loginService({ email, password });
       if (response) {
+        // Check if email is verified
+        const userInfo = await fetchUserInfo(response.data.access);
+
+        if (userInfo && !userInfo.is_email_verified) {
+          toast.error("Check your email to verify your account.");
+          logout();
+          return;
+        }
+
         toast.success("Login successful! Welcome back.");
         handleAuthSuccess(response.data.access);
       }
@@ -122,9 +131,8 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         college,
       });
       if (response) {
-        toast.success("Registration successful! Welcome aboard.");
-        // handleAuthSuccess(response.data.user, response.data.tokens.access);
-        login({ email, password });
+        toast.success("Registration successful! Check your email to verify your account.");
+        navigate("/auth/login");
       }
     } catch (error: any) {
       console.error("Registration failed:", error);
