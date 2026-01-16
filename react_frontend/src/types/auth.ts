@@ -10,7 +10,8 @@ export interface User {
   total_right_attempts: string,
   total_attempts: string,
   accuracy_percent: string,
-  completion_percent: string
+  completion_percent: string,
+  is_email_verified: boolean,
 }
 
 export interface AuthToken {

@@ -82,6 +82,15 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       const response = await loginService({ email, password });
       if (response) {
+        // Check if email is verified
+        const userInfo = await fetchUserInfo(response.data.access);
+
+        if (userInfo && !userInfo.is_email_verified) {
+          toast.error("Check your email to verify your account.");
+          logout();
+          return;
+        }
+
         toast.success("Login successful! Welcome back.");
         handleAuthSuccess(response.data.access);
       }
@@ -122,13 +131,35 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         college,
       });
       if (response) {
-        toast.success("Registration successful! Welcome aboard.");
-        // handleAuthSuccess(response.data.user, response.data.tokens.access);
-        login({ email, password });
+        toast.success("Registration successful! Check your email to verify your account.");
+        navigate("/auth/login");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Registration failed:", error);
-      toast.error("Registration failed. Please try again.");
+      // Try to extract detailed error messages from backend
+      let errorMsg = "Registration failed. Please try again.";
+      if (error?.response?.data) {
+        const data = error.response.data;
+        if (typeof data === "object" && data !== null) {
+          // Show only the first error message, capitalized
+          let firstMsg = "";
+          for (const msg of Object.values(data)) {
+            if (Array.isArray(msg) && msg.length > 0) {
+              firstMsg = msg[0];
+              break;
+            } else if (typeof msg === "string" && msg) {
+              firstMsg = msg;
+              break;
+            }
+          }
+          if (firstMsg) {
+            errorMsg = firstMsg.charAt(0).toUpperCase() + firstMsg.slice(1);
+          }
+        } else if (typeof data === "string" && data) {
+          errorMsg = data.charAt(0).toUpperCase() + data.slice(1);
+        }
+      }
+      toast.error(errorMsg);
       logout();
     }
   };
