@@ -3,6 +3,12 @@ SPECTACULAR_SETTINGS = {
     "TITLE": "MCQ API",
     "DESCRIPTION": """
 
+## January 17, 2026
+- Added anchor link to Email Link
+- added `question_text` field in AttemptSerializer to include question text in attempt details.
+- added `selected_options_labels` field in AttemptSerializer to include the text of selected options in attempt details.
+
+
 ## December 30, 2025
 - Added `is_email_verified` field in User model to track email verification status.
 - Email verification is now required during user signup. Verification email is sent upon successful registration.
