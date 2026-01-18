@@ -81,11 +81,11 @@ const HistoryPage = () => {
             <TableBody>
               {submissionHistory.map((attempt, idx) => (
                 <TableRow key={idx}>
-                  <TableCell>{attempt.question}</TableCell>
+                  <TableCell>{attempt.question_text}</TableCell>
                   <TableCell>
                     {attempt.selected_answers.map((ans, i) => (
                       <Badge key={i} className="mr-1">
-                        {ans}
+                        {ans}: {attempt.selected_options_labels[i]}
                       </Badge>
                     ))}
                   </TableCell>
