@@ -46,14 +46,26 @@ class UserSerializer(serializers.ModelSerializer):
         return [user_role.role.name for user_role in user_roles]
     
 class AttemptSerializer(me_serializers.EmbeddedDocumentSerializer):
-    question = serializers.SerializerMethodField()
+    question = serializers.CharField(write_only=True)
+    question_text = serializers.SerializerMethodField(read_only=True)
+    # SHOW SELECTED OPTION LABELS IN LIST
+    selected_options_labels = serializers.SerializerMethodField(read_only=True)
     class Meta:
         model = Attempt
-        fields = ('question', 'selected_answers','is_correct')
+        fields = ('question', 'selected_answers','is_correct', 'question_text', 'selected_options_labels')
         extra_kwargs = {'is_correct':{'read_only':True}}
     
-    def get_question(self, obj):
-        return str(obj.question.id)
+    def get_question_text(self, obj):
+        return str(obj.question.question_text)
+    
+    def get_selected_options_labels(self, obj):
+        option_labels = []
+        question = obj.question
+        for label in obj.selected_answers:
+            for option in question.options:
+                if option.label == label:
+                    option_labels.append(option.text)
+        return option_labels
 
     def validate_question(self, value):
         print('value: ',value)
