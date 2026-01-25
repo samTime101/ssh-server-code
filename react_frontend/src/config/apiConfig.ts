@@ -7,6 +7,7 @@ export const API_BASE_URL =
 export const API_ENDPOINTS = {
   login: `${API_BASE_URL}/auth/signin/`,
   signup: `${API_BASE_URL}/auth/signup/`,
+  verifyEmail: `${API_BASE_URL}/auth/verify-email/`,
 
   colleges: `${API_BASE_URL}/colleges/`,
 

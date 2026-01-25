@@ -28,3 +28,7 @@ export const signupService = async ({
     college,
   });
 };
+
+export const verifyEmailService = async (token: string) => {
+  return axios.get(`${API_ENDPOINTS.verifyEmail}${token}/`);
+}

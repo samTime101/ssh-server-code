@@ -157,6 +157,7 @@ const SignupPage = () => {
                     message: "Invalid phone number",
                   },
                   minLength: { value: 10, message: "Phone number must be at least 10 digits" },
+                  maxLength: { value: 10, message: "Phone number must be at most 10 digits" },
                 })}
               />
               {errors.phonenumber && <FormErrorMessage message={errors.phonenumber.message} />}
