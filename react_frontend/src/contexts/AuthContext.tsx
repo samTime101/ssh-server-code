@@ -118,6 +118,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     first_name,
     last_name,
     password,
+    confirm_password,
     college,
   }: SignupRequest) => {
     try {
@@ -128,6 +129,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         first_name,
         last_name,
         password,
+        confirm_password,
         college,
       });
       if (response) {

@@ -96,7 +96,7 @@ const ManageUsersPage = () => {
         {/* User management functionalities will go here */}
         <p>This is where admin can manage users.</p>
       </div>
-      <div className="manage-users-main-content p-4 rounded-md shadow-md bg-white mt-4 border">
+      <div className="manage-users-main-content mt-4 rounded-md border bg-white p-4 shadow-md">
         <div className="users-search-section">
           <Input
             placeholder="Search users by name or email"
@@ -135,42 +135,38 @@ const ManageUsersPage = () => {
                 </TableRow>
               ) : (
                 filteredUsers.map((user: any) => (
-                  <TableRow key={user.userGuid}>
+                  <TableRow key={user.user_guid}>
                     <TableCell>
                       <p className="font-semibold">{user.username}</p>
                     </TableCell>
                     <TableCell>
                       <p className="font-semibold">
-                        {user.firstname} {user.lastname}{" "}
+                        {user.first_name} {user.last_name}{" "}
                       </p>
                     </TableCell>
                     <TableCell>
-                      <p className="text-sm text-muted-foreground">
-                        {user.email}
-                      </p>
+                      <p className="text-muted-foreground text-sm">{user.email}</p>
                     </TableCell>
                     <TableCell>
-                      <p>{user.is_staff ? "Admin" : "Regular User"}</p>
+                      <p>{user.roles.includes("ADMIN") ? "Admin" : "Regular User"}</p>
                     </TableCell>
                     <TableCell>
                       <span
                         className={`${
-                          user.isActive
-                            ? "text-green-500 bg-green-100"
-                            : "text-red-500 bg-red-100"
-                        } px-2 py-1 rounded-md shadow-xs text-sm font-medium`}
+                          user.is_active ? "bg-green-100 text-green-500" : "bg-red-100 text-red-500"
+                        } rounded-md px-2 py-1 text-sm font-medium shadow-xs`}
                       >
-                        {user.isActive ? "Active" : "Inactive"}
+                        {user.is_active ? "Active" : "Inactive"}
                       </span>
                     </TableCell>
                     <TableCell className="flex gap-2">
-                      <Button 
-                        className="btn-edit bg-blue-500 text-white rounded cursor-pointer"
+                      <Button
+                        className="btn-edit cursor-pointer rounded bg-blue-500 text-white"
                         onClick={() => navigate(`/admin/manage-users/${user.user_guid}`)}
                       >
                         <PenIcon size={12} />
                       </Button>
-                      <Button className="btn-delete bg-red-500 text-white rounded cursor-pointer">
+                      <Button className="btn-delete cursor-pointer rounded bg-red-500 text-white">
                         <TrashIcon size={12} />
                       </Button>
                     </TableCell>

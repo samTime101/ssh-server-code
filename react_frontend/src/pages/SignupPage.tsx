@@ -10,7 +10,7 @@ import type { SignupRequest } from "@/types/auth";
 import FormErrorMessage from "@/components/FormErrorMessage";
 import { fetchColleges } from "@/services/admin/college-service";
 import type { College } from "@/types/college";
-import { Check, ChevronsUpDown } from "lucide-react";
+import { Check, ChevronsUpDown, Eye, EyeOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   Command,
@@ -27,6 +27,8 @@ const SignupPage = () => {
   const [colleges, setColleges] = useState<College[]>([]);
   const [open, setOpen] = useState(false);
   const [collegeValue, setCollegeValue] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   useEffect(() => {
     async function getColleges() {
@@ -51,6 +53,7 @@ const SignupPage = () => {
     if (
       !data.email ||
       !data.password ||
+      !data.confirm_password ||
       !data.username ||
       !data.first_name ||
       !data.last_name ||
@@ -64,6 +67,7 @@ const SignupPage = () => {
       await register({
         email: data.email,
         password: data.password,
+        confirm_password: data.confirm_password,
         username: data.username,
         first_name: data.first_name,
         last_name: data.last_name,
@@ -166,16 +170,60 @@ const SignupPage = () => {
             {/* Password */}
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="Enter your password"
-                {...formRegister("password", {
-                  required: "Password is required",
-                  minLength: { value: 6, message: "Password must be at least 6 characters" },
-                })}
-              />
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Enter your password"
+                  {...formRegister("password", {
+                    required: "Password is required",
+                    minLength: { value: 6, message: "Password must be at least 6 characters" },
+                  })}
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="absolute top-0 right-0 h-full px-3 py-2 hover:bg-transparent"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </Button>
+              </div>
               {errors.password && <FormErrorMessage message={errors.password.message} />}
+            </div>
+
+            {/* Confirm Password */}
+            <div className="space-y-2">
+              <Label htmlFor="confirm_password">Confirm Password</Label>
+              <div className="relative">
+                <Input
+                  id="confirm_password"
+                  type={showConfirmPassword ? "text" : "password"}
+                  placeholder="Confirm your password"
+                  {...formRegister("confirm_password", {
+                    required: "Confirm password is required",
+                    validate: (value, formValues) =>
+                      value === formValues.password || "Passwords do not match",
+                  })}
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="absolute top-0 right-0 h-full px-3 py-2 hover:bg-transparent"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                >
+                  {showConfirmPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
+              {errors.confirm_password && (
+                <FormErrorMessage message={errors.confirm_password.message} />
+              )}
             </div>
 
             {/* College */}
