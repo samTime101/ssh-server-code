@@ -14,7 +14,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('id','user_guid','username', 'email', 'first_name', 'last_name', 'is_active','total_right_attempts','total_attempts', 'accuracy_percent', 'completion_percent', 'roles','is_email_verified')
+        fields = ('id','user_guid','username', 'email', 'first_name', 'last_name', 'is_active','total_right_attempts','total_attempts', 'accuracy_percent', 'completion_percent', 'roles','is_email_verified','phonenumber', 'college')
     def get_total_right_attempts(self, obj):
         submission = Submissions.objects(user_guid=obj.user_guid).first()
         if not submission:
@@ -42,8 +42,7 @@ class UserSerializer(serializers.ModelSerializer):
         return (total_attempts / total_questions) * 100
     
     def get_roles(self, obj):
-        user_roles = UserRole.objects.filter(user=obj)
-        return [user_role.role.name for user_role in user_roles]
+        return obj.get_roles()
     
 class AttemptSerializer(me_serializers.EmbeddedDocumentSerializer):
     question = serializers.CharField(write_only=True)
@@ -79,9 +78,24 @@ class AttemptSerializer(me_serializers.EmbeddedDocumentSerializer):
 
 class SubmissionsSerializer(me_serializers.DocumentSerializer):
     attempts = AttemptSerializer(many=True)
+    categories = serializers.SerializerMethodField(read_only=True)
+    subcategories = serializers.SerializerMethodField(read_only=True)
     class Meta:
         model = Submissions
-        fields = ('user_guid', 'attempts', 'started_at')
+        fields = ('user_guid', 'attempts', 'started_at','categories','subcategories')
+
+    def get_categories(self, obj):
+        categories = set()
+        for attempt in obj.attempts:
+            question = attempt.question
+            categories.update(question.get_category_names())
+        return list(categories)
+    def get_subcategories(self, obj):
+        subcategories = set()
+        for attempt in obj.attempts:
+            question = attempt.question
+            subcategories.update(question.get_subcategory_names())
+        return list(subcategories)
 
 class SubmissionResponseSerializer(me_serializers.EmbeddedDocumentSerializer):
     detail = serializers.CharField(default="Submission recorded successfully")
@@ -113,7 +127,7 @@ class RoleSerializer(serializers.ModelSerializer):
 class UserRoleSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserRole
-        fields = ('user', 'role', 'user', 'role', 'assigned_at')
+        fields = ('user', 'role', 'assigned_at')
         read_only_fields = ('id', 'assigned_at')
 
 class AssignRoleSerializer(serializers.Serializer):

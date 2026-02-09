@@ -1,33 +1,84 @@
-import cloudinary.uploader
-import cloudinary.api
+# import cloudinary.uploader
+# import cloudinary.api
+
+# def upload_question_image(image_file, question_id, image_type):
+#     folder_path = f"Images/{question_id}"
+#     public_id = f"{image_type}"
+
+#     result = cloudinary.uploader.upload(
+#         image_file,
+#         folder=folder_path,
+#         public_id=public_id,
+#         overwrite=True,
+#         resource_type="image"
+#     )
+#     return result.get("secure_url")
+
+# def delete_question_image(question_id, image_type):
+#     try:
+#         public_id = f"Images/{question_id}/{image_type}"
+#         cloudinary.uploader.destroy(public_id)
+#     except Exception as e:
+#         print("cloudinary delete error:", e)
+
+
+# def delete_question_folder(question_id):
+#     folder_path = f"Images/{question_id}"
+#     try:
+#         delete_assets_all = cloudinary.api.delete_resources_by_prefix(folder_path)
+#         print(f'all assets under {folder_path} deleted {delete_assets_all}')
+#         delete_folder = cloudinary.api.delete_folder(folder_path)
+#         print(f'folder{folder_path} deleted {delete_folder}')        
+#     except cloudinary.exceptions.Error as e:
+#         print(f'error in cloudinary {e}')
+
+
+import os
+from django.conf import settings
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
 
 def upload_question_image(image_file, question_id, image_type):
     folder_path = f"Images/{question_id}"
-    public_id = f"{image_type}"
+    ext = os.path.splitext(image_file.name)[1]
+    filename = f"{image_type}{ext}"
+    relative_path = os.path.join(folder_path, filename)
 
-    result = cloudinary.uploader.upload(
-        image_file,
-        folder=folder_path,
-        public_id=public_id,
-        overwrite=True,
-        resource_type="image"
+    if default_storage.exists(relative_path):
+        default_storage.delete(relative_path)
+
+    saved_path = default_storage.save(
+        relative_path,
+        ContentFile(image_file.read())
     )
-    return result.get("secure_url")
+
+    return f"{settings.MEDIA_URL}{saved_path}"
 
 def delete_question_image(question_id, image_type):
-    try:
-        public_id = f"Images/{question_id}/{image_type}"
-        cloudinary.uploader.destroy(public_id)
-    except Exception as e:
-        print("cloudinary delete error:", e)
+    folder_path = os.path.join(settings.MEDIA_ROOT, "Images", str(question_id))
 
+    if not os.path.exists(folder_path):
+        return
+
+    for file in os.listdir(folder_path):
+        if file.startswith(image_type):
+            try:
+                os.remove(os.path.join(folder_path, file))
+            except Exception as e:
+                print("local image delete error:", e)
 
 def delete_question_folder(question_id):
-    folder_path = f"Images/{question_id}"
+    folder_path = os.path.join(settings.MEDIA_ROOT, "Images", str(question_id))
+
+    if not os.path.exists(folder_path):
+        return
+
     try:
-        delete_assets_all = cloudinary.api.delete_resources_by_prefix(folder_path)
-        print(f'all assets under {folder_path} deleted {delete_assets_all}')
-        delete_folder = cloudinary.api.delete_folder(folder_path)
-        print(f'folder{folder_path} deleted {delete_folder}')        
-    except cloudinary.exceptions.Error as e:
-        print(f'error in cloudinary {e}')
+        for root, dirs, files in os.walk(folder_path, topdown=False):
+            for name in files:
+                os.remove(os.path.join(root, name))
+            for name in dirs:
+                os.rmdir(os.path.join(root, name))
+        os.rmdir(folder_path)
+    except Exception as e:
+        print("local folder delete error:", e)
