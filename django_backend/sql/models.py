@@ -24,11 +24,14 @@ class UserManager(BaseUserManager):
             user.save(using=self._db)
 
             # Default role
-            if role is None:
-                role, created = Role.objects.get_or_create(name='USER')
-            else:
+            # if role is None:
+            #     role, created = Role.objects.get_or_create(name='USER')
+            # else:
+            #     role, created = Role.objects.get_or_create(name=role)
+
+            if role and role != "USER":
                 role, created = Role.objects.get_or_create(name=role)
-            UserRole.objects.create(user=user, role=role)
+                UserRole.objects.create(user=user, role=role)
             return user
     except Exception as e:
         raise ValueError(f"User creation failed: {e}")
@@ -79,6 +82,18 @@ class User(AbstractUser):
     # LOGIN WITH EMAIL
     USERNAME_FIELD = "email" 
     REQUIRED_FIELDS = ("username", "phonenumber", "first_name", "last_name")
+
+    def get_roles(self):
+        roles = list(self.user_roles.values_list("role__name", flat=True))
+        if "USER" not in roles:
+            roles.append("USER")
+
+        return roles
+
+    def has_role(self, role_name):
+        if role_name == "USER":
+            return True
+        return self.user_roles.filter(role__name=role_name).exists()
 
 class UserRole(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_roles')

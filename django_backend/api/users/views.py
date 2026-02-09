@@ -42,9 +42,10 @@ class UserViewSet(ModelViewSet):
             user = User.objects.get(user_guid=user_guid)
         except User.DoesNotExist:
             return NotFound("User not found")
-        user_roles = UserRole.objects.filter(user=user)
-        serializer = UserRoleSerializer(user_roles, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        # user_roles = UserRole.objects.filter(user=user)
+        user_roles = user.get_roles()
+        # serializer = UserRoleSerializer(user_roles, many=True)
+        return Response(user_roles, status=status.HTTP_200_OK)
     
     # /api/users/roles/
     @action(detail=False, methods=['get'], permission_classes=[IsAdminUser], url_path='roles')
