@@ -20,6 +20,7 @@ import HistoryPage from "@/pages/user/HistoryPage";
 import RoleRoute from "@/components/RoleRoute";
 import Loader from "@/components/ui/Loader";
 import ROLE_CONFIG from "@/config/roleConfig";
+import EmailVerified from "@/pages/EmailVerified";
 
 // Redirect user to correct panel based on role
 const RootRedirect = () => {
@@ -65,6 +66,14 @@ const App = () => {
           element={
             <PublicRoute>
               <SignupPage />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="verify-email/:token"
+          element={
+            <PublicRoute>
+              <EmailVerified />
             </PublicRoute>
           }
         />

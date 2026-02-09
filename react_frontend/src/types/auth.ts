@@ -7,11 +7,12 @@ export interface User {
   phonenumber: string;
   is_active: boolean;
   roles: string[];
-  total_right_attempts: string,
-  total_attempts: string,
-  accuracy_percent: string,
-  completion_percent: string,
-  is_email_verified: boolean,
+  college: string;
+  total_right_attempts: string;
+  total_attempts: string;
+  accuracy_percent: string;
+  completion_percent: string;
+  is_email_verified: boolean;
 }
 
 export interface AuthToken {
@@ -31,5 +32,6 @@ export interface SignupRequest {
   first_name: string;
   last_name: string;
   password: string;
+  confirm_password: string;
   college: string;
 }

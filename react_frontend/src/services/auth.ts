@@ -16,6 +16,7 @@ export const signupService = async ({
   first_name,
   last_name,
   password,
+  confirm_password,
   college,
 }: SignupRequest) => {
   return axios.post(API_ENDPOINTS.signup, {
@@ -25,6 +26,11 @@ export const signupService = async ({
     first_name,
     last_name,
     password,
+    confirm_password,
     college,
   });
+};
+
+export const verifyEmailService = async (token: string) => {
+  return axios.get(`${API_ENDPOINTS.verifyEmail}${token}/`);
 };
