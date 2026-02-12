@@ -3,6 +3,9 @@ SPECTACULAR_SETTINGS = {
     "TITLE": "MCQ API",
     "DESCRIPTION": """
 
+## February 11, 2026
+- Moved categories and subcategories fields from SubmissionsSerializer to AttemptSerializer to provide more detailed information about each attempt.    
+
 ## February 5, 2026
 - Added `college` and `phonenumber` in user profile response.    
 - Removed `USER` role and made it implicit for all users.
