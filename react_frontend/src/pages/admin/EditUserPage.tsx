@@ -24,7 +24,7 @@ import type { Role } from "@/types/role";
 const EditUserPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { token, user: currentUser } = useAuth();
+  const { token} = useAuth();
 
   const [user, setUser] = useState<User | null>(null);
   const [roles, setRoles] = useState<Role[]>([]);
@@ -33,7 +33,7 @@ const EditUserPage = () => {
   const [saving, setSaving] = useState(false);
 
 
-  const isSelfEditing = currentUser && user && currentUser.id === user.id;
+  // const isSelfEditing = currentUser && user && currentUser.id === user.id;
 
   useEffect(() => {
     if (!id || !token) return;
@@ -151,12 +151,6 @@ const EditUserPage = () => {
     <section className="p-6 max-w-2xl">
       <div className="mb-6">
         <h1 className="text-2xl font-semibold mb-1">Edit User</h1>
-        {isSelfEditing && (
-          <div className="mt-2 text-sm text-red-600">
-            You cannot Edit your own roles while logged in.
-          </div>
-        )
-        }
         <p className="text-sm text-gray-600">Manage user details and roles</p>
       </div>
 
@@ -171,7 +165,7 @@ const EditUserPage = () => {
               value={user.username}
               onChange={(e) => handleInputChange("username", e.target.value)}
               placeholder="Username"
-              disabled={saving || isSelfEditing}
+              disabled={saving}
             />
           </div>
 
@@ -182,7 +176,7 @@ const EditUserPage = () => {
               onChange={(e) => handleInputChange("email", e.target.value)}
               placeholder="Email address"
               type="email"
-              disabled={saving || isSelfEditing}
+              disabled={saving}
             />
           </div>
 
@@ -193,7 +187,7 @@ const EditUserPage = () => {
                 value={user.first_name}
                 onChange={(e) => handleInputChange("first_name", e.target.value)}
                 placeholder="First name"
-                disabled={saving || isSelfEditing}
+                disabled={saving}
               />
             </div>
 
@@ -203,7 +197,7 @@ const EditUserPage = () => {
                 value={user.last_name}
                 onChange={(e) => handleInputChange("last_name", e.target.value)}
                 placeholder="Last name"
-                disabled={saving || isSelfEditing}
+                disabled={saving}
               />
             </div>
           </div>
@@ -211,7 +205,7 @@ const EditUserPage = () => {
           <div>
             <label className="block text-sm font-medium mb-2">Status</label>
             <Select value={user.is_active ? "active" : "inactive"}>
-              <SelectTrigger disabled={saving || isSelfEditing}>
+              <SelectTrigger disabled={saving}>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -233,7 +227,7 @@ const EditUserPage = () => {
         </div>
 
         <div className="flex gap-3 mt-6">
-          <Button type="submit" disabled={saving || isSelfEditing}>
+          <Button type="submit" disabled={saving}>
             {saving ? "Saving..." : "Save Changes"}
 
           </Button>
@@ -250,7 +244,7 @@ const EditUserPage = () => {
         {/* Add Role */}
         <div className="mb-6 flex gap-3">
           <Select value={selectedRoleId} onValueChange={setSelectedRoleId}>
-            <SelectTrigger className="flex-1" disabled={saving || isSelfEditing}>
+            <SelectTrigger className="flex-1" disabled={saving}>
               <SelectValue placeholder="Select a role to assign" />
             </SelectTrigger>
             <SelectContent>
@@ -288,7 +282,7 @@ const EditUserPage = () => {
                     size="sm"
                     variant="destructive"
                     onClick={() => handleRemoveRole(role.id)}
-                    disabled={saving || role.name === "USER" || isSelfEditing}
+                    disabled={saving || role.name === "USER"}
                   >
                     Remove
                   </Button>
