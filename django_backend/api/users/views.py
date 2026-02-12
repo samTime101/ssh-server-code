@@ -73,6 +73,22 @@ class UserViewSet(ModelViewSet):
             assigned_roles.append(user_role)
         response_serializer = UserRoleSerializer(assigned_roles, many=True)
         return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+    
+    # api users/<>/remove-role/
+    @action(detail=True, methods=['post'], permission_classes=[IsAdminUser], url_path='remove-role', serializer_class=RemoveRoleSerializer)
+    def remove_role(self, request, *args, **kwargs):
+        user_guid = kwargs.get('user_guid')
+        role_ids = request.data.get('role_ids', [])
+        serializer = RemoveRoleSerializer(data={'role_ids': role_ids})
+        serializer.is_valid(raise_exception=True)
+        try:
+            user = User.objects.get(user_guid=user_guid)
+        except User.DoesNotExist:
+            return NotFound("User not found")
+        for role_id in serializer.validated_data['role_ids']:
+            role = Role.objects.get(id=role_id)
+            UserRole.objects.filter(user=user, role=role).delete()
+        return Response({"detail": "Roles removed successfully"}, status=status.HTTP_200_OK)
 
 class SubmissionCollectionViewSet(ModelViewSet):
     queryset = Submissions.objects.all()

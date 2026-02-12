@@ -153,3 +153,12 @@ class AssignRoleSerializer(serializers.Serializer):
             if not Role.objects.filter(id=role_id).exists():
                 raise serializers.ValidationError(f"Role with id {role_id} does not exist.")
         return value
+
+class RemoveRoleSerializer(serializers.Serializer):
+    role_ids = serializers.ListField(child=serializers.IntegerField(), allow_empty=False)
+
+    def validate_role_ids(self, value):
+        for role_id in value:
+            if not Role.objects.filter(id=role_id).exists():
+                raise serializers.ValidationError(f"Role with id {role_id} does not exist.")
+        return value

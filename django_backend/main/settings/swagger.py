@@ -3,6 +3,9 @@ SPECTACULAR_SETTINGS = {
     "TITLE": "MCQ API",
     "DESCRIPTION": """
 
+## February 12, 2026
+- Added remove-role endpoint to allow admin to remove roles from a user.    
+
 ## February 11, 2026
 - Moved categories and subcategories fields from SubmissionsSerializer to AttemptSerializer to provide more detailed information about each attempt.    
 
