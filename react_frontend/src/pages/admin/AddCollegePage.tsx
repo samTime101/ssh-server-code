@@ -9,7 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { fetchColleges, createCollege, deleteCollege } from "@/services/admin/college-service";
+import { fetchColleges, createCollege, deleteCollege, updateCollege } from "@/services/admin/college-service";
 import type { College } from "@/types/college";
 import { toast } from "sonner";
 import { PenIcon, TrashIcon } from "lucide-react";
@@ -17,6 +17,7 @@ import { PenIcon, TrashIcon } from "lucide-react";
 const AddCollegePage = () => {
   const [colleges, setColleges] = useState<College[]>([]);
   const [loading, setLoading] = useState(true);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: "",
     city: "",
@@ -40,15 +41,32 @@ const AddCollegePage = () => {
     }
   };
 
+  const handleEdit = (college: College) => {
+    setFormData({
+      name: college.name,
+      city: college.city,
+      state: college.state,
+      country: college.country,
+      postal_code: college.postal_code,
+    });
+    setEditingId(college.id);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     try {
-      await createCollege(formData);
-      toast.success("College created successfully");
+      if (editingId) {
+        await updateCollege(editingId, formData);
+        toast.success("College updated successfully");
+      } else {
+        await createCollege(formData);
+        toast.success("College created successfully");
+      }
       resetForm();
       loadColleges();
     } catch (error) {
-      toast.error("Failed to create college");
+      toast.error("Something went wrong");
     }
   };
 
@@ -72,6 +90,7 @@ const AddCollegePage = () => {
       country: "",
       postal_code: "",
     });
+    setEditingId(null);
   };
 
   if (loading) {
@@ -80,7 +99,9 @@ const AddCollegePage = () => {
 
   return (
     <section className="space-y-6 p-6">
-      <h1 className="text-2xl font-semibold">Add College</h1>
+      <h1 className="text-2xl font-semibold">
+        {editingId ? "Edit College" : "Add College"}
+      </h1>
 
       <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
         <Input
@@ -113,7 +134,16 @@ const AddCollegePage = () => {
           placeholder="Postal Code"
           required
         />
-        <Button type="submit">Add College</Button>
+        <div className="flex gap-2">
+          <Button type="submit">
+            {editingId ? "Update College" : "Add College"}
+          </Button>
+          {editingId && (
+            <Button type="button" variant="outline" onClick={resetForm}>
+              Cancel
+            </Button>
+          )}
+        </div>
       </form>
 
       <h2 className="mb-2 text-xl font-medium">Existing colleges</h2>
@@ -132,7 +162,7 @@ const AddCollegePage = () => {
           {colleges.length === 0 && (
             <TableRow>
               <TableCell colSpan={6} className="p-4 text-center">
-                {loading ? "Loading..." : "No colleges found"}
+                No colleges found
               </TableCell>
             </TableRow>
           )}
@@ -144,14 +174,14 @@ const AddCollegePage = () => {
               <TableCell>{college.country}</TableCell>
               <TableCell>{college.postal_code}</TableCell>
               <TableCell className="flex gap-2">
-                <Button className="btn-edit cursor-pointer rounded bg-blue-500 text-white">
-                  <PenIcon size={12} />
+                <Button className="cursor-pointer rounded bg-blue-500 text-white" onClick={() => handleEdit(college)}>
+                  <PenIcon size={14} />
                 </Button>
                 <Button
-                  className="btn-delete cursor-pointer rounded bg-red-500 text-white"
+                  className="cursor-pointer rounded bg-red-500 text-white"
                   onClick={() => handleDelete(college.id)}
                 >
-                  <TrashIcon size={12} />
+                  <TrashIcon size={14} />
                 </Button>
               </TableCell>
             </TableRow>
