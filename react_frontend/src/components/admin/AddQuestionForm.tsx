@@ -159,7 +159,7 @@ const AddQuestionForm = () => {
 
           {/* Description */}
           <div className="space-y-2">
-            <Label htmlFor="description">Description (Optional)</Label>
+            <Label htmlFor="description">Description <span className="text-red-500">*</span></Label>
             <textarea
               id="description"
               name="description"

@@ -113,7 +113,9 @@ const ProfilePage = () => {
                 </div>
                 <div>
                   <Label className="text-xs font-semibold text-gray-600 uppercase">Accuracy</Label>
-                  <p className="text-2xl font-bold text-blue-600">{user.accuracy_percent}%</p>
+                  <p className="text-2xl font-bold text-blue-600">
+                    {parseFloat(user.accuracy_percent).toFixed(2)}%
+                  </p>
                 </div>
                 <div>
                   <Label className="text-xs font-semibold text-gray-600 uppercase">
