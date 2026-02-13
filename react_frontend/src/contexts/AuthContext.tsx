@@ -144,18 +144,17 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (error?.response?.data) {
         const data = error.response.data;
         if (typeof data === "object" && data !== null) {
-          const fields: string[] = [];
+          let hasErrors = false;
           for (const [key, value] of Object.entries(data)) {
             if (
               Array.isArray(value) &&
               value.some((msg: string) => msg.includes("already exists"))
             ) {
-              fields.push(key);
+              toast.error(`User with this ${key} already exists.`);
+              hasErrors = true;
             }
           }
-          if (fields.length > 0) {
-            const fieldList = fields.join(", ").replace(/, ([^,]*)$/, " and $1"); // e.g., "username, email and phonenumber"
-            toast.error(`User with this ${fieldList} already exists.`);
+          if (hasErrors) {
             return;
           }
         }

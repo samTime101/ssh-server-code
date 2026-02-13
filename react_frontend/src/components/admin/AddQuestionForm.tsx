@@ -11,6 +11,8 @@ const AddQuestionForm = () => {
     questionFormData,
     categories,
     subCategories,
+    handleAddCategory,
+    handleRemoveCategory,
     handleAddSubCategory,
     handleRemoveSubCategory,
     selectedImages,
@@ -68,7 +70,7 @@ const AddQuestionForm = () => {
                   type="file"
                   id="questionImage"
                   accept="image/*"
-                  onChange={(e) => handleImageChange('question', e.target.files?.[0] || null)}
+                  onChange={(e) => handleImageChange("question", e.target.files?.[0] || null)}
                   className="hidden"
                 />
                 <label
@@ -87,7 +89,7 @@ const AddQuestionForm = () => {
                     </span>
                     <button
                       type="button"
-                      onClick={() => handleImageChange('question', null)}
+                      onClick={() => handleImageChange("question", null)}
                       className="ml-2 text-red-500 hover:text-red-700"
                     >
                       <X size={14} />
@@ -116,7 +118,7 @@ const AddQuestionForm = () => {
                   type="file"
                   id="descriptionImage"
                   accept="image/*"
-                  onChange={(e) => handleImageChange('description', e.target.files?.[0] || null)}
+                  onChange={(e) => handleImageChange("description", e.target.files?.[0] || null)}
                   className="hidden"
                 />
                 <label
@@ -135,7 +137,7 @@ const AddQuestionForm = () => {
                     </span>
                     <button
                       type="button"
-                      onClick={() => handleImageChange('description', null)}
+                      onClick={() => handleImageChange("description", null)}
                       className="ml-2 text-red-500 hover:text-red-700"
                     >
                       <X size={14} />
@@ -159,7 +161,9 @@ const AddQuestionForm = () => {
 
           {/* Description */}
           <div className="space-y-2">
-            <Label htmlFor="description">Description <span className="text-red-500">*</span></Label>
+            <Label htmlFor="description">
+              Description <span className="text-red-500">*</span>
+            </Label>
             <textarea
               id="description"
               name="description"
@@ -179,20 +183,50 @@ const AddQuestionForm = () => {
               </Label>
               <select
                 id="category"
-                name="categoryId"
+                name="categoryIds"
                 className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-slate-600 dark:bg-slate-700 dark:text-gray-100 dark:focus:ring-blue-400"
-                value={questionFormData.categoryId}
-                onChange={handleInputChange}
+                value=""
+                onChange={(e) => {
+                  const selectedId = e.target.value;
+                  if (selectedId) {
+                    handleAddCategory(selectedId);
+                  }
+                }}
               >
                 <option value="" disabled>
                   Select category
                 </option>
-                {categories.map((cat) => (
-                  <option key={cat.id} value={cat.id}>
-                    {cat.name}
-                  </option>
-                ))}
+                {categories
+                  .filter((cat) => !questionFormData.categoryIds.includes(cat.id.toString()))
+                  .map((cat) => (
+                    <option key={cat.id} value={cat.id}>
+                      {cat.name}
+                    </option>
+                  ))}
               </select>
+
+              {/* Dynamic Chips for selected categories */}
+              <div className="mt-2 flex flex-wrap gap-2">
+                {questionFormData.categoryIds.map((catId) => {
+                  const category = categories.find((c) => c.id.toString() === catId);
+                  return (
+                    <Badge
+                      key={catId}
+                      variant="secondary"
+                      className="flex items-center gap-1 py-1 pr-1 pl-2"
+                    >
+                      <span className="text-xs">{category?.name || catId}</span>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveCategory(catId)}
+                        className="ml-1 rounded-full p-0.5 hover:bg-gray-300 dark:hover:bg-slate-600"
+                      >
+                        <X size={12} />
+                      </button>
+                    </Badge>
+                  );
+                })}
+              </div>
             </div>
 
             <div className="space-y-2">
@@ -225,28 +259,28 @@ const AddQuestionForm = () => {
                 </select>
               </div>
 
-                {/* Dynamic Chips based on actual selected data */}
-                <div className="flex flex-wrap gap-2">
-                  {questionFormData.subCategories.map((subCatId) => {
-                    const subCat = subCategories.find((sc) => sc.id.toString() === subCatId);
-                    return (
-                      <Badge
-                        key={subCatId}
-                        variant="secondary"
-                        className="flex items-center gap-1 py-1 pr-1 pl-2"
+              {/* Dynamic Chips based on actual selected data */}
+              <div className="flex flex-wrap gap-2">
+                {questionFormData.subCategories.map((subCatId) => {
+                  const subCat = subCategories.find((sc) => sc.id.toString() === subCatId);
+                  return (
+                    <Badge
+                      key={subCatId}
+                      variant="secondary"
+                      className="flex items-center gap-1 py-1 pr-1 pl-2"
+                    >
+                      <span className="text-xs">{subCat?.name || subCatId}</span>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveSubCategory(subCatId)}
+                        className="ml-1 rounded-full p-0.5 hover:bg-gray-300 dark:hover:bg-slate-600"
                       >
-                        <span className="text-xs">{subCat?.name || subCatId}</span>
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveSubCategory(subCatId)}
-                          className="ml-1 rounded-full p-0.5 hover:bg-gray-300 dark:hover:bg-slate-600"
-                        >
-                          <X size={12} />
-                        </button>
-                      </Badge>
-                    );
-                  })}
-                </div>
+                        <X size={12} />
+                      </button>
+                    </Badge>
+                  );
+                })}
+              </div>
             </div>
           </div>
 
@@ -438,7 +472,6 @@ const AddQuestionForm = () => {
               />
             </div>
           </div>
-
 
           {/* Submit Button */}
           <div className="flex justify-end border-t border-gray-200 pt-4 dark:border-slate-700">
