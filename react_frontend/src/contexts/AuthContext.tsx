@@ -15,12 +15,14 @@ export const AuthContext = createContext<{
   token: string | null;
   register: (data: SignupRequest) => Promise<void>;
   user: User | null;
+  refreshUserData: () => Promise<void>;
 }>({
   login: () => Promise.resolve(),
   logout: () => Promise.resolve(),
   token: null,
   register: () => Promise.resolve(),
   user: null,
+  refreshUserData: () => Promise.resolve(),
 });
 
 const AuthProvider = ({ children }: { children: React.ReactNode }) => {
@@ -162,8 +164,17 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       toast.error("Registration failed. Please try again.");
     }
   };
+  const refreshUserData = async () => {
+    if (token) {
+      const fetchedUser = await fetchUserInfo(token);
+      if (fetchedUser) {
+        setUser(fetchedUser);
+      }
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ login, logout, token, register, user }}>
+    <AuthContext.Provider value={{ login, logout, token, register, user, refreshUserData }}>
       {children}
     </AuthContext.Provider>
   );
