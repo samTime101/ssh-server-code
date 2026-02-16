@@ -55,12 +55,13 @@ export async function assignRoleToUser(userGuid: string, roleId: string): Promis
   }
 }
 
-/**
- * Remove a role from a user
- */
-export async function removeRoleFromUser(userRoleId: string): Promise<void> {
+export async function removeRoleFromUser(userGuid: string, roleId: string): Promise<any> {
   try {
-    await axiosInstance.delete(`${API_ENDPOINTS.userRoles}${userRoleId}/`);
+    const response = await axiosInstance.post(
+      `/users/${userGuid}/remove-role/`,
+      { role_ids: [roleId] }
+    );
+    return response.data;
   } catch (error: any) {
     throw new Error(error.response?.data?.detail || "Failed to remove role");
   }

@@ -17,9 +17,10 @@ import { toast } from "sonner";
 import { PenIcon, TrashIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Paginator from "@/components/Paginator";
+import type { User } from "@/types/user";
 
 const ManageUsersPage = () => {
-  const { token } = useAuth();
+  const { token, user: authUser } = useAuth();
   const navigate = useNavigate();
 
   const [usersList, setUsersList] = useState([]);
@@ -33,6 +34,7 @@ const ManageUsersPage = () => {
   const [pageSize, setPageSize] = useState(5);
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const isSelf = (user: User) => authUser && (user.user_guid === authUser.userId || user.id === authUser.id);
 
   useEffect(() => {
     if (token) {
@@ -163,10 +165,11 @@ const ManageUsersPage = () => {
                       <Button
                         className="btn-edit cursor-pointer rounded bg-blue-500 text-white"
                         onClick={() => navigate(`/admin/manage-users/${user.user_guid}`)}
+                        disabled={isSelf(user)}
                       >
                         <PenIcon size={12} />
                       </Button>
-                      <Button className="btn-delete cursor-pointer rounded bg-red-500 text-white">
+                      <Button className="btn-delete cursor-pointer rounded bg-red-500 text-white" disabled={isSelf(user)}>
                         <TrashIcon size={12} />
                       </Button>
                     </TableCell>

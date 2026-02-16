@@ -49,9 +49,11 @@ class AttemptSerializer(me_serializers.EmbeddedDocumentSerializer):
     question_text = serializers.SerializerMethodField(read_only=True)
     # SHOW SELECTED OPTION LABELS IN LIST
     selected_options_labels = serializers.SerializerMethodField(read_only=True)
+    categories = serializers.SerializerMethodField(read_only=True)
+    subcategories = serializers.SerializerMethodField(read_only=True)
     class Meta:
         model = Attempt
-        fields = ('question', 'selected_answers','is_correct', 'question_text', 'selected_options_labels')
+        fields = ('question', 'selected_answers','is_correct', 'question_text', 'selected_options_labels', 'categories', 'subcategories')
         extra_kwargs = {'is_correct':{'read_only':True}}
     
     def get_question_text(self, obj):
@@ -65,6 +67,19 @@ class AttemptSerializer(me_serializers.EmbeddedDocumentSerializer):
                 if option.label == label:
                     option_labels.append(option.text)
         return option_labels
+    
+    def get_categories(self, obj):
+        question = obj.question
+        categories = set()
+        for subcat in question.sub_categories:
+            categories.add(subcat.category.name)
+        return list(categories)
+    def get_subcategories(self, obj):
+        question = obj.question
+        subcategories = set()
+        for subcat in question.sub_categories:
+            subcategories.add(subcat.name)
+        return list(subcategories)
 
     def validate_question(self, value):
         print('value: ',value)
@@ -78,24 +93,24 @@ class AttemptSerializer(me_serializers.EmbeddedDocumentSerializer):
 
 class SubmissionsSerializer(me_serializers.DocumentSerializer):
     attempts = AttemptSerializer(many=True)
-    categories = serializers.SerializerMethodField(read_only=True)
-    subcategories = serializers.SerializerMethodField(read_only=True)
+    # categories = serializers.SerializerMethodField(read_only=True)
+    # subcategories = serializers.SerializerMethodField(read_only=True)
     class Meta:
         model = Submissions
-        fields = ('user_guid', 'attempts', 'started_at','categories','subcategories')
+        fields = ('user_guid', 'attempts', 'started_at')
 
-    def get_categories(self, obj):
-        categories = set()
-        for attempt in obj.attempts:
-            question = attempt.question
-            categories.update(question.get_category_names())
-        return list(categories)
-    def get_subcategories(self, obj):
-        subcategories = set()
-        for attempt in obj.attempts:
-            question = attempt.question
-            subcategories.update(question.get_subcategory_names())
-        return list(subcategories)
+    # def get_categories(self, obj):
+    #     categories = set()
+    #     for attempt in obj.attempts:
+    #         question = attempt.question
+    #         categories.update(question.get_category_names())
+    #     return list(categories)
+    # def get_subcategories(self, obj):
+    #     subcategories = set()
+    #     for attempt in obj.attempts:
+    #         question = attempt.question
+    #         subcategories.update(question.get_subcategory_names())
+    #     return list(subcategories)
 
 class SubmissionResponseSerializer(me_serializers.EmbeddedDocumentSerializer):
     detail = serializers.CharField(default="Submission recorded successfully")
@@ -131,6 +146,15 @@ class UserRoleSerializer(serializers.ModelSerializer):
         read_only_fields = ('id', 'assigned_at')
 
 class AssignRoleSerializer(serializers.Serializer):
+    role_ids = serializers.ListField(child=serializers.IntegerField(), allow_empty=False)
+
+    def validate_role_ids(self, value):
+        for role_id in value:
+            if not Role.objects.filter(id=role_id).exists():
+                raise serializers.ValidationError(f"Role with id {role_id} does not exist.")
+        return value
+
+class RemoveRoleSerializer(serializers.Serializer):
     role_ids = serializers.ListField(child=serializers.IntegerField(), allow_empty=False)
 
     def validate_role_ids(self, value):

@@ -74,6 +74,8 @@ const HistoryPage = () => {
             <TableHeader>
               <TableRow>
                 <TableHead>Question</TableHead>
+                <TableHead>Category</TableHead>
+                <TableHead>SubCategory</TableHead>
                 <TableHead>Selected Answers</TableHead>
                 <TableHead>Status</TableHead>
               </TableRow>
@@ -82,6 +84,20 @@ const HistoryPage = () => {
               {submissionHistory.map((attempt, idx) => (
                 <TableRow key={idx}>
                   <TableCell>{attempt.question_text}</TableCell>
+                  <TableCell>
+                    {attempt.categories.map((cat) => (
+                      <Badge key={cat} className="mr-1">
+                        {cat}
+                      </Badge>
+                    ))}
+                  </TableCell>
+                  <TableCell>
+                    {attempt.subcategories.map((subcat) => (
+                      <Badge key={subcat} className="mr-1">
+                        {subcat}
+                      </Badge>
+                    ))}
+                  </TableCell>
                   <TableCell>
                     {attempt.selected_answers.map((ans, i) => (
                       <Badge key={i} className="mr-1">

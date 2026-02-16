@@ -24,13 +24,16 @@ import type { Role } from "@/types/role";
 const EditUserPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { token } = useAuth();
+  const { token} = useAuth();
 
   const [user, setUser] = useState<User | null>(null);
   const [roles, setRoles] = useState<Role[]>([]);
   const [selectedRoleId, setSelectedRoleId] = useState("");
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+
+
+  // const isSelfEditing = currentUser && user && currentUser.id === user.id;
 
   useEffect(() => {
     if (!id || !token) return;
@@ -106,14 +109,14 @@ const EditUserPage = () => {
     }
   };
 
-  const handleRemoveRole = async (roleName: string) => {
+  const handleRemoveRole = async (roleId: string) => {
     if (!user || !token) return;
     // Find the user-role relation ID (if needed) or use a backend endpoint that removes by user+role
     try {
       setSaving(true);
       // You may need to adjust this if your backend expects a user-role ID
       // Here, assuming removeRoleFromUser can take userId and roleName
-      await removeRoleFromUser(`${user.id}:${roleName}`);
+      await removeRoleFromUser(user.user_guid || user.id.toString(), roleId);
       toast.success("Role removed successfully");
       await loadUserData();
     } catch (err: any) {
@@ -144,6 +147,7 @@ const EditUserPage = () => {
   }
 
   return (
+    
     <section className="p-6 max-w-2xl">
       <div className="mb-6">
         <h1 className="text-2xl font-semibold mb-1">Edit User</h1>
@@ -225,6 +229,7 @@ const EditUserPage = () => {
         <div className="flex gap-3 mt-6">
           <Button type="submit" disabled={saving}>
             {saving ? "Saving..." : "Save Changes"}
+
           </Button>
           <Button type="button" variant="outline" onClick={() => navigate(-1)}>
             Cancel
@@ -265,18 +270,19 @@ const EditUserPage = () => {
               No roles assigned
             </div>
           ) : (
+            // DISABLE REMOVE BUTTON FOR EDITING OWN USER TO AVOID LOCKING YOURSELF OUT
             <div className="space-y-2">
-              {user.roles.map((roleName) => (
+              {roles.filter((role) => user.roles.includes(role.name)).map((role) => (
                 <div
-                  key={roleName}
+                  key={role.id}
                   className="flex items-center justify-between p-3 bg-gray-50 rounded border"
                 >
-                  <span className="text-sm font-medium">{roleName}</span>
+                  <span className="text-sm font-medium">{role.name}</span>
                   <Button
                     size="sm"
                     variant="destructive"
-                    onClick={() => handleRemoveRole(roleName)}
-                    disabled={saving}
+                    onClick={() => handleRemoveRole(role.id)}
+                    disabled={saving || role.name === "USER"}
                   >
                     Remove
                   </Button>
@@ -291,4 +297,3 @@ const EditUserPage = () => {
 };
 
 export default EditUserPage;
-// ...existing code...
