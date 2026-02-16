@@ -15,12 +15,14 @@ export const AuthContext = createContext<{
   token: string | null;
   register: (data: SignupRequest) => Promise<void>;
   user: User | null;
+  refreshUserData: () => Promise<void>;
 }>({
   login: () => Promise.resolve(),
   logout: () => Promise.resolve(),
   token: null,
   register: () => Promise.resolve(),
   user: null,
+  refreshUserData: () => Promise.resolve(),
 });
 
 const AuthProvider = ({ children }: { children: React.ReactNode }) => {
@@ -142,18 +144,17 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (error?.response?.data) {
         const data = error.response.data;
         if (typeof data === "object" && data !== null) {
-          const fields: string[] = [];
+          let hasErrors = false;
           for (const [key, value] of Object.entries(data)) {
             if (
               Array.isArray(value) &&
               value.some((msg: string) => msg.includes("already exists"))
             ) {
-              fields.push(key);
+              toast.error(`User with this ${key} already exists.`);
+              hasErrors = true;
             }
           }
-          if (fields.length > 0) {
-            const fieldList = fields.join(", ").replace(/, ([^,]*)$/, " and $1"); // e.g., "username, email and phonenumber"
-            toast.error(`User with this ${fieldList} already exists.`);
+          if (hasErrors) {
             return;
           }
         }
@@ -162,8 +163,17 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       toast.error("Registration failed. Please try again.");
     }
   };
+  const refreshUserData = async () => {
+    if (token) {
+      const fetchedUser = await fetchUserInfo(token);
+      if (fetchedUser) {
+        setUser(fetchedUser);
+      }
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ login, logout, token, register, user }}>
+    <AuthContext.Provider value={{ login, logout, token, register, user, refreshUserData }}>
       {children}
     </AuthContext.Provider>
   );

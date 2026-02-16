@@ -17,6 +17,7 @@ import AddRolePage from "@/pages/admin/AddRolePage";
 import AddCollegePage from "@/pages/admin/AddCollegePage";
 import ProfilePage from "@/pages/user/ProfilePage";
 import HistoryPage from "@/pages/user/HistoryPage";
+import SettingsPage from "@/pages/user/SettingsPage";
 import RoleRoute from "@/components/RoleRoute";
 import Loader from "@/components/ui/Loader";
 import ROLE_CONFIG from "@/config/roleConfig";
@@ -93,6 +94,7 @@ const App = () => {
           <Route path="question" element={<QuestionPage />} />
           <Route path="profile" element={<ProfilePage />} />
           <Route path="history" element={<HistoryPage />} />
+          <Route path="settings" element={<SettingsPage />} />
         </Route>
 
         {/* Admin Panel */}
@@ -104,7 +106,7 @@ const App = () => {
           <Route element={<RoleRoute allowedPermissions={["question-bank"]} />}>
             <Route path="question-bank" element={<QuestionBankPage />} />
           </Route>
-          
+
           <Route element={<RoleRoute allowedPermissions={["create-category"]} />}>
             <Route path="create-category" element={<CreateCategoryPage />} />
           </Route>

@@ -35,3 +35,13 @@ export interface SignupRequest {
   confirm_password: string;
   college: string;
 }
+
+export interface ResetPasswordForm {
+  old_password: string;
+  new_password: string;
+  confirm_new_password: string;
+}
+
+export interface ResetPhoneNumberForm {
+  new_phonenumber: string;
+}

@@ -12,6 +12,7 @@ import CategoryList from "./CategoryList";
 import type { GetCategoriesResponse } from "@/types/category";
 import { getCategories } from "@/services/user/question-service";
 import { AuthContext } from "@/contexts/AuthContext";
+import { getAttemptStats } from "@/utils/attemptUtils";
 
 /*
     Please note that the implementation of sub-sub-categories is currently on hold
@@ -52,6 +53,8 @@ const QuestionBankSection = () => {
     navigate("/userpanel/question");
   };
 
+  const stats = getAttemptStats(user, categories);
+
   return (
     <section className="mx-auto flex min-h-full max-w-[1500px] flex-1 flex-col gap-8 p-8">
       {/* Header Section */}
@@ -64,14 +67,17 @@ const QuestionBankSection = () => {
           </div>
           <div className="h-3 overflow-hidden rounded-full bg-gray-200">
             <div
-              className="h-full rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 transition-all duration-500"
-              style={{ width: "65%" }}
+              className="h-full rounded-full transition-all duration-500"
+              style={{
+                width: `${stats.progressPercent}%`,
+                background: `linear-gradient(to right, #22c55e 0%, #22c55e ${stats.correctPercent}%, #ef4444 ${stats.correctPercent}%, #ef4444 100%)`,
+              }}
             ></div>
           </div>
           <div className="flex items-center justify-between text-sm">
-            <span className="font-medium text-green-600">{user?.total_right_attempts} Correct</span>
+            <span className="font-medium text-green-600">{stats.totalRight} Correct</span>
             <span className="text-gray-500">
-              {user?.total_attempts} of {categories?.total_questions} completed
+              {stats.totalAttempts} of {stats.totalQuestions} completed
             </span>
           </div>
         </div>

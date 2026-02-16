@@ -26,6 +26,12 @@ const EditQuestionForm = ({ selectedQuestion, handleEditSuccess }: EditQuestionF
     handleOptionTextChange,
     isSubmitting,
     handleCreateQuestionSubmit,
+    categories,
+    subCategories,
+    handleAddCategory,
+    handleRemoveCategory,
+    handleAddSubCategory,
+    handleRemoveSubCategory,
   } = useQuestionForm({
     mode: "edit",
     questionId: selectedQuestion.id,
@@ -35,268 +41,363 @@ const EditQuestionForm = ({ selectedQuestion, handleEditSuccess }: EditQuestionF
       handleEditSuccess();
     },
     onError: (error) => {
-      console.error("Edit failed:", error)
-    }
-    ,
+      console.error("Edit failed:", error);
+    },
   });
 
-
   //data lai populate garna ko lagi
-    useEffect(() => {
+  useEffect(() => {
     if (!selectedQuestion) return;
+
+    // Map category names to category IDs
+    const categoryIds = selectedQuestion.category_names
+      .map((catName: string) => {
+        const category = categories.find((c) => c.name === catName);
+        return category?.id.toString() || "";
+      })
+      .filter(Boolean);
+
     setQuestionFormData({
-        questionText: selectedQuestion.question_text,
-        description: selectedQuestion.description,
-        optionType: selectedQuestion.option_type,
-        difficulty: selectedQuestion.difficulty,
-        categoryId: selectedQuestion.category_id,
-        subCategories: selectedQuestion.sub_categories_ids,
-        options: selectedQuestion.options?.map((opt: any) => ({
-        label: opt.label,
-        text: opt.text,
-        isCorrect: opt.is_true,
-      })) || [],
+      questionText: selectedQuestion.question_text,
+      description: selectedQuestion.description,
+      optionType: selectedQuestion.option_type,
+      difficulty: selectedQuestion.difficulty,
+      categoryIds: categoryIds,
+      subCategories: selectedQuestion.sub_categories_ids || [],
+      options:
+        selectedQuestion.options?.map((opt: any) => ({
+          label: opt.label,
+          text: opt.text,
+          isCorrect: opt.is_true,
+        })) || [],
       contributor: selectedQuestion.contributor,
       contributorSpecialization: selectedQuestion.contributor_specializations,
-
     });
-    }, [selectedQuestion, setQuestionFormData]);
-
+  }, [selectedQuestion, setQuestionFormData, categories]);
 
   return (
     // @see: react_frontend\src\components\admin\AddQuestionForm.tsx [exacct same code]
-        <form onSubmit={handleCreateQuestionSubmit} className="space-y-6">
-          {/* Question Text */}
-          <div className="space-y-2">
-            <Label htmlFor="questionText">Question Text</Label>
-            <textarea
-              id="questionText"
-              name="questionText"
-              rows={3}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-slate-600 dark:bg-slate-700 dark:text-gray-100 dark:focus:ring-blue-400"
-              value={questionFormData.questionText}
-              onChange={handleInputChange}
+    <form onSubmit={handleCreateQuestionSubmit} className="space-y-6">
+      {/* Question Text */}
+      <div className="space-y-2">
+        <Label htmlFor="questionText">Question Text</Label>
+        <textarea
+          id="questionText"
+          name="questionText"
+          rows={3}
+          className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-slate-600 dark:bg-slate-700 dark:text-gray-100 dark:focus:ring-blue-400"
+          value={questionFormData.questionText}
+          onChange={handleInputChange}
+        />
+      </div>
+
+      {/* Description */}
+      <div className="space-y-2">
+        <Label htmlFor="description">Description</Label>
+        <textarea
+          id="description"
+          name="description"
+          rows={2}
+          className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-slate-600 dark:bg-slate-700 dark:text-gray-100 dark:focus:ring-blue-400"
+          value={questionFormData.description}
+          onChange={handleInputChange}
+        />
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        {/* Image Upload */}
+        <div className="space-y-2">
+          <Label>Question Image</Label>
+          <div className="flex items-center gap-4">
+            <input
+              type="file"
+              id="questionImage"
+              accept="image/*"
+              onChange={(e) => handleImageChange("question", e.target.files?.[0] || null)}
+              className="hidden"
             />
-          </div>
-
-          {/* Description */}
-          <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
-            <textarea
-              id="description"
-              name="description"
-              rows={2}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-slate-600 dark:bg-slate-700 dark:text-gray-100 dark:focus:ring-blue-400"
-              value={questionFormData.description}
-              onChange={handleInputChange}
-            />
-          </div>
-
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            {/* Image Upload */}
-            <div className="space-y-2">
-              <Label>Question Image</Label>
-              <div className="flex items-center gap-4">
-                <input
-                  type="file"
-                  id="questionImage"
-                  accept="image/*"
-                  onChange={(e) => handleImageChange('question', e.target.files?.[0] || null)}
-                  className="hidden"
-                />
-                <label
-                  htmlFor="questionImage"
-                  className="flex cursor-pointer items-center gap-2 rounded-md border border-gray-300 px-4 py-2 text-sm transition-colors hover:bg-gray-50 dark:border-slate-600 dark:hover:bg-slate-700"
-                >
-                  <Upload size={16} /> Choose Question Image
-                </label>
-
-                {selectedImages.question ? (
-                  <div className="flex items-center gap-2">
-                    <ImageIcon size={16} className="text-green-600" />
-                    <span className="text-sm text-gray-600 dark:text-gray-400">{selectedImages.question.name}</span>
-                    <button
-                      type="button"
-                      onClick={() => handleImageChange('question', null)}
-                      className="ml-2 text-red-500 hover:text-red-700"
-                    >
-                      <X size={14} />
-                    </button>
-                  </div>
-                ) : selectedQuestion?.question_image_url ? (
-                  <img
-                    src={selectedQuestion.question_image_url}
-                    alt="Current question"
-                    className="h-20 rounded border border-gray-200 dark:border-slate-600"
-                  />
-                ) : null}
-              </div>
-            </div>
-
-            {/* Description Image */}
-            <div className="space-y-2">
-              <Label>Description Image</Label>
-              <div className="flex items-center gap-4">
-                <input
-                  type="file"
-                  id="descriptionImage"
-                  accept="image/*"
-                  onChange={(e) => handleImageChange('description', e.target.files?.[0] || null)}
-                  className="hidden"
-                />
-                <label
-                  htmlFor="descriptionImage"
-                  className="flex cursor-pointer items-center gap-2 rounded-md border border-gray-300 px-4 py-2 text-sm transition-colors hover:bg-gray-50 dark:border-slate-600 dark:hover:bg-slate-700"
-                >
-                  <Upload size={16} /> Choose Description Image
-                </label>
-
-                {selectedImages.description ? (
-                  <div className="flex items-center gap-2">
-                    <ImageIcon size={16} className="text-green-600" />
-                    <span className="text-sm text-gray-600 dark:text-gray-400">{selectedImages.description.name}</span>
-                    <button
-                      type="button"
-                      onClick={() => handleImageChange('description', null)}
-                      className="ml-2 text-red-500 hover:text-red-700"
-                    >
-                      <X size={14} />
-                    </button>
-                  </div>
-                ) : selectedQuestion?.description_image_url ? (
-                  <img
-                    src={selectedQuestion.description_image_url}
-                    alt="Current description"
-                    className="h-20 rounded border border-gray-200 dark:border-slate-600"
-                  />
-                ) : null}
-              </div>
-            </div>
-          </div>
-
-          {/* Category & Subcategory (Non-editable) */}
-            <div className="mt-2 flex flex-wrap gap-2">
-              {selectedQuestion.subcategory_names.map((name: string, idx: number) => (
-                    <Badge
-                    key={idx}
-                    variant="secondary"
-                    className="flex items-center gap-1 py-1 pr-1 pl-2"
-                    >
-                    {name}
-                    </Badge>
-                ))}
-            </div>
-
-
-          {/* Difficulty */}
-          <div className="space-y-2">
-            <Label>Difficulty</Label>
-            <select
-              name="difficulty"
-              value={questionFormData.difficulty}
-              onChange={handleInputChange}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-slate-600 dark:bg-slate-700 dark:text-gray-100 dark:focus:ring-blue-400"
+            <label
+              htmlFor="questionImage"
+              className="flex cursor-pointer items-center gap-2 rounded-md border border-gray-300 px-4 py-2 text-sm transition-colors hover:bg-gray-50 dark:border-slate-600 dark:hover:bg-slate-700"
             >
-              <option value="easy">Easy</option>
-              <option value="medium">Medium</option>
-              <option value="hard">Hard</option>
-            </select>
-          </div>
+              <Upload size={16} /> Choose Question Image
+            </label>
 
-          {/* Answer Type */}
-          <div className="space-y-2">
-            <Label>Answer Type</Label>
-            <div className="flex gap-6">
-              <label className="flex cursor-pointer items-center gap-2">
-                <input
-                  type="radio"
-                  name="answerType"
-                  value="single"
-                  checked={questionFormData.optionType === "single"}
-                  onChange={handleOptionTypeChange}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500"
-                />
-                <span className="text-sm text-gray-700 dark:text-gray-300">
-                  Single Correct Answer
+            {selectedImages.question ? (
+              <div className="flex items-center gap-2">
+                <ImageIcon size={16} className="text-green-600" />
+                <span className="text-sm text-gray-600 dark:text-gray-400">
+                  {selectedImages.question.name}
                 </span>
-              </label>
-              <label className="flex cursor-pointer items-center gap-2">
-                <input
-                  type="radio"
-                  name="answerType"
-                  value="multiple"
-                  checked={questionFormData.optionType === "multiple"}
-                  onChange={handleOptionTypeChange}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500"
-                />
-                <span className="text-sm text-gray-700 dark:text-gray-300">
-                  Multiple Correct Answers
-                </span>
-              </label>
-            </div>
+                <button
+                  type="button"
+                  onClick={() => handleImageChange("question", null)}
+                  className="ml-2 text-red-500 hover:text-red-700"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            ) : selectedQuestion?.question_image_url ? (
+              <img
+                src={selectedQuestion.question_image_url}
+                alt="Current question"
+                className="h-20 rounded border border-gray-200 dark:border-slate-600"
+              />
+            ) : null}
           </div>
+        </div>
 
-          {/* Answer Options */}
-          <div className="space-y-2">
-            <Label>Answer Options</Label>
-            <div className="space-y-3">
-              {questionFormData.options.map((option, index) => (
-                <div className="flex items-center gap-3" key={option.label}>
-                  {questionFormData.optionType === "single" ? (
-                    <input
-                      type="radio"
-                      name="correctAnswer"
-                      checked={option.isCorrect}
-                      onChange={(e) =>
-                        handleCorrectAnswerChange(option.label, e.target.checked)
-                      }
-                      className="text-blue-600 focus:ring-blue-500"
-                    />
-                  ) : (
-                    <input
-                      type="checkbox"
-                      checked={option.isCorrect}
-                      onChange={(e) =>
-                        handleCorrectAnswerChange(option.label, e.target.checked)
-                      }
-                      className="text-blue-600 focus:ring-blue-500"
-                    />
-                  )}
-                  <div className="mt-2 w-8 font-medium text-gray-700 dark:text-gray-300">
-                    {option.label}
-                  </div>
-                  <Input
-                    type="text"
-                    value={option.text}
-                    className="flex-1"
-                    onChange={(e) => handleOptionTextChange(index, e.target.value)}
-                    placeholder={`Enter option ${option.label}`}
-                  />
-                </div>
+        {/* Description Image */}
+        <div className="space-y-2">
+          <Label>Description Image</Label>
+          <div className="flex items-center gap-4">
+            <input
+              type="file"
+              id="descriptionImage"
+              accept="image/*"
+              onChange={(e) => handleImageChange("description", e.target.files?.[0] || null)}
+              className="hidden"
+            />
+            <label
+              htmlFor="descriptionImage"
+              className="flex cursor-pointer items-center gap-2 rounded-md border border-gray-300 px-4 py-2 text-sm transition-colors hover:bg-gray-50 dark:border-slate-600 dark:hover:bg-slate-700"
+            >
+              <Upload size={16} /> Choose Description Image
+            </label>
+
+            {selectedImages.description ? (
+              <div className="flex items-center gap-2">
+                <ImageIcon size={16} className="text-green-600" />
+                <span className="text-sm text-gray-600 dark:text-gray-400">
+                  {selectedImages.description.name}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => handleImageChange("description", null)}
+                  className="ml-2 text-red-500 hover:text-red-700"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            ) : selectedQuestion?.description_image_url ? (
+              <img
+                src={selectedQuestion.description_image_url}
+                alt="Current description"
+                className="h-20 rounded border border-gray-200 dark:border-slate-600"
+              />
+            ) : null}
+          </div>
+        </div>
+      </div>
+
+      {/* Category & Subcategory Selection */}
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <div className="space-y-2">
+          <Label htmlFor="category">
+            Categories <span className="text-red-500">*</span>
+          </Label>
+          <select
+            id="category"
+            name="categoryIds"
+            className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-slate-600 dark:bg-slate-700 dark:text-gray-100 dark:focus:ring-blue-400"
+            value=""
+            onChange={(e) => {
+              const selectedId = e.target.value;
+              if (selectedId) {
+                handleAddCategory(selectedId);
+              }
+            }}
+          >
+            <option value="" disabled>
+              Select category
+            </option>
+            {categories
+              .filter((cat) => !questionFormData.categoryIds.includes(cat.id.toString()))
+              .map((cat) => (
+                <option key={cat.id} value={cat.id}>
+                  {cat.name}
+                </option>
               ))}
+          </select>
+
+          {/* Display selected categories */}
+          <div className="mt-2 flex flex-wrap gap-2">
+            {questionFormData.categoryIds.map((catId) => {
+              const category = categories.find((c) => c.id.toString() === catId);
+              return (
+                <Badge
+                  key={catId}
+                  variant="secondary"
+                  className="flex items-center gap-1 py-1 pr-1 pl-2"
+                >
+                  <span className="text-xs">{category?.name || catId}</span>
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveCategory(catId)}
+                    className="ml-1 rounded-full p-0.5 hover:bg-gray-300 dark:hover:bg-slate-600"
+                  >
+                    <X size={12} />
+                  </button>
+                </Badge>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="subcategory">Subcategory</Label>
+          <select
+            id="subcategory"
+            name="subCategories"
+            className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-slate-600 dark:bg-slate-700 dark:text-gray-100 dark:focus:ring-blue-400"
+            value=""
+            onChange={(e) => {
+              const selectedId = e.target.value;
+              if (selectedId) {
+                handleAddSubCategory(selectedId);
+              }
+            }}
+          >
+            <option value="" disabled>
+              Select subcategory
+            </option>
+            {subCategories
+              .filter((subCat) => !questionFormData.subCategories.includes(subCat.id.toString()))
+              .map((subCat) => (
+                <option key={subCat.id} value={subCat.id.toString()}>
+                  {subCat.name}
+                </option>
+              ))}
+          </select>
+
+          {/* Display selected subcategories */}
+          <div className="mt-2 flex flex-wrap gap-2">
+            {questionFormData.subCategories.map((subCatId) => {
+              const subCat = subCategories.find((sc) => sc.id.toString() === subCatId);
+              return (
+                <Badge
+                  key={subCatId}
+                  variant="secondary"
+                  className="flex items-center gap-1 py-1 pr-1 pl-2"
+                >
+                  <span className="text-xs">{subCat?.name || subCatId}</span>
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveSubCategory(subCatId)}
+                    className="ml-1 rounded-full p-0.5 hover:bg-gray-300 dark:hover:bg-slate-600"
+                  >
+                    <X size={12} />
+                  </button>
+                </Badge>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* Difficulty */}
+      <div className="space-y-2">
+        <Label>Difficulty</Label>
+        <select
+          name="difficulty"
+          value={questionFormData.difficulty}
+          onChange={handleInputChange}
+          className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-slate-600 dark:bg-slate-700 dark:text-gray-100 dark:focus:ring-blue-400"
+        >
+          <option value="easy">Easy</option>
+          <option value="medium">Medium</option>
+          <option value="hard">Hard</option>
+        </select>
+      </div>
+
+      {/* Answer Type */}
+      <div className="space-y-2">
+        <Label>Answer Type</Label>
+        <div className="flex gap-6">
+          <label className="flex cursor-pointer items-center gap-2">
+            <input
+              type="radio"
+              name="answerType"
+              value="single"
+              checked={questionFormData.optionType === "single"}
+              onChange={handleOptionTypeChange}
+              className="h-4 w-4 text-blue-600 focus:ring-blue-500"
+            />
+            <span className="text-sm text-gray-700 dark:text-gray-300">Single Correct Answer</span>
+          </label>
+          <label className="flex cursor-pointer items-center gap-2">
+            <input
+              type="radio"
+              name="answerType"
+              value="multiple"
+              checked={questionFormData.optionType === "multiple"}
+              onChange={handleOptionTypeChange}
+              className="h-4 w-4 text-blue-600 focus:ring-blue-500"
+            />
+            <span className="text-sm text-gray-700 dark:text-gray-300">
+              Multiple Correct Answers
+            </span>
+          </label>
+        </div>
+      </div>
+
+      {/* Answer Options */}
+      <div className="space-y-2">
+        <Label>Answer Options</Label>
+        <div className="space-y-3">
+          {questionFormData.options.map((option, index) => (
+            <div className="flex items-center gap-3" key={option.label}>
+              {questionFormData.optionType === "single" ? (
+                <input
+                  type="radio"
+                  name="correctAnswer"
+                  checked={option.isCorrect}
+                  onChange={(e) => handleCorrectAnswerChange(option.label, e.target.checked)}
+                  className="text-blue-600 focus:ring-blue-500"
+                />
+              ) : (
+                <input
+                  type="checkbox"
+                  checked={option.isCorrect}
+                  onChange={(e) => handleCorrectAnswerChange(option.label, e.target.checked)}
+                  className="text-blue-600 focus:ring-blue-500"
+                />
+              )}
+              <div className="mt-2 w-8 font-medium text-gray-700 dark:text-gray-300">
+                {option.label}
+              </div>
+              <Input
+                type="text"
+                value={option.text}
+                className="flex-1"
+                onChange={(e) => handleOptionTextChange(index, e.target.value)}
+                placeholder={`Enter option ${option.label}`}
+              />
             </div>
+          ))}
+        </div>
 
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="mt-3 border-blue-600 text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:text-blue-400 dark:hover:bg-blue-900/20"
-              onClick={handleAddMoreAnswers}
-            >
-              + Add Another Answer
-            </Button>
-          </div>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="mt-3 border-blue-600 text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:text-blue-400 dark:hover:bg-blue-900/20"
+          onClick={handleAddMoreAnswers}
+        >
+          + Add Another Answer
+        </Button>
+      </div>
 
-          {/* Submit Button */}
-          <div className="flex justify-end border-t border-gray-200 pt-4 dark:border-slate-700">
-            <Button
-              className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
-              onClick={handleCreateQuestionSubmit}
-            >
-              {isSubmitting ? "Updating..." : " Update Question"}
-            </Button>
-          </div>
-        </form>
+      {/* Submit Button */}
+      <div className="flex justify-end border-t border-gray-200 pt-4 dark:border-slate-700">
+        <Button
+          className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
+          onClick={handleCreateQuestionSubmit}
+        >
+          {isSubmitting ? "Updating..." : " Update Question"}
+        </Button>
+      </div>
+    </form>
   );
 };
 

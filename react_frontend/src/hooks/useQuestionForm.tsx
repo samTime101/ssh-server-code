@@ -3,11 +3,12 @@ import { useAuth } from "./useAuth";
 import type { Category, SubCategory } from "@/types/category";
 import { fetchCategories } from "@/services/admin/category-service";
 import { toast } from "sonner";
-import {
-  createQuestion,
-  updateQuestion,
-} from "@/services/admin/addquestion-service";
-import type { CreateQuestionPayload, QuestionFormData, UseQuestionFormProps } from "@/types/question";
+import { createQuestion, updateQuestion } from "@/services/admin/addquestion-service";
+import type {
+  CreateQuestionPayload,
+  QuestionFormData,
+  UseQuestionFormProps,
+} from "@/types/question";
 
 export const useQuestionForm = ({
   mode,
@@ -21,7 +22,7 @@ export const useQuestionForm = ({
   const defaultFormData: QuestionFormData = {
     questionText: "",
     description: "",
-    categoryId: "",
+    categoryIds: [],
     subCategories: [],
     optionType: "single",
     difficulty: "easy",
@@ -38,7 +39,10 @@ export const useQuestionForm = ({
   const [categories, setCategories] = useState<Category[]>([]);
   const [subCategories, setSubCategories] = useState<SubCategory[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedImages, setSelectedImages] = useState<{ question: File | null; description: File | null }>({
+  const [selectedImages, setSelectedImages] = useState<{
+    question: File | null;
+    description: File | null;
+  }>({
     question: null,
     description: null,
   });
@@ -60,15 +64,29 @@ export const useQuestionForm = ({
   }, [token]);
 
   useEffect(() => {
-    if (!questionFormData || !questionFormData.categoryId || categories.length === 0) return;
+    if (!questionFormData || questionFormData.categoryIds.length === 0 || categories.length === 0)
+      return;
 
-    const selectedCategory = categories.find((cat) => cat.id == questionFormData.categoryId);
-    setSubCategories(selectedCategory?.sub_categories || []);
+    // Combine subcategories from all selected categories
+    const allSubCategories: SubCategory[] = [];
+    const subCategoryIds = new Set<string>();
 
-    console.log("Selected Category ID:", selectedCategory);
-    console.log("Sub Categories:", selectedCategory?.sub_categories || []);
-    setQuestionFormData((prev) => (prev ? { ...prev, subCategories: [] } : { ...defaultFormData }));
-  }, [questionFormData?.categoryId, categories]);
+    questionFormData.categoryIds.forEach((catId) => {
+      const selectedCategory = categories.find((cat) => cat.id == catId);
+      if (selectedCategory?.sub_categories) {
+        selectedCategory.sub_categories.forEach((subCat) => {
+          if (!subCategoryIds.has(subCat.id.toString())) {
+            allSubCategories.push(subCat);
+            subCategoryIds.add(subCat.id.toString());
+          }
+        });
+      }
+    });
+
+    setSubCategories(allSubCategories);
+    console.log("Selected Categories:", questionFormData.categoryIds);
+    console.log("Combined Sub Categories:", allSubCategories);
+  }, [questionFormData?.categoryIds, categories]);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -148,6 +166,39 @@ export const useQuestionForm = ({
     );
   };
 
+  const handleAddCategory = (categoryId: string) => {
+    if (categoryId && !questionFormData?.categoryIds.includes(categoryId)) {
+      setQuestionFormData((prev) =>
+        prev
+          ? {
+              ...prev,
+              categoryIds: [...prev.categoryIds, categoryId],
+            }
+          : { ...defaultFormData, categoryIds: [categoryId] }
+      );
+    }
+  };
+
+  const handleRemoveCategory = (categoryId: string) => {
+    setQuestionFormData((prev) => {
+      if (!prev) return { ...defaultFormData };
+
+      // Find the category being removed to get its subcategories
+      const removedCategory = categories.find((cat) => cat.id.toString() === categoryId);
+      const removedSubCategoryIds =
+        removedCategory?.sub_categories?.map((subCat) => subCat.id.toString()) || [];
+
+      return {
+        ...prev,
+        categoryIds: prev.categoryIds.filter((id) => id !== categoryId),
+        // Also remove subcategories that belong to the removed category
+        subCategories: prev.subCategories.filter(
+          (subCatId) => !removedSubCategoryIds.includes(subCatId)
+        ),
+      };
+    });
+  };
+
   const handleAddSubCategory = (subCategoryId: string) => {
     if (subCategoryId && !questionFormData?.subCategories.includes(subCategoryId)) {
       setQuestionFormData((prev) =>
@@ -172,7 +223,7 @@ export const useQuestionForm = ({
     );
   };
 
-  const handleImageChange = (type: 'question' | 'description', file: File | null) => {
+  const handleImageChange = (type: "question" | "description", file: File | null) => {
     setSelectedImages((prev) => ({ ...prev, [type]: file }));
   };
 
@@ -189,10 +240,12 @@ export const useQuestionForm = ({
     }
 
     // edit mode ma aaile lai chaidaina
-  if (mode === "create" && !questionFormData?.categoryId) {
-    errors.push("Category is required");
-  }
-
+    if (
+      mode === "create" &&
+      (!questionFormData?.categoryIds || questionFormData.categoryIds.length === 0)
+    ) {
+      errors.push("At least one category is required");
+    }
 
     if (!questionFormData?.difficulty) {
       errors.push("Difficulty is required");
@@ -230,7 +283,7 @@ export const useQuestionForm = ({
           is_true: answer.isCorrect,
         })),
         difficulty: questionFormData.difficulty,
-        categoryId: parseInt(questionFormData.categoryId),
+        categoryIds: questionFormData.categoryIds.map((id) => parseInt(id)),
         sub_categories: questionFormData.subCategories.map((id) => id),
         // subSubCategoryIds: questionFormData.subSubCategoryIds.map((id) => id),
         contributor: questionFormData.contributor,
@@ -250,7 +303,7 @@ export const useQuestionForm = ({
         toast.success("Question updated successfully");
       }
 
-      onSuccess?.(response)
+      onSuccess?.(response);
       console.log("Question created successfully:", response);
       // Reset form or navigate as needed
       setQuestionFormData(defaultFormData);
@@ -271,6 +324,8 @@ export const useQuestionForm = ({
     setCategories,
 
     subCategories,
+    handleAddCategory,
+    handleRemoveCategory,
     handleAddSubCategory,
     handleRemoveSubCategory,
 
