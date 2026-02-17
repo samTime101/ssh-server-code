@@ -8,17 +8,11 @@ import { useForm } from "react-hook-form";
 import { useAuth } from "@/hooks/useAuth";
 import type { SignupRequest } from "@/types/auth";
 import FormErrorMessage from "@/components/FormErrorMessage";
-import { fetchColleges } from "@/services/admin/college-service";
+import { fetchAllColleges } from "@/services/admin/college-service";
 import type { College } from "@/types/college";
 import { Check, ChevronsUpDown, Eye, EyeOff } from "lucide-react";
 import { cn } from "@/lib/utils";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-} from "@/components/ui/command";
+import { Command, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 const SignupPage = () => {
@@ -27,13 +21,14 @@ const SignupPage = () => {
   const [colleges, setColleges] = useState<College[]>([]);
   const [open, setOpen] = useState(false);
   const [collegeValue, setCollegeValue] = useState("");
+  const [searchInput, setSearchInput] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   useEffect(() => {
     async function getColleges() {
       try {
-        const data = await fetchColleges();
+        const data = await fetchAllColleges();
         setColleges(data);
       } catch (error) {
         console.error("Error fetching colleges:", error);
@@ -41,6 +36,10 @@ const SignupPage = () => {
     }
     getColleges();
   }, []);
+
+  const filteredColleges = colleges.filter((college) =>
+    college.name.toLowerCase().includes(searchInput.toLowerCase())
+  );
 
   const {
     register: formRegister,
@@ -241,37 +240,54 @@ const SignupPage = () => {
                     aria-expanded={open}
                     className="w-full justify-between"
                   >
-                    {collegeValue
-                      ? colleges.find((college) => college.name === collegeValue)?.name
-                      : "Select college"}
+                    {collegeValue || "Select college"}
                     <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50" />
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-full p-0">
                   <Command>
-                    <CommandInput placeholder="Search college..." />
-                    <CommandEmpty>No college found.</CommandEmpty>
-                    <CommandGroup>
-                      {colleges.map((college) => (
-                        <CommandItem
-                          key={college.id}
-                          value={college.name}
-                          onSelect={(currentValue) => {
-                            setCollegeValue(currentValue === collegeValue ? "" : currentValue);
-                            setValue("college", currentValue === collegeValue ? "" : currentValue);
-                            setOpen(false);
-                          }}
-                        >
-                          <Check
-                            className={cn(
-                              "h-4 w-4",
-                              collegeValue === college.name ? "opacity-100" : "opacity-20"
-                            )}
-                          />
-                          {college.name}
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
+                    <CommandInput
+                      placeholder="Search college..."
+                      value={searchInput}
+                      onValueChange={setSearchInput}
+                    />
+                    <div className="max-h-48 overflow-y-auto">
+                      {searchInput.length < 3 ? (
+                        <div className="text-muted-foreground p-4 text-center text-sm">
+                          Type at least 3 letters to search
+                        </div>
+                      ) : filteredColleges.length === 0 ? (
+                        <div className="text-muted-foreground p-4 text-center text-sm">
+                          No college found
+                        </div>
+                      ) : (
+                        <CommandGroup>
+                          {filteredColleges.map((college) => (
+                            <CommandItem
+                              key={college.id}
+                              value={college.name}
+                              onSelect={(currentValue) => {
+                                setCollegeValue(currentValue === collegeValue ? "" : currentValue);
+                                setValue(
+                                  "college",
+                                  currentValue === collegeValue ? "" : currentValue
+                                );
+                                setOpen(false);
+                                setSearchInput("");
+                              }}
+                            >
+                              <Check
+                                className={cn(
+                                  "h-4 w-4",
+                                  collegeValue === college.name ? "opacity-100" : "opacity-20"
+                                )}
+                              />
+                              {college.name}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      )}
+                    </div>
                   </Command>
                 </PopoverContent>
               </Popover>

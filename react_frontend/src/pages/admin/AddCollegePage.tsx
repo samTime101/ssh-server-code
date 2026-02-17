@@ -9,15 +9,30 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { fetchColleges, createCollege, deleteCollege, updateCollege } from "@/services/admin/college-service";
+import {
+  fetchColleges,
+  createCollege,
+  deleteCollege,
+  updateCollege,
+} from "@/services/admin/college-service";
 import type { College } from "@/types/college";
 import { toast } from "sonner";
 import { PenIcon, TrashIcon } from "lucide-react";
+import Paginator from "@/components/Paginator";
+import TableSkeletonLoader from "@/components/TableSkeletonLoader";
 
 const AddCollegePage = () => {
   const [colleges, setColleges] = useState<College[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [pagination, setPagination] = useState({
+    count: 0,
+    total_pages: 0,
+    next: null as string | null,
+    previous: null as string | null,
+  });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(5);
   const [formData, setFormData] = useState({
     name: "",
     city: "",
@@ -28,12 +43,19 @@ const AddCollegePage = () => {
 
   useEffect(() => {
     loadColleges();
-  }, []);
+  }, [currentPage, pageSize]);
 
   const loadColleges = async () => {
+    setLoading(true);
     try {
-      const data = await fetchColleges();
-      setColleges(data);
+      const data = await fetchColleges(currentPage, pageSize);
+      setColleges(data.results);
+      setPagination({
+        count: data.count,
+        total_pages: data.total_pages,
+        next: data.next,
+        previous: data.previous,
+      });
     } catch (error) {
       toast.error("Failed to load colleges");
     } finally {
@@ -82,6 +104,15 @@ const AddCollegePage = () => {
     }
   };
 
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const handlePageSizeChange = (newPageSize: number) => {
+    setPageSize(newPageSize);
+    setCurrentPage(1);
+  };
+
   const resetForm = () => {
     setFormData({
       name: "",
@@ -93,15 +124,9 @@ const AddCollegePage = () => {
     setEditingId(null);
   };
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
   return (
     <section className="space-y-6 p-6">
-      <h1 className="text-2xl font-semibold">
-        {editingId ? "Edit College" : "Add College"}
-      </h1>
+      <h1 className="text-2xl font-semibold">{editingId ? "Edit College" : "Add College"}</h1>
 
       <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
         <Input
@@ -135,9 +160,7 @@ const AddCollegePage = () => {
           required
         />
         <div className="flex gap-2">
-          <Button type="submit">
-            {editingId ? "Update College" : "Add College"}
-          </Button>
+          <Button type="submit">{editingId ? "Update College" : "Add College"}</Button>
           {editingId && (
             <Button type="button" variant="outline" onClick={resetForm}>
               Cancel
@@ -147,47 +170,64 @@ const AddCollegePage = () => {
       </form>
 
       <h2 className="mb-2 text-xl font-medium">Existing colleges</h2>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Name</TableHead>
-            <TableHead>City</TableHead>
-            <TableHead>State</TableHead>
-            <TableHead>Country</TableHead>
-            <TableHead>Postal Code</TableHead>
-            <TableHead>Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {colleges.length === 0 && (
+      <div className="rounded-md border bg-white shadow-md">
+        <Table>
+          <TableHeader>
             <TableRow>
-              <TableCell colSpan={6} className="p-4 text-center">
-                No colleges found
-              </TableCell>
+              <TableHead>Name</TableHead>
+              <TableHead>City</TableHead>
+              <TableHead>State</TableHead>
+              <TableHead>Country</TableHead>
+              <TableHead>Postal Code</TableHead>
+              <TableHead>Actions</TableHead>
             </TableRow>
-          )}
-          {colleges.map((college) => (
-            <TableRow key={college.id}>
-              <TableCell>{college.name}</TableCell>
-              <TableCell>{college.city}</TableCell>
-              <TableCell>{college.state}</TableCell>
-              <TableCell>{college.country}</TableCell>
-              <TableCell>{college.postal_code}</TableCell>
-              <TableCell className="flex gap-2">
-                <Button className="cursor-pointer rounded bg-blue-500 text-white" onClick={() => handleEdit(college)}>
-                  <PenIcon size={14} />
-                </Button>
-                <Button
-                  className="cursor-pointer rounded bg-red-500 text-white"
-                  onClick={() => handleDelete(college.id)}
-                >
-                  <TrashIcon size={14} />
-                </Button>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHeader>
+          <TableBody>
+            {loading ? (
+              <TableSkeletonLoader rows={5} columns={6} />
+            ) : colleges.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={6} className="p-4 text-center">
+                  No colleges found
+                </TableCell>
+              </TableRow>
+            ) : (
+              colleges.map((college) => (
+                <TableRow key={college.id}>
+                  <TableCell>{college.name}</TableCell>
+                  <TableCell>{college.city}</TableCell>
+                  <TableCell>{college.state}</TableCell>
+                  <TableCell>{college.country}</TableCell>
+                  <TableCell>{college.postal_code}</TableCell>
+                  <TableCell className="flex gap-2">
+                    <Button
+                      className="cursor-pointer rounded bg-blue-500 text-white"
+                      onClick={() => handleEdit(college)}
+                    >
+                      <PenIcon size={14} />
+                    </Button>
+                    <Button
+                      className="cursor-pointer rounded bg-red-500 text-white"
+                      onClick={() => handleDelete(college.id)}
+                    >
+                      <TrashIcon size={14} />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+        <Paginator
+          currentPage={currentPage}
+          totalPages={pagination.total_pages}
+          pageSize={pageSize}
+          totalCount={pagination.count}
+          onPageChange={handlePageChange}
+          onPageSizeChange={handlePageSizeChange}
+          isLoading={loading}
+        />
+      </div>
     </section>
   );
 };
