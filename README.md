@@ -108,3 +108,29 @@ django_backend/
     --------models for mongo
 
 ```
+
+
+## VPS CONFIGURATION
+
+fronedn build path: `/var/www/react_frontend/`
+
+nginx config path: `/etc/nginx/sites-available/react_django.conf`
+
+supervisor config path: `/etc/supervisor/conf.d/django_backend.conf`
+
+
+## RESTART NGINX CONFIG
+
+```sh
+ln -s /etc/nginx/sites-available/react_django.conf /etc/nginx/sites-enabled/
+systemctl restart nginx
+nginx -t
+```
+
+## RESTART SUPERVISOR CONFIG
+
+```sh
+supervisorctl reread
+supervisorctl update
+supervisorctl restart django_backend
+```
