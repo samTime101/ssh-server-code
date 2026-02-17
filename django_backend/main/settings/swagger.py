@@ -3,6 +3,9 @@ SPECTACULAR_SETTINGS = {
     "TITLE": "MCQ API",
     "DESCRIPTION": """
 
+## February 17, 2026
+- Fixed Queryset issue in `/api/questions/select/` endpoint to ensure correct question selection based on category and subcategory filters.    
+
 ## February 12, 2026
 - Added remove-role endpoint to allow admin to remove roles from a user.    
 

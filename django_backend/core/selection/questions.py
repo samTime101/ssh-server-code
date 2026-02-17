@@ -14,11 +14,11 @@ def selected_questions(
         # collect given subcat
         result.extend(SubCategory.objects(id__in=sub_category_ids))
     if not category_ids and not sub_category_ids:
-        questions = Question.objects().all()
+        questions = list(Question.objects().all())
     else:
         # collect ids
         sub_category_ids = list({sc.id for sc in result})
         # return question matching with id
-        questions = Question.objects(sub_categories__in=sub_category_ids)
+        questions = list(Question.objects(sub_categories__in=sub_category_ids))
         random.shuffle(questions)
-    return list(questions)    
+    return questions   
