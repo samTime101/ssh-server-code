@@ -9,7 +9,7 @@ import axiosInstance from "../axios";
 export async function createSubCategory(
   categoryId: string,
   subCategoryName: string
-): Promise<{ message: string; subcategory: CreateSubCategoryResponse }> {
+): Promise<CreateSubCategoryResponse> {
   const categoryData = { category: categoryId, name: subCategoryName };
   console.log("The category data being sent is ", categoryData);
   try {
