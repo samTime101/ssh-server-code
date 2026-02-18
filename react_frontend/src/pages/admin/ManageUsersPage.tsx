@@ -17,6 +17,7 @@ import { toast } from "sonner";
 import { PenIcon, TrashIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Paginator from "@/components/Paginator";
+import TableSkeletonLoader from "@/components/TableSkeletonLoader";
 import type { User } from "@/types/user";
 
 const ManageUsersPage = () => {
@@ -34,11 +35,7 @@ const ManageUsersPage = () => {
   const [pageSize, setPageSize] = useState(5);
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
-  // const isSelf = (user: User) => authUser && (user.user_guid === authUser.userId || user.id === authUser.id);
-  const isSelf = (user: User): boolean => {
-    if (!authUser) return false;
-    return user.user_guid === authUser.userId || user.id === authUser.id;
-  };
+  const isSelf = (user: User) => authUser && (user.user_guid === authUser.userId || user.id === authUser.id);
 
   useEffect(() => {
     if (token) {
@@ -112,9 +109,7 @@ const ManageUsersPage = () => {
         </div>
         <div className="users-list-section mt-4">
           <Table>
-            <TableCaption>
-              {isLoading ? "Loading..." : `Total users: ${pagination.count}`}
-            </TableCaption>
+            <TableCaption>{isLoading ? "" : `Total users: ${pagination.count}`}</TableCaption>
             <TableHeader>
               <TableRow>
                 {/* <TableHead>Id</TableHead> */}
@@ -128,11 +123,7 @@ const ManageUsersPage = () => {
             </TableHeader>
             <TableBody>
               {isLoading ? (
-                <TableRow>
-                  <TableCell colSpan={5} className="text-center">
-                    Loading...
-                  </TableCell>
-                </TableRow>
+                <TableSkeletonLoader rows={5} columns={6} />
               ) : filteredUsers.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={5} className="text-center">

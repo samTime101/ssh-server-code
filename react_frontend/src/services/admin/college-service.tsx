@@ -2,12 +2,39 @@ import { API_ENDPOINTS } from "@/config/apiConfig";
 import axiosInstance from "../axios";
 import type { College } from "@/types/college";
 
-export const fetchColleges = async (): Promise<College[]> => {
+export interface PaginatedCollegesResponse {
+  count: number;
+  total_pages: number;
+  results: College[];
+  next: string | null;
+  previous: string | null;
+}
+
+export const fetchColleges = async (
+  page?: number,
+  pageSize?: number
+): Promise<PaginatedCollegesResponse> => {
   try {
-    const response = await axiosInstance.get(API_ENDPOINTS.colleges);
-    return response.data.results;
+    const params: Record<string, number> = {};
+    if (page) params.page = page;
+    if (pageSize) params.page_size = pageSize;
+
+    const response = await axiosInstance.get(API_ENDPOINTS.colleges, { params });
+    return response.data;
   } catch (error) {
     console.error("Failed to fetch colleges:", error);
+    throw error;
+  }
+};
+
+export const fetchAllColleges = async (): Promise<College[]> => {
+  try {
+    const response = await axiosInstance.get(API_ENDPOINTS.colleges, {
+      params: { page_size: 1000 },
+    });
+    return response.data.results;
+  } catch (error) {
+    console.error("Failed to fetch all colleges:", error);
     throw error;
   }
 };

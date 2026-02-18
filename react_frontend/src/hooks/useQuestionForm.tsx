@@ -283,7 +283,6 @@ export const useQuestionForm = ({
           is_true: answer.isCorrect,
         })),
         difficulty: questionFormData.difficulty,
-        categoryIds: questionFormData.categoryIds.map((id) => parseInt(id)),
         sub_categories: questionFormData.subCategories.map((id) => id),
         // subSubCategoryIds: questionFormData.subSubCategoryIds.map((id) => id),
         contributor: questionFormData.contributor,

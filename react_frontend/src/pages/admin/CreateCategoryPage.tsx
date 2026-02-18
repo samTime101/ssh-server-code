@@ -89,7 +89,7 @@ const CreateCategoryPage = () => {
       const result = await createSubCategory(selectedCategoryId, subCategoryName);
     
 
-      setMessage(`Subcategory \"${result.message}\" created successfully!`);
+      setMessage(`Subcategory \"${result.name}\" created successfully!`);
       setMessageType("success");
       setSubCategoryName("");
       // Refresh categories

@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import { PenIcon, TrashIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Paginator from "@/components/Paginator";
+import TableSkeletonLoader from "@/components/TableSkeletonLoader";
 // import { DATE_OPTIONS, LOCALE } from "@/utils/dateUtils";
 import { LOCALE } from "@/utils/dateUtils";
 import Modal from "@/components/Modal";
@@ -139,22 +140,7 @@ const QuestionBankPage = () => {
             </TableHeader>
             <TableBody>
               {isLoading ? (
-                // <TableRow>
-                //   <TableCell colSpan={5} className="text-center">
-                //     Loading...
-                //   </TableCell>
-                // </TableRow>
-
-                // 5 rows ko 5 each cells
-                Array.from({ length: 5 }).map((_, index) => (
-                  <TableRow key={index} className="animate-pulse">
-                    {Array.from({ length: 5 }).map((_, cellIndex) => (
-                      <TableCell key={cellIndex}>
-                        <div className="h-8 w-full animate-pulse rounded-md bg-gray-300"></div>
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))
+                <TableSkeletonLoader rows={5} columns={5} />
               ) : questionList.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={5} className="text-center">

@@ -3,6 +3,7 @@ import { Navigate, Routes, Route, Outlet } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import LoginPage from "@/pages/LoginPage";
 import SignupPage from "@/pages/SignupPage";
+import LandingPage from "@/pages/LandingPage";
 import UserLayout from "@/layouts/UserLayout";
 import AdminLayout from "@/layouts/AdminLayout";
 import QuestionBankSection from "@/components/user/QuestionBankSection";
@@ -32,9 +33,11 @@ const RootRedirect = () => {
     return <Loader />;
   }
 
-  if (!user) return <Navigate to="/auth/login" replace />;
+  // Show landing page if not authenticated
+  if (!token) return <LandingPage />;
+
   // Admins, Contributors, and Doctors can access admin panel
-  if (user.roles?.some((role: string) => role in ROLE_CONFIG)) {
+  if (user?.roles?.some((role: string) => role in ROLE_CONFIG)) {
     return <Navigate to="/admin" replace />;
   }
   return <Navigate to="/userpanel" replace />;
