@@ -285,8 +285,12 @@ export const useQuestionForm = ({
         difficulty: questionFormData.difficulty,
         sub_categories: questionFormData.subCategories.map((id) => id),
         // subSubCategoryIds: questionFormData.subSubCategoryIds.map((id) => id),
-        contributor: questionFormData.contributor,
-        contributor_specialization: questionFormData.contributorSpecialization,
+        ...(questionFormData.contributor?.trim() && {
+          contributor: questionFormData.contributor,
+        }),
+        ...(questionFormData.contributorSpecialization?.trim() && {
+          contributor_specialization: questionFormData.contributorSpecialization,
+        }),
       };
       console.log("Question created successfully API:", apiData);
       let response;
