@@ -14,6 +14,7 @@ import axiosInstance from "@/services/axios";
 import { API_ENDPOINTS } from "@/config/apiConfig";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
+import { deleteUser } from "@/services/admin/user-service";
 import { PenIcon, TrashIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Paginator from "@/components/Paginator";
@@ -35,11 +36,8 @@ const ManageUsersPage = () => {
   const [pageSize, setPageSize] = useState(5);
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
-  // const isSelf = (user: User) => authUser && (user.user_guid === authUser.userId || user.id === authUser.id);
-  const isSelf = (user: User): boolean => {
-    if (!authUser) return false;
-    return user.user_guid === authUser.userId || user.id === authUser.id;
-  };
+  const isSelf = (user: User) => authUser && (user.user_guid === authUser.userId || user.id === authUser.id);
+
   useEffect(() => {
     if (token) {
       fetchUsers();
@@ -88,11 +86,28 @@ const ManageUsersPage = () => {
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
   };
+
+  const handleDeleteUser = async (user: User) => {
+    if (!confirm(`Are you sure you want to delete ${user.first_name} ${user.last_name}?`)) {
+      return;
+    }
+
+    try {
+      await deleteUser(user.user_guid);
+      toast.success("User deleted successfully");
+      fetchUsers(); // Refresh the list
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to delete user");
+      console.error("Error deleting user:", error);
+    }
+  };
+
   const filteredUsers = usersList.filter((user: any) =>
     `${user.firstname} ${user.lastname} ${user.email}`
       .toLowerCase()
       .includes(searchQuery.toLowerCase())
   );
+
   return (
     <div>
       <div className="manage-users-header">
@@ -167,7 +182,11 @@ const ManageUsersPage = () => {
                       >
                         <PenIcon size={12} />
                       </Button>
-                      <Button className="btn-delete cursor-pointer rounded bg-red-500 text-white" disabled={isSelf(user)}>
+                      <Button
+                        className="btn-delete cursor-pointer rounded bg-red-500 text-white"
+                        disabled={isSelf(user)}
+                        onClick={() => handleDeleteUser(user)}
+                      >
                         <TrashIcon size={12} />
                       </Button>
                     </TableCell>
