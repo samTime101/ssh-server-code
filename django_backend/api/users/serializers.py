@@ -1,3 +1,4 @@
+from core.constants.roles import ROLE_USER
 from sql.models import User, Role, UserRole
 from rest_framework import serializers
 from rest_framework_mongoengine import serializers as me_serializers
@@ -149,16 +150,33 @@ class AssignRoleSerializer(serializers.Serializer):
     role_ids = serializers.ListField(child=serializers.IntegerField(), allow_empty=False)
 
     def validate_role_ids(self, value):
+        user = self.context.get("user")
+        if not user:
+            raise serializers.ValidationError("User context is required for role assignment.")
         for role_id in value:
-            if not Role.objects.filter(id=role_id).exists():
+            role = Role.objects.filter(id=role_id).first()
+            if not role:
                 raise serializers.ValidationError(f"Role with id {role_id} does not exist.")
+            if role.name == ROLE_USER:
+                raise serializers.ValidationError("USER role is virtual and cannot be assigned.")
+            if UserRole.objects.filter(user=user, role=role).exists():
+                raise serializers.ValidationError(f"User already has the role {role.name}.")
         return value
 
 class RemoveRoleSerializer(serializers.Serializer):
     role_ids = serializers.ListField(child=serializers.IntegerField(), allow_empty=False)
 
     def validate_role_ids(self, value):
+        user = self.context.get("user")
+        if not user:
+            raise serializers.ValidationError("User context is required for role removal.")
         for role_id in value:
-            if not Role.objects.filter(id=role_id).exists():
+            role = Role.objects.filter(id=role_id).first()
+            if not role:
                 raise serializers.ValidationError(f"Role with id {role_id} does not exist.")
+            # DISABLE VIRTUAL ROLE REMOVAL
+            if role.name == ROLE_USER:
+                raise serializers.ValidationError("USER role is virtual and cannot be removed.")
+            if not UserRole.objects.filter(user=user, role=role).exists():
+                raise serializers.ValidationError(f"Role '{role.name}' is not assigned to this user.")
         return value

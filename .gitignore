@@ -6,6 +6,7 @@ migrations/
 *.log
 **/tests.py
 .venv/
+django_backend/main/media/*
 
 # FOR REACT AND NODE
 react_frontend/node_modules/

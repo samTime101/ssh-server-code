@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 import uuid
 from django.contrib.auth.models import BaseUserManager
+from core.constants.roles import ROLE_USER
 
 # REFERNCE LINK : https://testdriven.io/blog/django-custom-user-model/
 
@@ -29,7 +30,7 @@ class UserManager(BaseUserManager):
             # else:
             #     role, created = Role.objects.get_or_create(name=role)
 
-            if role and role != "USER":
+            if role and role != ROLE_USER:
                 role, created = Role.objects.get_or_create(name=role)
                 UserRole.objects.create(user=user, role=role)
             return user
@@ -64,6 +65,12 @@ class Role(models.Model):
     class Meta:
         ordering = ['name']
 
+    def save(self, *args, **kwargs):
+        # DONT ALLOW CREATION OF ROLE WITH NAME "USER" BECAUSE IT IS VIRTUAL ROLE
+        if self.name.upper() == ROLE_USER:
+            raise ValueError("FROM MODEL: USER role is virtual and cannot be created.")
+        super().save(*args, **kwargs)
+
 class User(AbstractUser):
     user_guid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     email = models.EmailField(unique=True)
@@ -85,13 +92,13 @@ class User(AbstractUser):
 
     def get_roles(self):
         roles = list(self.user_roles.values_list("role__name", flat=True))
-        if "USER" not in roles:
-            roles.append("USER")
+        if ROLE_USER not in roles:
+            roles.append(ROLE_USER)
 
         return roles
 
     def has_role(self, role_name):
-        if role_name == "USER":
+        if role_name == ROLE_USER:
             return True
         return self.user_roles.filter(role__name=role_name).exists()
 
