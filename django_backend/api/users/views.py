@@ -11,6 +11,7 @@ from mongo.models import Attempt, Submissions
 from drf_spectacular.utils import extend_schema 
 from rest_framework.exceptions import MethodNotAllowed, NotFound
 from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError
 
 class UserViewSet(ModelViewSet):
     queryset = User.objects.all()
@@ -59,17 +60,22 @@ class UserViewSet(ModelViewSet):
     @action(detail=True, methods=['post'], permission_classes=[IsAdminUser], url_path='assign-role', serializer_class=AssignRoleSerializer)
     def assign_role(self, request, *args, **kwargs):
         user_guid = kwargs.get('user_guid')
-        role_ids = request.data.get('role_ids', [])
-        serializer = AssignRoleSerializer(data={'role_ids': role_ids})
-        serializer.is_valid(raise_exception=True)
         try:
             user = User.objects.get(user_guid=user_guid)
         except User.DoesNotExist:
-            return NotFound("User not found")
+            raise NotFound("User not found")
+        serializer = self.get_serializer(data=request.data,context={"user": user})
+        serializer.is_valid(raise_exception=True)
+        if user == request.user:
+            raise ValidationError("You cannot assign roles to yourself.")
         assigned_roles = []
-        for role_id in serializer.validated_data['role_ids']:
-            role = Role.objects.get(id=role_id)
-            user_role, created = UserRole.objects.get_or_create(user=user, role=role)
+        # for role_id in serializer.validated_data['role_ids']:
+        #     role = Role.objects.get(id=role_id)
+        #     user_role = UserRole.objects.create(user=user, role=role)
+        #     assigned_roles.append(user_role)
+        roles =  Role.objects.filter(id__in=serializer.validated_data['role_ids'])
+        for role in roles:
+            user_role = UserRole.objects.create(user=user, role=role)
             assigned_roles.append(user_role)
         response_serializer = UserRoleSerializer(assigned_roles, many=True)
         return Response(response_serializer.data, status=status.HTTP_201_CREATED)
@@ -78,15 +84,19 @@ class UserViewSet(ModelViewSet):
     @action(detail=True, methods=['post'], permission_classes=[IsAdminUser], url_path='remove-role', serializer_class=RemoveRoleSerializer)
     def remove_role(self, request, *args, **kwargs):
         user_guid = kwargs.get('user_guid')
-        role_ids = request.data.get('role_ids', [])
-        serializer = RemoveRoleSerializer(data={'role_ids': role_ids})
-        serializer.is_valid(raise_exception=True)
         try:
             user = User.objects.get(user_guid=user_guid)
         except User.DoesNotExist:
-            return NotFound("User not found")
-        for role_id in serializer.validated_data['role_ids']:
-            role = Role.objects.get(id=role_id)
+            raise NotFound("User not found")
+        serializer = self.get_serializer(data=request.data,context={"user": user})
+        serializer.is_valid(raise_exception=True)
+        if user == request.user:
+            raise ValidationError("You cannot remove your own roles.")
+        # for role_id in serializer.validated_data['role_ids']:
+        #     role = Role.objects.get(id=role_id)
+        #     UserRole.objects.filter(user=user, role=role).delete()
+        roles =  Role.objects.filter(id__in=serializer.validated_data['role_ids'])
+        for role in roles:
             UserRole.objects.filter(user=user, role=role).delete()
         return Response({"detail": "Roles removed successfully"}, status=status.HTTP_200_OK)
 

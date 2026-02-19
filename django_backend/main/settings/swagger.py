@@ -3,6 +3,14 @@ SPECTACULAR_SETTINGS = {
     "TITLE": "MCQ API",
     "DESCRIPTION": """
 
+## February 18, 2026
+- Admin cannot remove/add own roles.    
+- Added checks in role assignment and removal serializers to ensure that the user context is provided, preventing potential errors during role management operations.
+- disallowed removal of virtual USER role from any user to maintain consistent access control across the application.    
+
+## February 17, 2026
+- Fixed Queryset issue in `/api/questions/select/` endpoint to ensure correct question selection based on category and subcategory filters.    
+
 ## February 12, 2026
 - Added remove-role endpoint to allow admin to remove roles from a user.    
 

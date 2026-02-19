@@ -36,7 +36,11 @@ const ManageUsersPage = () => {
   const [pageSize, setPageSize] = useState(5);
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const isSelf = (user: User) => authUser && (user.user_guid === authUser.userId || user.id === authUser.id);
+  // const isSelf = (user: User) => authUser && (user.user_guid === authUser.userId || user.id === authUser.id);
+  const isSelf = (user: User): boolean => {
+    if (!authUser) return false;
+    return user.user_guid === authUser.userId || user.id === authUser.id;
+  };
 
   useEffect(() => {
     if (token) {
