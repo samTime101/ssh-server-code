@@ -283,11 +283,14 @@ export const useQuestionForm = ({
           is_true: answer.isCorrect,
         })),
         difficulty: questionFormData.difficulty,
-        categoryIds: questionFormData.categoryIds.map((id) => parseInt(id)),
         sub_categories: questionFormData.subCategories.map((id) => id),
         // subSubCategoryIds: questionFormData.subSubCategoryIds.map((id) => id),
-        contributor: questionFormData.contributor,
-        contributor_specialization: questionFormData.contributorSpecialization,
+        ...(questionFormData.contributor?.trim() && {
+          contributor: questionFormData.contributor,
+        }),
+        ...(questionFormData.contributorSpecialization?.trim() && {
+          contributor_specialization: questionFormData.contributorSpecialization,
+        }),
       };
       console.log("Question created successfully API:", apiData);
       let response;

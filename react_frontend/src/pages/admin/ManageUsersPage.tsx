@@ -14,9 +14,11 @@ import axiosInstance from "@/services/axios";
 import { API_ENDPOINTS } from "@/config/apiConfig";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
+import { deleteUser } from "@/services/admin/user-service";
 import { PenIcon, TrashIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Paginator from "@/components/Paginator";
+import TableSkeletonLoader from "@/components/TableSkeletonLoader";
 import type { User } from "@/types/user";
 
 const ManageUsersPage = () => {
@@ -84,11 +86,28 @@ const ManageUsersPage = () => {
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
   };
+
+  const handleDeleteUser = async (user: User) => {
+    if (!confirm(`Are you sure you want to delete ${user.first_name} ${user.last_name}?`)) {
+      return;
+    }
+
+    try {
+      await deleteUser(user.user_guid);
+      toast.success("User deleted successfully");
+      fetchUsers(); // Refresh the list
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to delete user");
+      console.error("Error deleting user:", error);
+    }
+  };
+
   const filteredUsers = usersList.filter((user: any) =>
     `${user.firstname} ${user.lastname} ${user.email}`
       .toLowerCase()
       .includes(searchQuery.toLowerCase())
   );
+
   return (
     <div>
       <div className="manage-users-header">
@@ -108,9 +127,7 @@ const ManageUsersPage = () => {
         </div>
         <div className="users-list-section mt-4">
           <Table>
-            <TableCaption>
-              {isLoading ? "Loading..." : `Total users: ${pagination.count}`}
-            </TableCaption>
+            <TableCaption>{isLoading ? "" : `Total users: ${pagination.count}`}</TableCaption>
             <TableHeader>
               <TableRow>
                 {/* <TableHead>Id</TableHead> */}
@@ -124,11 +141,7 @@ const ManageUsersPage = () => {
             </TableHeader>
             <TableBody>
               {isLoading ? (
-                <TableRow>
-                  <TableCell colSpan={5} className="text-center">
-                    Loading...
-                  </TableCell>
-                </TableRow>
+                <TableSkeletonLoader rows={5} columns={6} />
               ) : filteredUsers.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={5} className="text-center">
@@ -169,7 +182,11 @@ const ManageUsersPage = () => {
                       >
                         <PenIcon size={12} />
                       </Button>
-                      <Button className="btn-delete cursor-pointer rounded bg-red-500 text-white" disabled={isSelf(user)}>
+                      <Button
+                        className="btn-delete cursor-pointer rounded bg-red-500 text-white"
+                        disabled={isSelf(user)}
+                        onClick={() => handleDeleteUser(user)}
+                      >
                         <TrashIcon size={12} />
                       </Button>
                     </TableCell>

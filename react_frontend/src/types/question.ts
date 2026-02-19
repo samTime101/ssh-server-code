@@ -35,7 +35,6 @@ export interface CreateQuestionPayload {
   options: Option[];
   // correctAnswers: string[];
   difficulty: string;
-  categoryIds: number[];
   sub_categories: string[];
   // subSubCategoryIds: string[];
   description?: string;
@@ -61,8 +60,8 @@ export interface QuestionFormData {
     text: string;
     isCorrect: boolean;
   }>;
-  contributor: string;
-  contributorSpecialization: string;
+  contributor?: string;
+  contributorSpecialization?: string;
 }
 
 export interface UseQuestionFormProps {

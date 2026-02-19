@@ -1,6 +1,6 @@
 import axiosInstance from "@/services/axios";
 import { API_ENDPOINTS } from "@/config/apiConfig";
-import type { User, UserUpdate } from "@/types/user"
+import type { User, UserUpdate } from "@/types/user";
 
 /**
  * Fetch a single user by ID
@@ -64,5 +64,16 @@ export async function removeRoleFromUser(userGuid: string, roleId: string): Prom
     return response.data;
   } catch (error: any) {
     throw new Error(error.response?.data?.detail || "Failed to remove role");
+  }
+}
+
+/**
+ * Delete a user by ID
+ */
+export async function deleteUser(userId: string): Promise<void> {
+  try {
+    await axiosInstance.delete(`${API_ENDPOINTS.usersList}${userId}/`);
+  } catch (error: any) {
+    throw new Error(error.response?.data?.detail || "Failed to delete user");
   }
 }
