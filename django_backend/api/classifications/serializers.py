@@ -13,7 +13,8 @@ class CategorySerializer(me_serializers.DocumentSerializer):
 
 class SubCategorySerializer(me_serializers.DocumentSerializer):
     id = serializers.CharField(read_only=True)
-    category = serializers.SerializerMethodField()
+    category = serializers.CharField(write_only=True)
+    category_name = serializers.SerializerMethodField(read_only=True)
     class Meta:
         model = SubCategory
         fields = '__all__'
@@ -23,3 +24,6 @@ class SubCategorySerializer(me_serializers.DocumentSerializer):
     
     def get_category(self, obj):
         return str(obj.category.name)
+    
+    def get_category_name(self, obj):
+        return obj.category.name

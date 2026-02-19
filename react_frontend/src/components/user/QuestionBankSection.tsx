@@ -2,6 +2,7 @@ import { Search } from "lucide-react";
 import { useContext, useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "../ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 //import { getCategories } from "@/services/user/questionService.ts";
@@ -9,10 +10,9 @@ import { toast } from "sonner";
 import { useQuestions } from "@/hooks/useQuestions.tsx";
 import CategoryList from "./CategoryList";
 import type { GetCategoriesResponse } from "@/types/category";
-import { getCategories } from "@/services/user/questionService";
+import { getCategories } from "@/services/user/question-service";
 import { AuthContext } from "@/contexts/AuthContext";
-
-
+import { getAttemptStats } from "@/utils/attemptUtils";
 
 /*
     Please note that the implementation of sub-sub-categories is currently on hold
@@ -29,19 +29,19 @@ const QuestionBankSection = () => {
   const { user } = useContext(AuthContext);
 
   const [categories, setCategories] = useState<GetCategoriesResponse>();
-
+  const [reattemptWrongOnly, setReattemptWrongOnly] = useState(false);
 
   useEffect(() => {
     if (!token) return;
     const getCategoriesData = async () => {
       try {
-        const categoryResponse = await getCategories(token);
-    
+        const categoryResponse = await getCategories();
+
         console.log("The category response:", categoryResponse);
         setCategories(categoryResponse);
       } catch (error) {
         console.error("Failed to fetch categories:", error);
-        setCategories({total_questions: 0, categories: [] });
+        setCategories({ total_questions: 0, categories: [] });
         toast.error("Failed to fetch categories");
       }
     };
@@ -52,6 +52,8 @@ const QuestionBankSection = () => {
     await fetchQuestions(reattemptWrongOnly);
     navigate("/userpanel/question");
   };
+
+  const stats = getAttemptStats(user, categories);
 
   return (
     <section className="mx-auto flex min-h-full max-w-[1500px] flex-1 flex-col gap-8 p-8">
@@ -65,13 +67,18 @@ const QuestionBankSection = () => {
           </div>
           <div className="h-3 overflow-hidden rounded-full bg-gray-200">
             <div
-              className="h-full rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 transition-all duration-500"
-              style={{ width: "65%" }}
+              className="h-full rounded-full transition-all duration-500"
+              style={{
+                width: `${stats.progressPercent}%`,
+                background: `linear-gradient(to right, #22c55e 0%, #22c55e ${stats.correctPercent}%, #ef4444 ${stats.correctPercent}%, #ef4444 100%)`,
+              }}
             ></div>
           </div>
           <div className="flex items-center justify-between text-sm">
-            <span className="font-medium text-green-600">{user?.total_right_attempts} Correct</span>
-            <span className="text-gray-500">{user?.total_attempts} of {categories?.total_questions} completed</span>
+            <span className="font-medium text-green-600">{stats.totalRight} Correct</span>
+            <span className="text-gray-500">
+              {stats.totalAttempts} of {stats.totalQuestions} completed
+            </span>
           </div>
         </div>
       </div>
@@ -87,6 +94,15 @@ const QuestionBankSection = () => {
               className="rounded-lg border-gray-300 py-3 pr-4 pl-12 text-base focus:border-blue-500 focus:ring-blue-500"
             />
           </div>
+          <div className="mt-4 flex justify-end">
+            <label className="flex items-center space-x-2">
+              <Checkbox
+                checked={reattemptWrongOnly}
+                onCheckedChange={() => setReattemptWrongOnly(!reattemptWrongOnly)}
+              />
+              <span>Reattempt Wrong Only</span>
+            </label>
+          </div>
         </div>
 
         <div className="space-y-4">
@@ -101,16 +117,9 @@ const QuestionBankSection = () => {
         <div className="mt-8 flex gap-4 border-t border-gray-200 pt-6">
           <Button
             className="cursor-pointer rounded-lg px-8 py-6 font-medium shadow-sm transition-all duration-200 hover:shadow-md"
-            onClick={() => handleStartSession(false)}
+            onClick={() => handleStartSession(reattemptWrongOnly)}
           >
             Start Session
-          </Button>
-          <Button
-            variant="destructive"
-            className="cursor-pointer rounded-lg px-8 py-6 font-medium shadow-sm transition-all duration-200 hover:shadow-md"
-            onClick={() => handleStartSession(true)}
-          >
-            Reattempt Wrong Only
           </Button>
         </div>
       </div>

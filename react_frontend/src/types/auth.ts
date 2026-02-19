@@ -1,15 +1,19 @@
 export interface User {
+  id: string;
   userId: string;
   email: string;
   username: string;
+  first_name: string;
+  last_name: string;
   phonenumber: string;
-  is_superuser: boolean;
-  is_staff: boolean;
   is_active: boolean;
-  total_right_attempts: string,
-  total_attempts: string,
-  accuracy_percent: string,
-  completion_percent: string
+  roles: string[];
+  college: string;
+  total_right_attempts: string;
+  total_attempts: string;
+  accuracy_percent: string;
+  completion_percent: string;
+  is_email_verified: boolean;
 }
 
 export interface AuthToken {
@@ -29,5 +33,16 @@ export interface SignupRequest {
   first_name: string;
   last_name: string;
   password: string;
+  confirm_password: string;
   college: string;
+}
+
+export interface ResetPasswordForm {
+  old_password: string;
+  new_password: string;
+  confirm_new_password: string;
+}
+
+export interface ResetPhoneNumberForm {
+  new_phonenumber: string;
 }

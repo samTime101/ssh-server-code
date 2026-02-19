@@ -1,7 +1,8 @@
 from rest_framework_mongoengine import viewsets
 from mongo.models import Category, SubCategory
 from .serializers import CategorySerializer, SubCategorySerializer
-from rest_framework.permissions import IsAdminUser
+# from rest_framework.permissions import IsAdminUser
+from core.permissions.permissions import IsAdminUser
 
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()

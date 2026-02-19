@@ -36,6 +36,7 @@ LOCAL_APPS = [
     'api.classifications',
     'api.users',
     'api.colleges',
+    'api.roles',
 ]
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
@@ -74,3 +75,5 @@ print(f'DJANGO ENVIRONMENT  : {ENVIRONMENT}')
 
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"

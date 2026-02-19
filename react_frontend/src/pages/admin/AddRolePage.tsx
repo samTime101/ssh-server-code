@@ -16,7 +16,7 @@ const AddRolePage = () => {
     if (!token) return;
     try {
       setLoading(true);
-      const data = await fetchRoles(token);
+      const data = await fetchRoles();
       setRoles(data);
     } catch (err) {
       console.error(err);
@@ -38,7 +38,7 @@ const AddRolePage = () => {
 
     try {
       setLoading(true);
-      await createRole(roleName.trim(), token);
+      await createRole(roleName.trim());
       toast.success("Role created");
       setRoleName("");
       // refresh list

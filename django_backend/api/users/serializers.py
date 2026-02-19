@@ -1,3 +1,4 @@
+from core.constants.roles import ROLE_USER
 from sql.models import User, Role, UserRole
 from rest_framework import serializers
 from rest_framework_mongoengine import serializers as me_serializers
@@ -10,11 +11,11 @@ class UserSerializer(serializers.ModelSerializer):
     total_attempts = serializers.SerializerMethodField()
     accuracy_percent = serializers.SerializerMethodField()
     completion_percent = serializers.SerializerMethodField()
+    roles = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ('id','user_guid','username', 'email', 'first_name', 'last_name', 'is_active','is_staff','is_superuser','total_right_attempts','total_attempts', 'accuracy_percent', 'completion_percent')
-
+        fields = ('id','user_guid','username', 'email', 'first_name', 'last_name', 'is_active','total_right_attempts','total_attempts', 'accuracy_percent', 'completion_percent', 'roles','is_email_verified','phonenumber', 'college')
     def get_total_right_attempts(self, obj):
         submission = Submissions.objects(user_guid=obj.user_guid).first()
         if not submission:
@@ -34,7 +35,6 @@ class UserSerializer(serializers.ModelSerializer):
         total_right_attempts = self.get_total_right_attempts(obj)
         return (total_right_attempts / total_attempts) * 100
     
-    # TODO: logic fix
     def get_completion_percent(self, obj):
         total_questions = Question.objects.count()
         if total_questions == 0:
@@ -42,12 +42,45 @@ class UserSerializer(serializers.ModelSerializer):
         total_attempts = self.get_total_attempts(obj)
         return (total_attempts / total_questions) * 100
     
+    def get_roles(self, obj):
+        return obj.get_roles()
+    
 class AttemptSerializer(me_serializers.EmbeddedDocumentSerializer):
-    question = serializers.CharField()
+    question = serializers.CharField(write_only=True)
+    question_text = serializers.SerializerMethodField(read_only=True)
+    # SHOW SELECTED OPTION LABELS IN LIST
+    selected_options_labels = serializers.SerializerMethodField(read_only=True)
+    categories = serializers.SerializerMethodField(read_only=True)
+    subcategories = serializers.SerializerMethodField(read_only=True)
     class Meta:
         model = Attempt
-        fields = ('question', 'selected_answers','is_correct')
+        fields = ('question', 'selected_answers','is_correct', 'question_text', 'selected_options_labels', 'categories', 'subcategories')
         extra_kwargs = {'is_correct':{'read_only':True}}
+    
+    def get_question_text(self, obj):
+        return str(obj.question.question_text)
+    
+    def get_selected_options_labels(self, obj):
+        option_labels = []
+        question = obj.question
+        for label in obj.selected_answers:
+            for option in question.options:
+                if option.label == label:
+                    option_labels.append(option.text)
+        return option_labels
+    
+    def get_categories(self, obj):
+        question = obj.question
+        categories = set()
+        for subcat in question.sub_categories:
+            categories.add(subcat.category.name)
+        return list(categories)
+    def get_subcategories(self, obj):
+        question = obj.question
+        subcategories = set()
+        for subcat in question.sub_categories:
+            subcategories.add(subcat.name)
+        return list(subcategories)
 
     def validate_question(self, value):
         print('value: ',value)
@@ -61,9 +94,24 @@ class AttemptSerializer(me_serializers.EmbeddedDocumentSerializer):
 
 class SubmissionsSerializer(me_serializers.DocumentSerializer):
     attempts = AttemptSerializer(many=True)
+    # categories = serializers.SerializerMethodField(read_only=True)
+    # subcategories = serializers.SerializerMethodField(read_only=True)
     class Meta:
         model = Submissions
         fields = ('user_guid', 'attempts', 'started_at')
+
+    # def get_categories(self, obj):
+    #     categories = set()
+    #     for attempt in obj.attempts:
+    #         question = attempt.question
+    #         categories.update(question.get_category_names())
+    #     return list(categories)
+    # def get_subcategories(self, obj):
+    #     subcategories = set()
+    #     for attempt in obj.attempts:
+    #         question = attempt.question
+    #         subcategories.update(question.get_subcategory_names())
+    #     return list(subcategories)
 
 class SubmissionResponseSerializer(me_serializers.EmbeddedDocumentSerializer):
     detail = serializers.CharField(default="Submission recorded successfully")
@@ -85,7 +133,7 @@ class SubmissionResponseSerializer(me_serializers.EmbeddedDocumentSerializer):
         correct_answers = question.correct_answers()
         selected_answers = set(obj.selected_answers)
         return list(selected_answers & correct_answers)
-
+    
 class RoleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Role
@@ -93,10 +141,42 @@ class RoleSerializer(serializers.ModelSerializer):
         read_only_fields = ('id', 'created_at', 'updated_at')
 
 class UserRoleSerializer(serializers.ModelSerializer):
-    role_name = serializers.CharField(source='role.name', read_only=True)
-    username = serializers.CharField(source='user.username', read_only=True)
-    
     class Meta:
         model = UserRole
-        fields = ('id', 'user', 'role', 'username', 'role_name', 'assigned_at')
+        fields = ('user', 'role', 'assigned_at')
         read_only_fields = ('id', 'assigned_at')
+
+class AssignRoleSerializer(serializers.Serializer):
+    role_ids = serializers.ListField(child=serializers.IntegerField(), allow_empty=False)
+
+    def validate_role_ids(self, value):
+        user = self.context.get("user")
+        if not user:
+            raise serializers.ValidationError("User context is required for role assignment.")
+        for role_id in value:
+            role = Role.objects.filter(id=role_id).first()
+            if not role:
+                raise serializers.ValidationError(f"Role with id {role_id} does not exist.")
+            if role.name == ROLE_USER:
+                raise serializers.ValidationError("USER role is virtual and cannot be assigned.")
+            if UserRole.objects.filter(user=user, role=role).exists():
+                raise serializers.ValidationError(f"User already has the role {role.name}.")
+        return value
+
+class RemoveRoleSerializer(serializers.Serializer):
+    role_ids = serializers.ListField(child=serializers.IntegerField(), allow_empty=False)
+
+    def validate_role_ids(self, value):
+        user = self.context.get("user")
+        if not user:
+            raise serializers.ValidationError("User context is required for role removal.")
+        for role_id in value:
+            role = Role.objects.filter(id=role_id).first()
+            if not role:
+                raise serializers.ValidationError(f"Role with id {role_id} does not exist.")
+            # DISABLE VIRTUAL ROLE REMOVAL
+            if role.name == ROLE_USER:
+                raise serializers.ValidationError("USER role is virtual and cannot be removed.")
+            if not UserRole.objects.filter(user=user, role=role).exists():
+                raise serializers.ValidationError(f"Role '{role.name}' is not assigned to this user.")
+        return value

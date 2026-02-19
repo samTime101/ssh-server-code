@@ -1,23 +1,29 @@
 from datetime import datetime
 from sql.models import User, Role, UserRole
 from rest_framework.viewsets import ModelViewSet
-from rest_framework.permissions import IsAuthenticated, IsAdminUser
+# from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from core.permissions.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import UserSerializer, SubmissionsSerializer, SubmissionResponseSerializer, AttemptSerializer, RoleSerializer, UserRoleSerializer
+from .serializers import *
 from core.pagination import StandardResultsSetPagination
 from mongo.models import Attempt, Submissions
 from drf_spectacular.utils import extend_schema 
 from rest_framework.exceptions import MethodNotAllowed, NotFound
 from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError
 
 class UserViewSet(ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     pagination_class = StandardResultsSetPagination
     permission_classes = [IsAdminUser]
-    http_method_names = ['get', 'put', 'delete', 'patch']
+    http_method_names = ['post','get', 'put', 'delete', 'patch']
     lookup_field = 'user_guid'
+
+    # BLOCK POST FOR USER CREATION FROM HERE
+    def create(self, request, *args, **kwargs):
+        raise MethodNotAllowed("Method 'create' not allowed. Use /api/auth/register/ to create users.")
 
     @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated], url_path='profile')
     def profile(self, request, *args, **kwargs):
@@ -29,6 +35,70 @@ class UserViewSet(ModelViewSet):
         serializer = self.get_serializer(user)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    # /api/users/<>/roles/
+    @action(detail=True, methods=['get'], permission_classes=[IsAdminUser], url_path='roles')
+    def roles(self, request, *args, **kwargs):
+        user_guid = kwargs.get('user_guid')
+        try:
+            user = User.objects.get(user_guid=user_guid)
+        except User.DoesNotExist:
+            return NotFound("User not found")
+        # user_roles = UserRole.objects.filter(user=user)
+        user_roles = user.get_roles()
+        # serializer = UserRoleSerializer(user_roles, many=True)
+        return Response(user_roles, status=status.HTTP_200_OK)
+    
+    # /api/users/roles/
+    @action(detail=False, methods=['get'], permission_classes=[IsAdminUser], url_path='roles')
+    def all_roles(self, request, *args, **kwargs):
+        user_roles = UserRole.objects.all()
+        serializer = UserRoleSerializer(user_roles, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    
+    # api/users/<>/assign-role/
+    @action(detail=True, methods=['post'], permission_classes=[IsAdminUser], url_path='assign-role', serializer_class=AssignRoleSerializer)
+    def assign_role(self, request, *args, **kwargs):
+        user_guid = kwargs.get('user_guid')
+        try:
+            user = User.objects.get(user_guid=user_guid)
+        except User.DoesNotExist:
+            raise NotFound("User not found")
+        serializer = self.get_serializer(data=request.data,context={"user": user})
+        serializer.is_valid(raise_exception=True)
+        if user == request.user:
+            raise ValidationError("You cannot assign roles to yourself.")
+        assigned_roles = []
+        # for role_id in serializer.validated_data['role_ids']:
+        #     role = Role.objects.get(id=role_id)
+        #     user_role = UserRole.objects.create(user=user, role=role)
+        #     assigned_roles.append(user_role)
+        roles =  Role.objects.filter(id__in=serializer.validated_data['role_ids'])
+        for role in roles:
+            user_role = UserRole.objects.create(user=user, role=role)
+            assigned_roles.append(user_role)
+        response_serializer = UserRoleSerializer(assigned_roles, many=True)
+        return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+    
+    # api users/<>/remove-role/
+    @action(detail=True, methods=['post'], permission_classes=[IsAdminUser], url_path='remove-role', serializer_class=RemoveRoleSerializer)
+    def remove_role(self, request, *args, **kwargs):
+        user_guid = kwargs.get('user_guid')
+        try:
+            user = User.objects.get(user_guid=user_guid)
+        except User.DoesNotExist:
+            raise NotFound("User not found")
+        serializer = self.get_serializer(data=request.data,context={"user": user})
+        serializer.is_valid(raise_exception=True)
+        if user == request.user:
+            raise ValidationError("You cannot remove your own roles.")
+        # for role_id in serializer.validated_data['role_ids']:
+        #     role = Role.objects.get(id=role_id)
+        #     UserRole.objects.filter(user=user, role=role).delete()
+        roles =  Role.objects.filter(id__in=serializer.validated_data['role_ids'])
+        for role in roles:
+            UserRole.objects.filter(user=user, role=role).delete()
+        return Response({"detail": "Roles removed successfully"}, status=status.HTTP_200_OK)
 
 class SubmissionCollectionViewSet(ModelViewSet):
     queryset = Submissions.objects.all()
@@ -77,24 +147,3 @@ class SubmissionCollectionViewSet(ModelViewSet):
         Submissions.objects(user_guid=user_guid).update_one(add_to_set__attempts=attempt_doc,set__started_at=datetime.utcnow(),upsert=True)
         response_data = SubmissionResponseSerializer(attempt_doc)
         return Response(response_data.data, status=status.HTTP_201_CREATED)
-
-class RoleViewSet(ModelViewSet):
-    queryset = Role.objects.all()
-    serializer_class = RoleSerializer
-    permission_classes = [IsAdminUser]
-    http_method_names = ['get', 'post']
-
-class UserRoleViewSet(ModelViewSet):
-    """ViewSet for managing user role assignments."""
-    queryset = UserRole.objects.all()
-    serializer_class = UserRoleSerializer
-    permission_classes = [IsAdminUser]
-    http_method_names = ['get', 'post', 'delete']
-    
-    def get_queryset(self):
-        """Filter user roles by user_id if provided in query params."""
-        queryset = UserRole.objects.all()
-        user_id = self.request.query_params.get('user_guid')
-        if user_id:
-            queryset = queryset.filter(user_id=user_id)
-        return queryset

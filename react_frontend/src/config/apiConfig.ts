@@ -7,6 +7,9 @@ export const API_BASE_URL =
 export const API_ENDPOINTS = {
   login: `${API_BASE_URL}/auth/signin/`,
   signup: `${API_BASE_URL}/auth/signup/`,
+  verifyEmail: `${API_BASE_URL}/auth/verify-email/`,
+  resetPassword: `${API_BASE_URL}/auth/reset-password/`,
+  resetPhoneNumber: `${API_BASE_URL}/auth/reset-phonenumber/`,
 
   colleges: `${API_BASE_URL}/colleges/`,
 
@@ -22,13 +25,10 @@ export const API_ENDPOINTS = {
   attemptQuestion: `${API_BASE_URL}/submissions/`,
   createQuestion: `${API_BASE_URL}/questions/`,
 
-
-
   // Admin Routes
   usersList: `${API_BASE_URL}/users/`,
-  adminQuestions: `${API_BASE_URL}/questions`,
+  adminQuestions: `${API_BASE_URL}/questions/`,
   // Roles (backend endpoint should expose /roles/)
   roles: `${API_BASE_URL}/roles/`,
   userRoles: `${API_BASE_URL}/user-roles/`,
-  
 };

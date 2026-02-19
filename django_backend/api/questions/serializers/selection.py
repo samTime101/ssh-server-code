@@ -7,6 +7,9 @@ from core.validators.obj_ids_validator import validate_object_ids
 class WrongOnlyQuerySerializer(serializers.Serializer):
     wrong_only = serializers.BooleanField(required=False, default=False)
 
+class NonAttemptedQuerySerializer(serializers.Serializer):
+    non_attempted = serializers.BooleanField(required=False, default=True)
+
 class QuestionSelectionSerializer(serializers.Serializer, SelectionValidationMixin):
     category_ids = serializers.ListField(child=serializers.CharField(),required=False,allow_empty=True,default=list)
     sub_category_ids = serializers.ListField(child=serializers.CharField(),required=False,allow_empty=True,default=list)

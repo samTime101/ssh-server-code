@@ -1,5 +1,6 @@
 from rest_framework_mongoengine.viewsets import ModelViewSet
-from rest_framework.permissions import AllowAny, IsAdminUser
+# from rest_framework.permissions import AllowAny, IsAdminUser
+from core.permissions.permissions import AllowAny, IsAdminUser
 from mongo.models import College
 from core.pagination import StandardResultsSetPagination
 from .serializers import CollegeSerializer

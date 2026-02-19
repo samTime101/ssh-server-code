@@ -2,13 +2,25 @@ import axiosInstance from "../axios";
 import { API_ENDPOINTS } from "@/config/apiConfig";
 import type { CreateQuestionPayload, CreateQuestionResponse } from "@/types/question";
 
+export const fetchQuestions = async (page: number, pageSize: number) => {
+  try {
+    const response = await axiosInstance.get(API_ENDPOINTS.adminQuestions, {
+      params: {
+        page,
+        page_size: pageSize,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    throw new Error("Failed to fetch questions");
+  }
+};
+
 export const createQuestion = async (
   questionData: CreateQuestionPayload,
-  images: { question: File | null; description: File | null },
-  token: string
+  images: { question: File | null; description: File | null }
 ): Promise<CreateQuestionResponse> => {
   console.log(JSON.stringify(questionData));
-  console.log(token);
 
   const formData = new FormData();
   formData.append("data", JSON.stringify(questionData));
@@ -19,15 +31,7 @@ export const createQuestion = async (
     formData.append("description_image", images.description);
   }
   try {
-    const response = await axiosInstance.post(
-      API_ENDPOINTS.adminQuestions + "/", // Django expects trailing slash for POST Requests
-      formData,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
+    const response = await axiosInstance.post(API_ENDPOINTS.adminQuestions, formData);
     return response.data;
   } catch (error) {
     throw new Error("Failed to create questions");
@@ -37,11 +41,9 @@ export const createQuestion = async (
 export const updateQuestion = async (
   questionId: string,
   questionData: CreateQuestionPayload,
-  images: { question: File | null; description: File | null },
-  token: string
+  images: { question: File | null; description: File | null }
 ): Promise<CreateQuestionResponse> => {
   console.log(JSON.stringify(questionData));
-  console.log(token);
   try {
     const formData = new FormData();
     formData.append("data", JSON.stringify(questionData));
@@ -52,17 +54,21 @@ export const updateQuestion = async (
       formData.append("description_image", images.description);
     }
     const response = await axiosInstance.putForm(
-      `${API_ENDPOINTS.adminQuestions}/${questionId}/`,
-      formData,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
+      `${API_ENDPOINTS.adminQuestions}${questionId}/`,
+      formData
     );
     return response.data;
   } catch (error) {
     console.error("Failed to update question", error);
     throw new Error("Failed to update question");
+  }
+};
+
+export const deleteQuestion = async (questionId: string): Promise<void> => {
+  try {
+    await axiosInstance.delete(`${API_ENDPOINTS.adminQuestions}${questionId}/`);
+  } catch (error) {
+    console.error("Failed to delete question", error);
+    throw new Error("Failed to delete question");
   }
 };

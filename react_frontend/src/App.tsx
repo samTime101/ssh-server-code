@@ -3,69 +3,54 @@ import { Navigate, Routes, Route, Outlet } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import LoginPage from "@/pages/LoginPage";
 import SignupPage from "@/pages/SignupPage";
+import LandingPage from "@/pages/LandingPage";
 import UserLayout from "@/layouts/UserLayout";
 import AdminLayout from "@/layouts/AdminLayout";
-import QuestionBankSection from "./components/user/QuestionBankSection";
+import QuestionBankSection from "@/components/user/QuestionBankSection";
 import QuestionProvider from "@/contexts/QuestionContext.tsx";
-import QuestionPage from "./pages/user/QuestionPage";
-import AddQuestionPage from "./pages/admin/AddQuestionPage";
-import CreateCategoryPage from "./pages/admin/CreateCategoryPage";
-import Loader from "./components/ui/Loader";
-import ManageUsersPage from "./pages/admin/ManageUsersPage";
-import EditUserPage from "./pages/admin/EditUserPage";
-import QuestionBankPage from "./pages/admin/QuestionBankPage";
-import AddRolePage from "./pages/admin/AddRolePage";
+import QuestionPage from "@/pages/user/QuestionPage";
+import AddQuestionPage from "@/pages/admin/AddQuestionPage";
+import CreateCategoryPage from "@/pages/admin/CreateCategoryPage";
+import ManageUsersPage from "@/pages/admin/ManageUsersPage";
+import EditUserPage from "@/pages/admin/EditUserPage";
+import QuestionBankPage from "@/pages/admin/QuestionBankPage";
+import AddRolePage from "@/pages/admin/AddRolePage";
+import AddCollegePage from "@/pages/admin/AddCollegePage";
+import ProfilePage from "@/pages/user/ProfilePage";
+import HistoryPage from "@/pages/user/HistoryPage";
+import SettingsPage from "@/pages/user/SettingsPage";
+import RoleRoute from "@/components/RoleRoute";
+import Loader from "@/components/ui/Loader";
+import ROLE_CONFIG from "@/config/roleConfig";
+import EmailVerified from "@/pages/EmailVerified";
 
-/*
-  The Route guard structure needs heavy refactoring to accommodate
-  multiple user roles (admin, staff, regular users) properly.
-  Current implementation is a temporary solution to ensure correct access control.
-
-  Current Flow:
-  - PrivateRoute: Checks for authentication token.
-  - UserRoute: Grants access to regular users and staff.
-  - AdminRoute: Restricts access to superusers only.
-  - RootRedirect: Directs users based on role after login.
-*/
-
-const PrivateRoute = () => {
-  const { token } = useAuth();
-  console.log("PrivateRoute token:", token);
-  return token ? <Outlet /> : <Navigate to="/auth/login" />;
-};
-
-const PublicRoute = ({ children }: { children: React.ReactNode }) => {
-  const { token } = useAuth();
-  return !token ? children : <Navigate to="/" />;
-};
-
+// Redirect user to correct panel based on role
 const RootRedirect = () => {
-  const { token, user } = useAuth();
+  const { user, token } = useAuth();
 
-  if (token && user) {
-    if (user.is_superuser) return <Navigate to="/admin" />;
-    if (user.is_staff) return <Navigate to="/userpanel" />;
-    return <Navigate to="/userpanel" />;
-  }
-
+  // Show loader while authentication is being determined
   if (token && !user) {
     return <Loader />;
   }
 
-  return <Navigate to="/auth/login" />;
+  // Show landing page if not authenticated
+  if (!token) return <LandingPage />;
+
+  // Admins, Contributors, and Doctors can access admin panel
+  if (user?.roles?.some((role: string) => role in ROLE_CONFIG)) {
+    return <Navigate to="/admin" replace />;
+  }
+  return <Navigate to="/userpanel" replace />;
 };
 
-const AdminRoute = () => {
-  const { token, user } = useAuth();
-  return token && user?.is_superuser ? <Outlet /> : <Navigate to="/" />;
+const PrivateRoute = () => {
+  const { token } = useAuth();
+  return token ? <Outlet /> : <Navigate to="/auth/login" replace />;
 };
 
-const UserRoute = () => {
-  const { token, user } = useAuth();
-  if (!token) return <Navigate to="/auth/login" />;
-  if (!user) return <Loader />;
-
-  return token && user ? <Outlet /> : <Navigate to="/" />;
+const PublicRoute = ({ children }: { children: React.ReactNode }) => {
+  const { token } = useAuth();
+  return !token ? children : <Navigate to="/" replace />;
 };
 
 const App = () => {
@@ -79,7 +64,7 @@ const App = () => {
               <LoginPage />
             </PublicRoute>
           }
-        ></Route>
+        />
         <Route
           path="signup"
           element={
@@ -87,39 +72,67 @@ const App = () => {
               <SignupPage />
             </PublicRoute>
           }
-        ></Route>
+        />
+        <Route
+          path="verify-email/:token"
+          element={
+            <PublicRoute>
+              <EmailVerified />
+            </PublicRoute>
+          }
+        />
       </Route>
       <Route element={<PrivateRoute />}>
-        <Route element={<UserRoute />}>
-          <Route
-            path="/userpanel"
-            element={
-              <QuestionProvider>
-                <UserLayout />
-              </QuestionProvider>
-            }
-          >
-            <Route index element={<Navigate to="question-bank" replace />} />
-            <Route path="question-bank" element={<QuestionBankSection />} index></Route>
-            {<Route path="question" element={<QuestionPage />}></Route>}
-          </Route>
+        {/* User Panel */}
+        <Route
+          path="/userpanel"
+          element={
+            <QuestionProvider>
+              <UserLayout />
+            </QuestionProvider>
+          }
+        >
+          <Route index element={<Navigate to="question-bank" replace />} />
+          <Route path="question-bank" element={<QuestionBankSection />} />
+          <Route path="question" element={<QuestionPage />} />
+          <Route path="profile" element={<ProfilePage />} />
+          <Route path="history" element={<HistoryPage />} />
+          <Route path="settings" element={<SettingsPage />} />
         </Route>
 
-        {/* <Route path="/teacherpanel" element={<TeacherLayout />} /> */}
-
-        <Route element={<AdminRoute />}>
-          <Route path="/admin" element={<AdminLayout />}>
+        {/* Admin Panel */}
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route element={<RoleRoute allowedPermissions={["add-question"]} />}>
             <Route path="add-question" element={<AddQuestionPage />} />
-            <Route path="create-category" element={<CreateCategoryPage />} />
-            <Route path="manage-users" element={<ManageUsersPage />} />
-            <Route path="manage-users/:id" element={<EditUserPage />} />
+          </Route>
+
+          <Route element={<RoleRoute allowedPermissions={["question-bank"]} />}>
             <Route path="question-bank" element={<QuestionBankPage />} />
+          </Route>
+
+          <Route element={<RoleRoute allowedPermissions={["create-category"]} />}>
+            <Route path="create-category" element={<CreateCategoryPage />} />
+          </Route>
+
+          <Route element={<RoleRoute allowedPermissions={["manage-users"]} />}>
+            <Route path="manage-users" element={<ManageUsersPage />} />
+          </Route>
+
+          <Route element={<RoleRoute allowedPermissions={["manage-users/:id"]} />}>
+            <Route path="manage-users/:id" element={<EditUserPage />} />
+          </Route>
+
+          <Route element={<RoleRoute allowedPermissions={["add-role"]} />}>
             <Route path="add-role" element={<AddRolePage />} />
+          </Route>
+
+          <Route element={<RoleRoute allowedPermissions={["add-college"]} />}>
+            <Route path="add-college" element={<AddCollegePage />} />
           </Route>
         </Route>
       </Route>
       <Route path="/" element={<RootRedirect />} />
-      <Route path="*" element={<div>404 - Page Not Found</div>} />{" "}
+      <Route path="*" element={<div>404 - Page Not Found</div>} />
     </Routes>
   );
 };

@@ -14,12 +14,15 @@ import axiosInstance from "@/services/axios";
 import { API_ENDPOINTS } from "@/config/apiConfig";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
+import { deleteUser } from "@/services/admin/user-service";
 import { PenIcon, TrashIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Paginator from "@/components/Paginator";
+import TableSkeletonLoader from "@/components/TableSkeletonLoader";
+import type { User } from "@/types/user";
 
 const ManageUsersPage = () => {
-  const { token } = useAuth();
+  const { token, user: authUser } = useAuth();
   const navigate = useNavigate();
 
   const [usersList, setUsersList] = useState([]);
@@ -33,6 +36,11 @@ const ManageUsersPage = () => {
   const [pageSize, setPageSize] = useState(5);
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
+  // const isSelf = (user: User) => authUser && (user.user_guid === authUser.userId || user.id === authUser.id);
+  const isSelf = (user: User): boolean => {
+    if (!authUser) return false;
+    return user.user_guid === authUser.userId || user.id === authUser.id;
+  };
 
   useEffect(() => {
     if (token) {
@@ -44,9 +52,6 @@ const ManageUsersPage = () => {
     setIsLoading(true);
     try {
       const response = await axiosInstance.get(API_ENDPOINTS.usersList, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
         params: {
           page: currentPage,
           page_size: pageSize,
@@ -85,11 +90,28 @@ const ManageUsersPage = () => {
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
   };
+
+  const handleDeleteUser = async (user: User) => {
+    if (!confirm(`Are you sure you want to delete ${user.first_name} ${user.last_name}?`)) {
+      return;
+    }
+
+    try {
+      await deleteUser(user.user_guid);
+      toast.success("User deleted successfully");
+      fetchUsers(); // Refresh the list
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to delete user");
+      console.error("Error deleting user:", error);
+    }
+  };
+
   const filteredUsers = usersList.filter((user: any) =>
     `${user.firstname} ${user.lastname} ${user.email}`
       .toLowerCase()
       .includes(searchQuery.toLowerCase())
   );
+
   return (
     <div>
       <div className="manage-users-header">
@@ -99,7 +121,7 @@ const ManageUsersPage = () => {
         {/* User management functionalities will go here */}
         <p>This is where admin can manage users.</p>
       </div>
-      <div className="manage-users-main-content p-4 rounded-md shadow-md bg-white mt-4 border">
+      <div className="manage-users-main-content mt-4 rounded-md border bg-white p-4 shadow-md">
         <div className="users-search-section">
           <Input
             placeholder="Search users by name or email"
@@ -109,9 +131,7 @@ const ManageUsersPage = () => {
         </div>
         <div className="users-list-section mt-4">
           <Table>
-            <TableCaption>
-              {isLoading ? "Loading..." : `Total users: ${pagination.count}`}
-            </TableCaption>
+            <TableCaption>{isLoading ? "" : `Total users: ${pagination.count}`}</TableCaption>
             <TableHeader>
               <TableRow>
                 {/* <TableHead>Id</TableHead> */}
@@ -125,11 +145,7 @@ const ManageUsersPage = () => {
             </TableHeader>
             <TableBody>
               {isLoading ? (
-                <TableRow>
-                  <TableCell colSpan={5} className="text-center">
-                    Loading...
-                  </TableCell>
-                </TableRow>
+                <TableSkeletonLoader rows={5} columns={6} />
               ) : filteredUsers.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={5} className="text-center">
@@ -138,42 +154,43 @@ const ManageUsersPage = () => {
                 </TableRow>
               ) : (
                 filteredUsers.map((user: any) => (
-                  <TableRow key={user.userGuid}>
+                  <TableRow key={user.user_guid}>
                     <TableCell>
                       <p className="font-semibold">{user.username}</p>
                     </TableCell>
                     <TableCell>
                       <p className="font-semibold">
-                        {user.firstname} {user.lastname}{" "}
+                        {user.first_name} {user.last_name}{" "}
                       </p>
                     </TableCell>
                     <TableCell>
-                      <p className="text-sm text-muted-foreground">
-                        {user.email}
-                      </p>
+                      <p className="text-muted-foreground text-sm">{user.email}</p>
                     </TableCell>
                     <TableCell>
-                      <p>{user.is_staff ? "Admin" : "Regular User"}</p>
+                      <p>{user.roles.includes("ADMIN") ? "Admin" : "Regular User"}</p>
                     </TableCell>
                     <TableCell>
                       <span
                         className={`${
-                          user.isActive
-                            ? "text-green-500 bg-green-100"
-                            : "text-red-500 bg-red-100"
-                        } px-2 py-1 rounded-md shadow-xs text-sm font-medium`}
+                          user.is_active ? "bg-green-100 text-green-500" : "bg-red-100 text-red-500"
+                        } rounded-md px-2 py-1 text-sm font-medium shadow-xs`}
                       >
-                        {user.isActive ? "Active" : "Inactive"}
+                        {user.is_active ? "Active" : "Inactive"}
                       </span>
                     </TableCell>
                     <TableCell className="flex gap-2">
-                      <Button 
-                        className="btn-edit bg-blue-500 text-white rounded cursor-pointer"
+                      <Button
+                        className="btn-edit cursor-pointer rounded bg-blue-500 text-white"
                         onClick={() => navigate(`/admin/manage-users/${user.user_guid}`)}
+                        disabled={isSelf(user)}
                       >
                         <PenIcon size={12} />
                       </Button>
-                      <Button className="btn-delete bg-red-500 text-white rounded cursor-pointer">
+                      <Button
+                        className="btn-delete cursor-pointer rounded bg-red-500 text-white"
+                        disabled={isSelf(user)}
+                        onClick={() => handleDeleteUser(user)}
+                      >
                         <TrashIcon size={12} />
                       </Button>
                     </TableCell>

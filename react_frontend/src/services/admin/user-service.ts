@@ -1,33 +1,13 @@
 import axiosInstance from "@/services/axios";
 import { API_ENDPOINTS } from "@/config/apiConfig";
-
-export interface User {
-  id: string | number;
-  user_guid?: string;
-  username: string;
-  email: string;
-  first_name: string;
-  last_name: string;
-  is_active: boolean;
-  is_staff: boolean;
-}
-
-export interface UserUpdate {
-  username?: string;
-  email?: string;
-  first_name?: string;
-  last_name?: string;
-  is_active?: boolean;
-}
+import type { User, UserUpdate } from "@/types/user";
 
 /**
  * Fetch a single user by ID
  */
-export async function fetchUserById(userId: string, token: string): Promise<User> {
+export async function fetchUserById(userId: string): Promise<User> {
   try {
-    const response = await axiosInstance.get(`${API_ENDPOINTS.usersList}${userId}/`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    const response = await axiosInstance.get(`${API_ENDPOINTS.usersList}${userId}/`);
     return response.data;
   } catch (error: any) {
     throw new Error(error.response?.data?.detail || "Failed to fetch user");
@@ -37,48 +17,37 @@ export async function fetchUserById(userId: string, token: string): Promise<User
 /**
  * Update a user's details
  */
-export async function updateUser(
-  userId: string,
-  data: UserUpdate,
-  token: string
-): Promise<User> {
+export async function updateUser(userId: string, data: UserUpdate): Promise<User> {
   try {
-    const response = await axiosInstance.patch(`${API_ENDPOINTS.usersList}${userId}/`, data, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    const response = await axiosInstance.patch(`${API_ENDPOINTS.usersList}${userId}/`, data);
     return response.data;
   } catch (error: any) {
     throw new Error(error.response?.data?.detail || "Failed to update user");
   }
 }
 
+
+// Already getting roles directly from user profile by id
 /**
  * Get roles for a specific user
  */
-export async function fetchUserRoles(userId: string, token: string): Promise<any[]> {
-  try {
-    const response = await axiosInstance.get(`${API_ENDPOINTS.userRoles}?user_id=${userId}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    return Array.isArray(response.data) ? response.data : response.data.results || [];
-  } catch (error: any) {
-    throw new Error(error.response?.data?.detail || "Failed to fetch user roles");
-  }
-}
+// export async function fetchUserRoles(userId: string): Promise<any[]> {
+//   try {
+//     const response = await axiosInstance.get(`${API_ENDPOINTS.userRoles}?user_id=${userId}`);
+//     return Array.isArray(response.data) ? response.data : response.data.results || [];
+//   } catch (error: any) {
+//     throw new Error(error.response?.data?.detail || "Failed to fetch user roles");
+//   }
+// }
 
 /**
  * Assign a role to a user
  */
-export async function assignRoleToUser(
-  userId: string,
-  roleId: string,
-  token: string
-): Promise<any> {
+export async function assignRoleToUser(userGuid: string, roleId: string): Promise<any> {
   try {
     const response = await axiosInstance.post(
-      `${API_ENDPOINTS.userRoles}`,
-      { user: userId, role: roleId },
-      { headers: { Authorization: `Bearer ${token}` } }
+      `/users/${userGuid}/assign-role/`,  // Adjusted endpoint manually for now
+      { role_ids: [roleId] }
     );
     return response.data;
   } catch (error: any) {
@@ -86,18 +55,25 @@ export async function assignRoleToUser(
   }
 }
 
-/**
- * Remove a role from a user
- */
-export async function removeRoleFromUser(
-  userRoleId: string,
-  token: string
-): Promise<void> {
+export async function removeRoleFromUser(userGuid: string, roleId: string): Promise<any> {
   try {
-    await axiosInstance.delete(`${API_ENDPOINTS.userRoles}${userRoleId}/`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    const response = await axiosInstance.post(
+      `/users/${userGuid}/remove-role/`,
+      { role_ids: [roleId] }
+    );
+    return response.data;
   } catch (error: any) {
     throw new Error(error.response?.data?.detail || "Failed to remove role");
+  }
+}
+
+/**
+ * Delete a user by ID
+ */
+export async function deleteUser(userId: string): Promise<void> {
+  try {
+    await axiosInstance.delete(`${API_ENDPOINTS.usersList}${userId}/`);
+  } catch (error: any) {
+    throw new Error(error.response?.data?.detail || "Failed to delete user");
   }
 }
