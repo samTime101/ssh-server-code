@@ -59,7 +59,7 @@ const HistoryPage = () => {
             <CardTitle>Incorrect</CardTitle>
           </CardHeader>
           <CardContent>
-            <span className="text-2xl font-bold text-red-600">{incorrect}</span>
+            <span className="text-destructive text-2xl font-bold">{incorrect}</span>
           </CardContent>
         </Card>
       </div>
@@ -111,7 +111,7 @@ const HistoryPage = () => {
                         Correct
                       </Badge>
                     ) : (
-                      <Badge variant="destructive" className="bg-red-100 text-red-700">
+                      <Badge variant="destructive" className="bg-destructive/10 text-destructive">
                         Incorrect
                       </Badge>
                     )}

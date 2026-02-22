@@ -37,7 +37,7 @@ const EmailVerified = () => {
   }, [token, navigate]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4">
+    <div className="bg-background flex min-h-screen items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
           <h2 className="text-center text-2xl font-bold">Email Verification</h2>
@@ -53,14 +53,12 @@ const EmailVerified = () => {
               <>
                 <CheckCircle2 className="h-16 w-16 text-green-500" />
                 <p className="text-center font-medium text-green-700">{message}</p>
-                <Button onClick={() => navigate("/auth/login")}>
-                  Go to Login
-                </Button>
+                <Button onClick={() => navigate("/auth/login")}>Go to Login</Button>
               </>
             ) : (
               <>
-                <XCircle className="h-16 w-16 text-red-500" />
-                <p className="text-center font-medium text-red-700">{message}</p>
+                <XCircle className="text-destructive h-16 w-16" />
+                <p className="text-destructive text-center font-medium">{message}</p>
               </>
             )}
           </div>

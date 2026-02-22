@@ -35,10 +35,10 @@ const AddQuestionForm = () => {
   });
 
   return (
-    <Card className="border border-gray-200 shadow-sm dark:border-slate-700">
-      <CardHeader className="border-b border-gray-200 pb-4 dark:border-slate-700">
-        <h2 className="text-xl font-semibold text-gray-800 dark:text-white">Create New Question</h2>
-        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+    <Card className="border-border border shadow-sm">
+      <CardHeader className="border-border border-b pb-4">
+        <h2 className="text-foreground text-xl font-semibold">Create New Question</h2>
+        <p className="text-muted-foreground mt-1 text-sm">
           Fill in the details below to add a new question
         </p>
       </CardHeader>
@@ -48,13 +48,13 @@ const AddQuestionForm = () => {
           {/* Question Text */}
           <div className="space-y-2">
             <Label htmlFor="questionText">
-              Question Text <span className="text-red-500">*</span>
+              Question Text <span className="text-destructive">*</span>
             </Label>
             <textarea
               id="questionText"
               name="questionText"
               rows={3}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-slate-600 dark:bg-slate-700 dark:text-gray-100 dark:focus:ring-blue-400"
+              className="border-input bg-background text-foreground focus:ring-ring w-full rounded-md border px-3 py-2 focus:ring-2 focus:outline-none"
               placeholder="Enter your question here"
               value={questionFormData?.questionText}
               onChange={handleInputChange}
@@ -75,7 +75,7 @@ const AddQuestionForm = () => {
                 />
                 <label
                   htmlFor="questionImage"
-                  className="flex cursor-pointer items-center gap-2 rounded-md border border-gray-300 px-4 py-2 text-sm transition-colors hover:bg-gray-50 dark:border-slate-600 dark:hover:bg-slate-700"
+                  className="border-input hover:bg-muted flex cursor-pointer items-center gap-2 rounded-md border px-4 py-2 text-sm transition-colors"
                 >
                   <Upload size={16} />
                   Choose Question Image
@@ -84,13 +84,13 @@ const AddQuestionForm = () => {
                 {selectedImages.question && (
                   <div className="flex items-center gap-2">
                     <ImageIcon size={16} className="text-green-600" />
-                    <span className="text-sm text-gray-600 dark:text-gray-400">
+                    <span className="text-muted-foreground text-sm">
                       {selectedImages.question.name}
                     </span>
                     <button
                       type="button"
                       onClick={() => handleImageChange("question", null)}
-                      className="ml-2 text-red-500 hover:text-red-700"
+                      className="text-destructive hover:text-destructive/70 ml-2"
                     >
                       <X size={14} />
                     </button>
@@ -104,7 +104,7 @@ const AddQuestionForm = () => {
                   <img
                     src={URL.createObjectURL(selectedImages.question)}
                     alt="Question preview"
-                    className="max-h-48 max-w-xs rounded-md border border-gray-200 dark:border-slate-600"
+                    className="border-border max-h-48 max-w-xs rounded-md border"
                   />
                 </div>
               )}
@@ -123,7 +123,7 @@ const AddQuestionForm = () => {
                 />
                 <label
                   htmlFor="descriptionImage"
-                  className="flex cursor-pointer items-center gap-2 rounded-md border border-gray-300 px-4 py-2 text-sm transition-colors hover:bg-gray-50 dark:border-slate-600 dark:hover:bg-slate-700"
+                  className="border-input hover:bg-muted flex cursor-pointer items-center gap-2 rounded-md border px-4 py-2 text-sm transition-colors"
                 >
                   <Upload size={16} />
                   Choose Description Image
@@ -132,13 +132,13 @@ const AddQuestionForm = () => {
                 {selectedImages.description && (
                   <div className="flex items-center gap-2">
                     <ImageIcon size={16} className="text-green-600" />
-                    <span className="text-sm text-gray-600 dark:text-gray-400">
+                    <span className="text-muted-foreground text-sm">
                       {selectedImages.description.name}
                     </span>
                     <button
                       type="button"
                       onClick={() => handleImageChange("description", null)}
-                      className="ml-2 text-red-500 hover:text-red-700"
+                      className="text-destructive hover:text-destructive/70 ml-2"
                     >
                       <X size={14} />
                     </button>
@@ -152,7 +152,7 @@ const AddQuestionForm = () => {
                   <img
                     src={URL.createObjectURL(selectedImages.description)}
                     alt="Description preview"
-                    className="max-h-48 max-w-xs rounded-md border border-gray-200 dark:border-slate-600"
+                    className="border-border max-h-48 max-w-xs rounded-md border"
                   />
                 </div>
               )}
@@ -162,13 +162,13 @@ const AddQuestionForm = () => {
           {/* Description */}
           <div className="space-y-2">
             <Label htmlFor="description">
-              Description <span className="text-red-500">*</span>
+              Description <span className="text-destructive">*</span>
             </Label>
             <textarea
               id="description"
               name="description"
               rows={2}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-slate-600 dark:bg-slate-700 dark:text-gray-100 dark:focus:ring-blue-400"
+              className="border-input bg-background text-foreground focus:ring-ring w-full rounded-md border px-3 py-2 focus:ring-2 focus:outline-none"
               placeholder="Additional context or explanation"
               value={questionFormData.description}
               onChange={handleInputChange}
@@ -179,12 +179,12 @@ const AddQuestionForm = () => {
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <div className="space-y-2">
               <Label htmlFor="category">
-                Category <span className="text-red-500">*</span>
+                Category <span className="text-destructive">*</span>
               </Label>
               <select
                 id="category"
                 name="categoryIds"
-                className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-slate-600 dark:bg-slate-700 dark:text-gray-100 dark:focus:ring-blue-400"
+                className="border-input bg-background text-foreground focus:ring-ring w-full rounded-md border px-3 py-2 focus:ring-2 focus:outline-none"
                 value=""
                 onChange={(e) => {
                   const selectedId = e.target.value;
@@ -219,7 +219,7 @@ const AddQuestionForm = () => {
                       <button
                         type="button"
                         onClick={() => handleRemoveCategory(catId)}
-                        className="ml-1 rounded-full p-0.5 hover:bg-gray-300 dark:hover:bg-slate-600"
+                        className="hover:bg-muted ml-1 rounded-full p-0.5"
                       >
                         <X size={12} />
                       </button>
@@ -235,7 +235,7 @@ const AddQuestionForm = () => {
                 <select
                   id="subcategory"
                   name="subCategoryIds"
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-slate-600 dark:bg-slate-700 dark:text-gray-100 dark:focus:ring-blue-400"
+                  className="border-input bg-background text-foreground focus:ring-ring w-full rounded-md border px-3 py-2 focus:ring-2 focus:outline-none"
                   value=""
                   onChange={(e) => {
                     const selectedId = e.target.value;
@@ -273,7 +273,7 @@ const AddQuestionForm = () => {
                       <button
                         type="button"
                         onClick={() => handleRemoveSubCategory(subCatId)}
-                        className="ml-1 rounded-full p-0.5 hover:bg-gray-300 dark:hover:bg-slate-600"
+                        className="hover:bg-muted ml-1 rounded-full p-0.5"
                       >
                         <X size={12} />
                       </button>
@@ -344,12 +344,12 @@ const AddQuestionForm = () => {
           {/* Difficulty */}
           <div className="space-y-2">
             <Label htmlFor="difficulty">
-              Difficulty <span className="text-red-500">*</span>
+              Difficulty <span className="text-destructive">*</span>
             </Label>
             <select
               id="difficulty"
               name="difficulty"
-              className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-slate-600 dark:bg-slate-700 dark:text-gray-100 dark:focus:ring-blue-400"
+              className="border-input bg-background text-foreground focus:ring-ring w-full rounded-md border px-3 py-2 focus:ring-2 focus:outline-none"
               value={questionFormData.difficulty}
               onChange={handleInputChange}
             >
@@ -362,7 +362,7 @@ const AddQuestionForm = () => {
           {/* Answer Type */}
           <div className="space-y-2">
             <Label>
-              Answer Type <span className="text-red-500">*</span>
+              Answer Type <span className="text-destructive">*</span>
             </Label>
             <div className="flex gap-6">
               <label className="flex cursor-pointer items-center gap-2">
@@ -372,11 +372,9 @@ const AddQuestionForm = () => {
                   value="single"
                   checked={questionFormData.optionType === "single"}
                   onChange={handleOptionTypeChange}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500"
+                  className="text-primary focus:ring-ring h-4 w-4"
                 />
-                <span className="text-sm text-gray-700 dark:text-gray-300">
-                  Single Correct Answer
-                </span>
+                <span className="text-foreground text-sm">Single Correct Answer</span>
               </label>
               <label className="flex cursor-pointer items-center gap-2">
                 <input
@@ -385,11 +383,9 @@ const AddQuestionForm = () => {
                   value="multiple"
                   checked={questionFormData.optionType === "multiple"}
                   onChange={handleOptionTypeChange}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500"
+                  className="text-primary focus:ring-ring h-4 w-4"
                 />
-                <span className="text-sm text-gray-700 dark:text-gray-300">
-                  Multiple Correct Answers
-                </span>
+                <span className="text-foreground text-sm">Multiple Correct Answers</span>
               </label>
             </div>
           </div>
@@ -397,7 +393,7 @@ const AddQuestionForm = () => {
           {/* Answer Options */}
           <div className="space-y-2">
             <Label>
-              Answer Options <span className="text-red-500">*</span>
+              Answer Options <span className="text-destructive">*</span>
             </Label>
             <div className="space-y-3">
               {/* Answer Option A */}
@@ -410,20 +406,18 @@ const AddQuestionForm = () => {
                         name="correctAnswer"
                         checked={option.isCorrect}
                         onChange={(e) => handleCorrectAnswerChange(option.label, e.target.checked)}
-                        className="text-blue-600 focus:ring-blue-500"
+                        className="text-primary focus:ring-ring"
                       />
                     ) : (
                       <input
                         type="checkbox"
                         checked={option.isCorrect}
                         onChange={(e) => handleCorrectAnswerChange(option.label, e.target.checked)}
-                        className="text-blue-600 focus:ring-blue-500"
+                        className="text-primary focus:ring-ring"
                       />
                     )}
                   </div>
-                  <div className="mt-2 w-8 font-medium text-gray-700 dark:text-gray-300">
-                    {option.label}
-                  </div>
+                  <div className="text-foreground mt-2 w-8 font-medium">{option.label}</div>
                   <Input
                     type="text"
                     placeholder="Enter option option"
@@ -439,7 +433,7 @@ const AddQuestionForm = () => {
               type="button"
               variant="outline"
               size="sm"
-              className="mt-3 border-blue-600 text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:text-blue-400 dark:hover:bg-blue-900/20"
+              className="border-primary text-primary hover:bg-primary/5 mt-3"
               onClick={handleAddMoreAnswers}
             >
               + Add Another Answer
@@ -474,9 +468,9 @@ const AddQuestionForm = () => {
           </div>
 
           {/* Submit Button */}
-          <div className="flex justify-end border-t border-gray-200 pt-4 dark:border-slate-700">
+          <div className="border-border flex justify-end border-t pt-4">
             <Button
-              className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground"
               onClick={handleCreateQuestionSubmit}
             >
               {isSubmitting ? "Creating..." : "Create Question"}

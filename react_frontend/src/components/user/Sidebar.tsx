@@ -18,10 +18,11 @@ const otherItems = [
 
 const baseItemClass =
   "flex items-center gap-4 rounded-lg px-6 py-3 transition-all duration-200 cursor-pointer border border-transparent";
-const activeClass = "bg-blue-600 text-white shadow-md";
-const inactiveClass = "text-gray-700 hover:bg-white hover:shadow-sm hover:border-gray-200";
-const iconActiveClass = "text-white";
-const iconInactiveClass = "text-gray-500 group-hover:text-blue-600";
+const activeClass = "bg-sidebar-primary text-sidebar-primary-foreground shadow-md";
+const inactiveClass =
+  "text-sidebar-foreground hover:bg-background hover:shadow-sm hover:border-border";
+const iconActiveClass = "text-sidebar-primary-foreground";
+const iconInactiveClass = "text-muted-foreground group-hover:text-sidebar-primary";
 
 const Sidebar = () => {
   const { logout } = useAuth();
@@ -30,9 +31,9 @@ const Sidebar = () => {
   const isActive = (path: string) => location.pathname.startsWith(path);
 
   return (
-    <aside className="fixed top-[64px] left-0 z-10 flex h-[calc(100vh-64px)] w-64 flex-col border-r border-gray-200 bg-gray-50">
-      <div className="flex-shrink-0 border-b border-gray-200 px-4 py-6">
-        <h2 className="text-center text-xl font-bold text-blue-600">SISANI-EPS</h2>
+    <aside className="border-sidebar-border bg-sidebar fixed top-[64px] left-0 z-10 flex h-[calc(100vh-64px)] w-64 flex-col border-r">
+      <div className="border-sidebar-border flex-shrink-0 border-b px-4 py-6">
+        <h2 className="text-sidebar-primary text-center text-xl font-bold">SISANI-EPS</h2>
       </div>
 
       <nav className="flex-1 overflow-y-auto py-6">
@@ -57,7 +58,7 @@ const Sidebar = () => {
         </ul>
       </nav>
 
-      <div className="flex-shrink-0 border-t border-gray-200 bg-gray-50 px-3 py-6">
+      <div className="border-sidebar-border bg-sidebar flex-shrink-0 border-t px-3 py-6">
         {otherItems.map((item, idx) => {
           const IconComponent = item.icon;
           if (item.type === "link" && item.path) {
@@ -78,9 +79,9 @@ const Sidebar = () => {
             <button
               key={idx}
               onClick={logout}
-              className="mt-2 flex w-full items-center gap-4 rounded-lg border border-transparent px-6 py-3 text-red-600 transition-all duration-200 hover:border-red-200 hover:bg-red-50 hover:shadow-sm"
+              className="text-destructive hover:border-destructive/20 hover:bg-destructive/10 mt-2 flex w-full items-center gap-4 rounded-lg border border-transparent px-6 py-3 transition-all duration-200 hover:shadow-sm"
             >
-              <IconComponent size={20} className="text-red-500" />
+              <IconComponent size={20} className="text-destructive" />
               <p className="text-sm font-medium">{item.text}</p>
             </button>
           );
