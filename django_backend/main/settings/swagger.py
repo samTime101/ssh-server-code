@@ -3,6 +3,12 @@ SPECTACULAR_SETTINGS = {
     "TITLE": "MCQ API",
     "DESCRIPTION": """
 
+## February 23, 2026
+- Added `search` query parameter to `/api/questions/` endpoint to enable searching in `question_text` and `explanation` fields.
+- Added `category_id` and `sub_category_id` query parameters to `/api/questions/` endpoint to filter questions based on category and subcategory.
+- Added Pagination to `/api/questions/select/` endpoint to handle large question sets efficiently.
+    
+
 ## February 18, 2026
 - Admin cannot remove/add own roles.    
 - Added checks in role assignment and removal serializers to ensure that the user context is provided, preventing potential errors during role management operations.
