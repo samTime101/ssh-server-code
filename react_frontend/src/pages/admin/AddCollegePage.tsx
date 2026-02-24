@@ -126,7 +126,7 @@ const AddCollegePage = () => {
 
   return (
     <section className="space-y-6 p-6">
-      <h1 className="text-2xl font-semibold">{editingId ? "Edit College" : "Add College"}</h1>
+      <h1 className="text-2xl font-semibold text-foreground">{editingId ? "Edit College" : "Add College"}</h1>
 
       <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
         <Input
@@ -169,8 +169,8 @@ const AddCollegePage = () => {
         </div>
       </form>
 
-      <h2 className="mb-2 text-xl font-medium">Existing colleges</h2>
-      <div className="rounded-md border bg-white shadow-md">
+      <h2 className="mb-2 text-xl font-medium text-foreground">Existing colleges</h2>
+      <div className="border-border bg-card rounded-md border shadow-md">
         <Table>
           <TableHeader>
             <TableRow>
@@ -193,7 +193,7 @@ const AddCollegePage = () => {
               </TableRow>
             ) : (
               colleges.map((college) => (
-                <TableRow key={college.id}>
+                <TableRow className="text-muted-foreground" key={college.id}>
                   <TableCell>{college.name}</TableCell>
                   <TableCell>{college.city}</TableCell>
                   <TableCell>{college.state}</TableCell>
@@ -201,13 +201,13 @@ const AddCollegePage = () => {
                   <TableCell>{college.postal_code}</TableCell>
                   <TableCell className="flex gap-2">
                     <Button
-                      className="cursor-pointer rounded bg-blue-500 text-white"
+                      className="bg-primary text-primary-foreground cursor-pointer rounded"
                       onClick={() => handleEdit(college)}
                     >
                       <PenIcon size={14} />
                     </Button>
                     <Button
-                      className="cursor-pointer rounded bg-red-500 text-white"
+                      className="bg-destructive text-primary-foreground cursor-pointer rounded"
                       onClick={() => handleDelete(college.id)}
                     >
                       <TrashIcon size={14} />

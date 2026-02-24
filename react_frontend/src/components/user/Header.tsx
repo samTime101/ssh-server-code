@@ -1,10 +1,9 @@
 import { useAuth } from "@/hooks/useAuth";
 
-
 const Header = () => {
   const { user } = useAuth();
   return (
-    <header className="flex justify-between px-8 py-4 border-b sticky top-0 bg-gray-50">
+    <header className="border-border bg-card sticky top-0 flex justify-between border-b px-8 py-4">
       <div className="header-left">
         <div className="header-logo">
           <img
@@ -14,10 +13,11 @@ const Header = () => {
           />
         </div>
       </div>
-      <div className="header-right flex gap-3 px-4 py-1 rounded-lg items-center">
+      <div className="header-right flex items-center gap-3 rounded-lg px-4 py-1">
         <div className="header-user-name">{user?.username}</div>
-        <div className="header-user-picture bg-[#323A67] rounded-full p-2 flex justify-center items-center text-xs text-white">
-          {user?.first_name[0]}{user?.last_name[0]}
+        <div className="header-user-picture bg-primary text-primary-foreground flex items-center justify-center rounded-full p-2 text-xs">
+          {user?.first_name[0]}
+          {user?.last_name[0]}
         </div>
       </div>
     </header>
