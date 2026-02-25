@@ -1,9 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { useQuestions } from "@/hooks/useQuestions";
-import { useState, useEffect } from "react"; //React,
+import { useState, useEffect, useRef } from "react"; //React,
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, ArrowRight, Lightbulb } from "lucide-react";
+import { ArrowLeft, ArrowRight, Lightbulb, Loader2 } from "lucide-react";
 import { attemptQuestion } from "@/services/user/question-service";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -14,7 +14,7 @@ import { useNavigate } from "react-router-dom";
 
 const QuestionPage = () => {
   const { token } = useAuth();
-  const { questionData } = useQuestions();
+  const { questionData, questionPagination, fetchNextPage, isFetchingNextPage } = useQuestions();
   const navigate = useNavigate();
 
   // use an index instead of storing whole object
@@ -25,6 +25,9 @@ const QuestionPage = () => {
   // single source for per-question state
   const [attempts, setAttempts] = useState<{ [id: string]: QuestionAttemptState }>({});
 
+  // track the data length from the previous render to distinguish a fresh fetch from a page append
+  const prevDataLengthRef = useRef(0);
+
   // derive currentQuestion from index and questionData
   const currentQuestion: Question | null =
     questionData && questionData.length > 0 ? questionData[currentIndex] || null : null;
@@ -32,11 +35,18 @@ const QuestionPage = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
 
-    // reset index and UI if questionData changes
+    const prevLength = prevDataLengthRef.current;
+    prevDataLengthRef.current = questionData?.length ?? 0;
+
     if (!questionData || questionData.length === 0) {
       setCurrentIndex(0);
       return;
     }
+
+    // If the new length is greater than before, this is a page append — keep the current index.
+    // Otherwise it's a fresh session fetch — reset everything.
+    if (questionData.length > prevLength) return;
+
     setCurrentIndex(0);
     setSelectedOptions([]);
     setSelectedOption("");
@@ -58,11 +68,6 @@ const QuestionPage = () => {
   const handleNextQuestion = async () => {
     if (!currentQuestion) return;
 
-    // if (!token) {
-    //   console.error("No token available");
-    //   return;
-    // }
-
     // validate selection before going next
     if (
       (currentQuestion.option_type === "multiple" && selectedOptions.length === 0) ||
@@ -75,17 +80,22 @@ const QuestionPage = () => {
     const nextIndex = currentIndex + 1;
 
     if (!questionData || nextIndex >= questionData.length) {
-      toast.info("You've completed all questions!");
-      navigate("/userpanel");
+      // try to load the next page if available
+      if (questionPagination?.next) {
+        await fetchNextPage();
+        setCurrentIndex(nextIndex);
+      } else {
+        toast.info("You've completed all questions!");
+        navigate("/userpanel");
+      }
       return;
     }
     setCurrentIndex(nextIndex);
   };
 
   const handlePreviousQuestion = () => {
-    if (!questionData || questionData.length === 0) return;
-    const prevIndex = (currentIndex - 1 + questionData.length) % questionData.length;
-    setCurrentIndex(prevIndex);
+    if (!questionData || questionData.length === 0 || currentIndex === 0) return;
+    setCurrentIndex(currentIndex - 1);
   };
 
   const handleAttemptQuestion = async (question: Question) => {
@@ -146,6 +156,14 @@ const QuestionPage = () => {
   };
 
   if (!currentQuestion) {
+    if (isFetchingNextPage) {
+      return (
+        <div className="flex min-h-screen items-center justify-center gap-3">
+          <Loader2 className="text-primary h-6 w-6 animate-spin" />
+          <p className="text-muted-foreground text-lg">Loading next questions...</p>
+        </div>
+      );
+    }
     return (
       <div className="flex min-h-screen items-center justify-center">
         <p className="text-muted-foreground text-lg">
@@ -169,14 +187,26 @@ const QuestionPage = () => {
   const currentAttempt = currentQuestion ? attempts[currentQuestion.id] : undefined;
   const isAttempted = !!currentAttempt?.isAttempted;
 
+  // total question count — use total from pagination meta if available, otherwise length of loaded data
+  const totalCount = questionPagination?.count ?? questionData.length;
+
   return (
     <div className="min-h-screen p-6">
       <div className="mx-auto max-w-4xl space-y-6">
-        <Button variant="outline" onClick={handleBack} className="hover:bg-muted px-4 py-2 text-muted-foreground">
+        <Button
+          variant="outline"
+          onClick={handleBack}
+          className="hover:bg-muted text-muted-foreground px-4 py-2"
+        >
           <ArrowLeft />
           Back
         </Button>
-        <h1 className="text-foreground text-3xl font-bold">Entrance Preparation Test</h1>
+        <div className="flex items-center justify-between">
+          <h1 className="text-foreground text-3xl font-bold">Entrance Preparation Test</h1>
+          <span className="text-muted-foreground text-sm font-medium">
+            {currentIndex + 1} / {totalCount}
+          </span>
+        </div>
 
         <Card className="shadow-lg">
           <CardHeader className="pb-4">
@@ -281,7 +311,7 @@ const QuestionPage = () => {
           <Button
             variant="outline"
             onClick={handlePreviousQuestion}
-            className="hover:bg-muted px-6 py-2 text-muted-foreground"
+            className="hover:bg-muted text-muted-foreground px-6 py-2"
           >
             <ArrowLeft />
             <p>Previous</p>
@@ -302,10 +332,20 @@ const QuestionPage = () => {
           ) : (
             <Button
               onClick={handleNextQuestion}
+              disabled={isFetchingNextPage}
               className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2"
             >
-              <p>Next</p>
-              <ArrowRight />
+              {isFetchingNextPage ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <p>Loading...</p>
+                </>
+              ) : (
+                <>
+                  <p>Next</p>
+                  <ArrowRight />
+                </>
+              )}
             </Button>
           )}
         </div>
