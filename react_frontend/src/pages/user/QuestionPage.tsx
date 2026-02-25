@@ -172,7 +172,7 @@ const QuestionPage = () => {
   return (
     <div className="min-h-screen p-6">
       <div className="mx-auto max-w-4xl space-y-6">
-        <Button variant="outline" onClick={handleBack} className="hover:bg-muted px-4 py-2 text-muted-foreground">
+        <Button variant="outline" onClick={handleBack} className="hover:bg-muted px-4 py-2 text-muted-foreground bg-card">
           <ArrowLeft />
           Back
         </Button>
@@ -281,7 +281,7 @@ const QuestionPage = () => {
           <Button
             variant="outline"
             onClick={handlePreviousQuestion}
-            className="hover:bg-muted px-6 py-2 text-muted-foreground"
+            className="hover:bg-muted px-6 py-2 text-muted-foreground bg-card"
           >
             <ArrowLeft />
             <p>Previous</p>

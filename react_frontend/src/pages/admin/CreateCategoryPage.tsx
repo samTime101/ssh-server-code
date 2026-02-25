@@ -1,6 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { API_ENDPOINTS } from "@/config/apiConfig";
 import { useAuth } from "@/hooks/useAuth";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { getCategories } from "@/services/admin/subcategory-service";
 import { createSubCategory } from "@/services/admin/subcategory-service";
 import { createSubSubCategory } from "@/services/admin/subsubcategory-service";
@@ -195,12 +203,11 @@ const CreateCategoryPage = () => {
               >
                 Category Name *
               </label>
-              <input
+              <Input
                 type="text"
                 id="categoryName"
                 value={categoryName}
                 onChange={(e) => setCategoryName(e.target.value)}
-                className="border-input bg-background text-foreground focus:ring-ring w-full rounded-md border px-4 py-2 focus:border-transparent focus:ring-2 focus:outline-none"
                 placeholder="Enter category name (e.g., Computer Science)"
                 required
                 disabled={isLoading}
@@ -230,21 +237,22 @@ const CreateCategoryPage = () => {
               >
                 Select Category *
               </label>
-              <select
-                id="categorySelect"
+              <Select
                 value={selectedCategoryId}
-                onChange={(e) => setSelectedCategoryId(e.target.value)}
-                className="border-input bg-background text-foreground focus:ring-ring w-full rounded-md border px-4 py-2 focus:border-transparent focus:ring-2 focus:outline-none"
-                required
+                onValueChange={setSelectedCategoryId}
                 disabled={isLoading}
               >
-                <option value="">-- Select Category --</option>
-                {categories.map((cat) => (
-                  <option key={cat.categoryId} value={cat.categoryId}>
-                    {cat.categoryName}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="-- Select Category --" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map((cat) => (
+                    <SelectItem key={cat.categoryId} value={cat.categoryId}>
+                      {cat.categoryName}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="mb-6">
               <label
@@ -253,12 +261,11 @@ const CreateCategoryPage = () => {
               >
                 Subcategory Name *
               </label>
-              <input
+              <Input
                 type="text"
                 id="subCategoryName"
                 value={subCategoryName}
                 onChange={(e) => setSubCategoryName(e.target.value)}
-                className="border-input bg-background text-foreground focus:ring-ring w-full rounded-md border px-4 py-2 focus:border-transparent focus:ring-2 focus:outline-none"
                 placeholder="Enter subcategory name"
                 required
                 disabled={isLoading}
@@ -288,23 +295,24 @@ const CreateCategoryPage = () => {
               >
                 Select Subcategory *
               </label>
-              <select
-                id="subCategorySelect"
+              <Select
                 value={selectedSubCategoryId}
-                onChange={(e) => setSelectedSubCategoryId(e.target.value)}
-                className="border-input bg-background text-foreground focus:ring-ring w-full rounded-md border px-4 py-2 focus:border-transparent focus:ring-2 focus:outline-none"
-                required
+                onValueChange={setSelectedSubCategoryId}
                 disabled={isLoading}
               >
-                <option value="">-- Select Subcategory --</option>
-                {categories
-                  .find((cat) => cat.categoryId === selectedCategoryId)
-                  ?.subCategories?.map((subcat: any) => (
-                    <option key={subcat.subCategoryId} value={subcat.subCategoryId}>
-                      {subcat.subCategoryName}
-                    </option>
-                  ))}
-              </select>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="-- Select Subcategory --" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories
+                    .find((cat) => cat.categoryId === selectedCategoryId)
+                    ?.subCategories?.map((subcat: any) => (
+                      <SelectItem key={subcat.subCategoryId} value={subcat.subCategoryId}>
+                        {subcat.subCategoryName}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="mb-6">
               <label
@@ -313,12 +321,11 @@ const CreateCategoryPage = () => {
               >
                 Subsubcategory Name *
               </label>
-              <input
+              <Input
                 type="text"
                 id="subSubCategoryName"
                 value={subSubCategoryName}
                 onChange={(e) => setSubSubCategoryName(e.target.value)}
-                className="border-input bg-background text-foreground focus:ring-ring w-full rounded-md border px-4 py-2 focus:border-transparent focus:ring-2 focus:outline-none"
                 placeholder="Enter subsubcategory name"
                 required
                 disabled={isLoading}
