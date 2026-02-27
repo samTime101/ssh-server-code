@@ -268,42 +268,46 @@ const QuestionPage = () => {
                     />
                   ))}
             </div>
-
-            {isAttempted && (
-              <div className="border-primary bg-primary/5 rounded-lg border-l-4 p-5">
-                <div className="flex items-start gap-3">
-                  <div className="mt-1 flex-shrink-0">
-                    <div className="bg-primary flex h-8 w-8 items-center justify-center rounded-full">
-                      <Lightbulb size={18} className="text-primary-foreground" />
-                    </div>
-                  </div>
-                  <div className="flex-1 space-y-2">
-                    <h3 className="text-primary flex items-center text-sm font-semibold">
-                      Explanation
-                    </h3>
-                    <p className="text-foreground text-sm leading-relaxed">
-                      {currentQuestion.description}
-                    </p>
-                    {currentQuestion.description_image_url && (
-                      <div className="flex justify-center">
-                        <img
-                          src={currentQuestion.description_image_url}
-                          alt="Question illustration"
-                          className="h-auto max-w-full rounded-lg shadow-md"
-                        />
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
           </CardContent>
         </Card>
 
-        {/* Contributor Display */}
+        {/* Explanation */}
+        {isAttempted && (
+          <div className="border-primary bg-primary/5 rounded-lg border-l-4 p-5">
+            <div className="flex items-start gap-3">
+              <div className="mt-1 flex-shrink-0">
+                <div className="bg-primary flex h-8 w-8 items-center justify-center rounded-full">
+                  <Lightbulb size={18} className="text-primary-foreground" />
+                </div>
+              </div>
+              <div className="flex-1 space-y-2">
+                <h3 className="text-primary flex items-center text-sm font-semibold">
+                  Explanation
+                </h3>
+                <p className="text-foreground text-sm leading-relaxed">
+                  {currentQuestion.description}
+                </p>
+                {currentQuestion.description_image_url && (
+                  <div className="flex justify-center">
+                    <img
+                      src={currentQuestion.description_image_url}
+                      alt="Question illustration"
+                      className="h-auto max-w-full rounded-lg shadow-md"
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Contributor */}
         {currentQuestion?.contributor && (
-          <div className="text-muted-foreground text-sm">
-            {currentQuestion.contributor} - {currentQuestion.contributor_specialization}
+          <div className="text-muted-foreground text-right text-sm">
+            <div>{currentQuestion.contributor}</div>
+            {currentQuestion.contributor_specialization && (
+              <div className="text-xs">{currentQuestion.contributor_specialization}</div>
+            )}
           </div>
         )}
 
@@ -317,37 +321,39 @@ const QuestionPage = () => {
             <p>Previous</p>
           </Button>
 
-          {!isAttempted ? (
-            <Button
-              className="bg-primary hover:bg-primary/90 text-primary-foreground mt-6"
-              onClick={() => handleAttemptQuestion(currentQuestion)}
-              disabled={
-                currentQuestion.option_type === "multiple"
-                  ? selectedOptions.length === 0
-                  : selectedOption === ""
-              }
-            >
-              Attempt
-            </Button>
-          ) : (
-            <Button
-              onClick={handleNextQuestion}
-              disabled={isFetchingNextPage}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2"
-            >
-              {isFetchingNextPage ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  <p>Loading...</p>
-                </>
-              ) : (
-                <>
-                  <p>Next</p>
-                  <ArrowRight />
-                </>
-              )}
-            </Button>
-          )}
+          <div className="flex items-center gap-4">
+            {!isAttempted ? (
+              <Button
+                className="bg-primary hover:bg-primary/90 text-primary-foreground mt-6"
+                onClick={() => handleAttemptQuestion(currentQuestion)}
+                disabled={
+                  currentQuestion.option_type === "multiple"
+                    ? selectedOptions.length === 0
+                    : selectedOption === ""
+                }
+              >
+                Attempt
+              </Button>
+            ) : (
+              <Button
+                onClick={handleNextQuestion}
+                disabled={isFetchingNextPage}
+                className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2"
+              >
+                {isFetchingNextPage ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <p>Loading...</p>
+                  </>
+                ) : (
+                  <>
+                    <p>Next</p>
+                    <ArrowRight />
+                  </>
+                )}
+              </Button>
+            )}
+          </div>
         </div>
 
         <div className="text-center">
