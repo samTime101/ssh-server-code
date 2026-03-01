@@ -148,7 +148,9 @@ const QuestionPage = () => {
   if (!currentQuestion) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <p className="text-lg text-gray-600">No questions available. Please select categories.</p>
+        <p className="text-muted-foreground text-lg">
+          No questions available. Please select categories.
+        </p>
       </div>
     );
   }
@@ -170,11 +172,11 @@ const QuestionPage = () => {
   return (
     <div className="min-h-screen p-6">
       <div className="mx-auto max-w-4xl space-y-6">
-        <Button variant="outline" onClick={handleBack} className="px-4 py-2 hover:bg-gray-100">
+        <Button variant="outline" onClick={handleBack} className="hover:bg-muted px-4 py-2 text-muted-foreground bg-card">
           <ArrowLeft />
           Back
         </Button>
-        <h1 className="text-3xl font-bold text-gray-800">Entrance Preparation Test</h1>
+        <h1 className="text-foreground text-3xl font-bold">Entrance Preparation Test</h1>
 
         <Card className="shadow-lg">
           <CardHeader className="pb-4">
@@ -198,7 +200,7 @@ const QuestionPage = () => {
                 {currentQuestion.option_type}
               </Badge>
             </div>
-            <h2 className="text-xl leading-relaxed font-semibold text-gray-800">
+            <h2 className="text-foreground text-xl leading-relaxed font-semibold">
               {currentQuestion.question_text}
             </h2>
             {currentQuestion.question_image_url && (
@@ -238,18 +240,18 @@ const QuestionPage = () => {
             </div>
 
             {isAttempted && (
-              <div className="rounded-lg border-l-4 border-blue-500 bg-blue-50 p-5 dark:bg-blue-900/20">
+              <div className="border-primary bg-primary/5 rounded-lg border-l-4 p-5">
                 <div className="flex items-start gap-3">
                   <div className="mt-1 flex-shrink-0">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-500">
-                      <Lightbulb size={18} className="text-white" />
+                    <div className="bg-primary flex h-8 w-8 items-center justify-center rounded-full">
+                      <Lightbulb size={18} className="text-primary-foreground" />
                     </div>
                   </div>
                   <div className="flex-1 space-y-2">
-                    <h3 className="flex items-center text-sm font-semibold text-blue-900 dark:text-blue-100">
+                    <h3 className="text-primary flex items-center text-sm font-semibold">
                       Explanation
                     </h3>
-                    <p className="text-sm leading-relaxed text-blue-800 dark:text-blue-200">
+                    <p className="text-foreground text-sm leading-relaxed">
                       {currentQuestion.description}
                     </p>
                     {currentQuestion.description_image_url && (
@@ -270,7 +272,7 @@ const QuestionPage = () => {
 
         {/* Contributor Display */}
         {currentQuestion?.contributor && (
-          <div className="text-sm text-gray-600 dark:text-gray-400">
+          <div className="text-muted-foreground text-sm">
             {currentQuestion.contributor} - {currentQuestion.contributor_specialization}
           </div>
         )}
@@ -279,7 +281,7 @@ const QuestionPage = () => {
           <Button
             variant="outline"
             onClick={handlePreviousQuestion}
-            className="px-6 py-2 hover:bg-gray-100"
+            className="hover:bg-muted px-6 py-2 text-muted-foreground bg-card"
           >
             <ArrowLeft />
             <p>Previous</p>
@@ -287,7 +289,7 @@ const QuestionPage = () => {
 
           {!isAttempted ? (
             <Button
-              className="mt-6 bg-blue-600 hover:bg-blue-700"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground mt-6"
               onClick={() => handleAttemptQuestion(currentQuestion)}
               disabled={
                 currentQuestion.option_type === "multiple"
@@ -300,7 +302,7 @@ const QuestionPage = () => {
           ) : (
             <Button
               onClick={handleNextQuestion}
-              className="bg-blue-600 px-6 py-2 hover:bg-blue-700"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2"
             >
               <p>Next</p>
               <ArrowRight />

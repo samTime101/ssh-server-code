@@ -115,13 +115,13 @@ const ManageUsersPage = () => {
   return (
     <div>
       <div className="manage-users-header">
-        <h1 className="manage-users-title text-2xl font-bold">Manage Users</h1>
+        <h1 className="manage-users-title text-2xl font-bold text-foreground">Manage Users</h1>
       </div>
-      <div className="manage-users-content">
+      <div className="manage-users-content text-muted-foreground mt-1">
         {/* User management functionalities will go here */}
         <p>This is where admin can manage users.</p>
       </div>
-      <div className="manage-users-main-content mt-4 rounded-md border bg-white p-4 shadow-md">
+      <div className="manage-users-main-content border-border bg-card mt-4 rounded-md border p-4 shadow-md">
         <div className="users-search-section">
           <Input
             placeholder="Search users by name or email"
@@ -154,7 +154,7 @@ const ManageUsersPage = () => {
                 </TableRow>
               ) : (
                 filteredUsers.map((user: any) => (
-                  <TableRow key={user.user_guid}>
+                  <TableRow className="text-muted-foreground" key={user.user_guid}>
                     <TableCell>
                       <p className="font-semibold">{user.username}</p>
                     </TableCell>
@@ -164,7 +164,7 @@ const ManageUsersPage = () => {
                       </p>
                     </TableCell>
                     <TableCell>
-                      <p className="text-muted-foreground text-sm">{user.email}</p>
+                      <p className="text-sm">{user.email}</p>
                     </TableCell>
                     <TableCell>
                       <p>{user.roles.includes("ADMIN") ? "Admin" : "Regular User"}</p>
@@ -172,7 +172,9 @@ const ManageUsersPage = () => {
                     <TableCell>
                       <span
                         className={`${
-                          user.is_active ? "bg-green-100 text-green-500" : "bg-red-100 text-red-500"
+                          user.is_active
+                            ? "bg-green-100 text-green-600"
+                            : "bg-destructive/10 text-destructive"
                         } rounded-md px-2 py-1 text-sm font-medium shadow-xs`}
                       >
                         {user.is_active ? "Active" : "Inactive"}
@@ -180,14 +182,14 @@ const ManageUsersPage = () => {
                     </TableCell>
                     <TableCell className="flex gap-2">
                       <Button
-                        className="btn-edit cursor-pointer rounded bg-blue-500 text-white"
+                        className="btn-edit bg-primary text-primary-foreground cursor-pointer rounded"
                         onClick={() => navigate(`/admin/manage-users/${user.user_guid}`)}
                         disabled={isSelf(user)}
                       >
                         <PenIcon size={12} />
                       </Button>
                       <Button
-                        className="btn-delete cursor-pointer rounded bg-red-500 text-white"
+                        className="btn-delete bg-destructive text-primary-foreground cursor-pointer rounded"
                         disabled={isSelf(user)}
                         onClick={() => handleDeleteUser(user)}
                       >
