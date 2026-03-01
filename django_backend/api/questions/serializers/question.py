@@ -127,3 +127,9 @@ class OptionPublicSerializer(me_serializers.EmbeddedDocumentSerializer):
 
 class QuestionPublicSerializer(QuestionSerializer):
     options = OptionPublicSerializer(many=True)
+
+
+class QuestionFilterSerializer(serializers.Serializer):
+    search = serializers.CharField(required=False)
+    category_id = serializers.CharField(required=False)
+    sub_category_id = serializers.CharField(required=False)

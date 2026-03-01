@@ -3,6 +3,14 @@ SPECTACULAR_SETTINGS = {
     "TITLE": "MCQ API",
     "DESCRIPTION": """
 
+## March 1, 2026
+- Rounded accuracy_percent and completion_percent to 2 decimal places in user profile response for better readability.    
+- Added `ObjectId` validation for `category_id` and `sub_category_id` query parameters in question filtering to ensure valid input and prevent potential errors during filtering operations.
+- Added `AllowAny` permission to `retrieve` method in `QuestionViewSet` to allow any authenticated user to access question details, not just admin users.
+- Organized filtering and searching logic in `/api/questions/` endpoint by creating a separate `filters.py` file to handle all question filtering based on query parameters, improving code maintainability and readability.
+- Updated `get_queryset` method in `QuestionViewSet` to utilize the new filtering function
+
+
 ## February 23, 2026
 - Added `search` query parameter to `/api/questions/` endpoint to enable searching in `question_text` and `explanation` fields.
 - Added `category_id` and `sub_category_id` query parameters to `/api/questions/` endpoint to filter questions based on category and subcategory.

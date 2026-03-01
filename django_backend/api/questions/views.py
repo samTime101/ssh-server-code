@@ -15,44 +15,20 @@ from core.heirarchy import get_heirarchy
 from core.selection.selection import get_questions_by_selection
 from core.pagination import StandardResultsSetPagination,QuestionResultsSetPagination
 # from rest_framework.permissions import IsAdminUser, IsAuthenticated
-from core.permissions.permissions import IsAdminUser, IsAuthenticated
+from core.permissions.permissions import IsAdminUser, IsAuthenticated,AllowAny
 from rest_framework.parsers import JSONParser
 from core.parser import QuestionMultipartJsonParser
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework.exceptions import NotFound
-from drf_spectacular.utils import OpenApiParameter
-from drf_spectacular.types import OpenApiTypes
-from bson import ObjectId
-
+from api.questions.serializers.question import QuestionFilterSerializer
+from api.questions.filters import filter_questions_queryset
 
 @extend_schema_view(
     create=extend_schema(exclude=True),
     update=extend_schema(exclude=True),
     partial_update=extend_schema(exclude=True),
-    list=extend_schema(
-        parameters=[
-            OpenApiParameter(
-                name="search",
-                type=OpenApiTypes.STR,
-                location=OpenApiParameter.QUERY,
-                description="Search in question_text and explanation"
-            ),
-            OpenApiParameter(
-                name="category_id",
-                type=OpenApiTypes.STR,
-                location=OpenApiParameter.QUERY,
-                description="Filter by category ObjectId"
-            ),
-            OpenApiParameter(
-                name="sub_category_id",
-                type=OpenApiTypes.STR,
-                location=OpenApiParameter.QUERY,
-                description="Filter by sub-category ObjectId"
-            ),
-        ]
-    )
+    list=extend_schema(parameters=[QuestionFilterSerializer])
 )
-
 class QuestionViewSet(viewsets.ModelViewSet):
     # Core CRUD handled under this viewset automatically
     queryset = Question.objects.all()
@@ -71,30 +47,15 @@ class QuestionViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAdminUser]
 
     def get_queryset(self):
-        queryset = Question.objects.all()
+        base_queryset = Question.objects.all()            
+        return filter_questions_queryset(base_queryset, self.request.query_params)
 
-        search = self.request.query_params.get("search")
-        category_id = self.request.query_params.get("category_id")
-        sub_category_id = self.request.query_params.get("sub_category_id")
-
-        if search:
-            queryset = queryset.filter(
-                __raw__={
-                    "$or": [
-                        {"question_text": {"$regex": search, "$options": "i"}},
-                        {"explanation": {"$regex": search, "$options": "i"}},
-                    ]
-                }
-            )
-
-        if category_id:
-            queryset = queryset.filter(category_id=ObjectId(category_id))
-
-        if sub_category_id:
-            queryset = queryset.filter(sub_category_id=ObjectId(sub_category_id))
-
-        return queryset
-
+    # for get/questions/<id>, allow from any authenticated user, not just admin
+    # https://github.com/users/sisani9/projects/2/views/1?pane=issue&itemId=159302989&issue=sisani9%7Csisani-eps%7C147
+    def retrieve(self, request, *args, **kwargs):
+        self.permission_classes = [AllowAny]
+        return super().retrieve(request, *args, **kwargs)
+        
     # For api/questions/hierarchy/
     @action(detail=False,methods=['get'],url_path='hierarchy',serializer_class=HierarchySerializer,permission_classes=[IsAuthenticated])
     def hierarchy(self, request):
