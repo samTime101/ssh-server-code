@@ -1,6 +1,7 @@
 import React, { createContext, useState } from "react"; //useContext,
 import { useAuth } from "@/hooks/useAuth.tsx";
-import { getQuestions } from "@/services/user/question-service";
+import { getQuestions, getNextPageQuestions } from "@/services/user/question-service";
+import type { Question, QuestionPaginationMeta, FetchQuestionsPayload } from "@/types/question";
 
 export const QuestionContext = createContext<any>(null);
 
@@ -10,7 +11,10 @@ const QuestionProvider = ({ children }: { children: React.ReactNode }) => {
   const [selectedCategoriesId, setSelectedCategoriesId] = useState<string[]>([]);
   const [selectedSubCategoryId, setSelectedSubCategoryId] = useState<string[]>([]);
   const [selectedSubSubCategoryId, setSelectedSubSubCategoryId] = useState<string[]>([]);
-  const [questionData, setQuestionData] = useState<any>([]);
+  const [questionData, setQuestionData] = useState<Question[]>([]);
+  const [questionPagination, setQuestionPagination] = useState<QuestionPaginationMeta | null>(null);
+  const [lastFetchPayload, setLastFetchPayload] = useState<FetchQuestionsPayload | null>(null);
+  const [isFetchingNextPage, setIsFetchingNextPage] = useState(false);
 
   const handleCategorySelection = (categoryId: string) => {
     // Filters and removes duplicates and adds the selected category ID
@@ -43,21 +47,55 @@ const QuestionProvider = ({ children }: { children: React.ReactNode }) => {
         console.error("No token available");
         return;
       }
-      const payload = {
+      const payload: FetchQuestionsPayload = {
         category_ids: selectedCategoriesId,
         sub_category_ids: selectedSubCategoryId,
         subSubCategoryId: selectedSubSubCategoryId,
         wrong_only,
       };
+      setLastFetchPayload(payload);
+
       const response = await getQuestions(payload);
       console.log("Questions fetched in context:", response);
-      //   if (response) {
-      //     setQuestionData(response);
-      //   }
-      setQuestionData(response);
+
+      if (response) {
+        setQuestionData(response.results);
+        setQuestionPagination({
+          count: response.count,
+          next: response.next,
+          total_pages: response.total_pages,
+        });
+      } else {
+        setQuestionData([]);
+        setQuestionPagination(null);
+      }
     } catch (e) {
       console.error(e);
       setQuestionData([]);
+      setQuestionPagination(null);
+    }
+  };
+
+  const fetchNextPage = async () => {
+    if (!questionPagination?.next || !lastFetchPayload || isFetchingNextPage) return;
+
+    setIsFetchingNextPage(true);
+    try {
+      const response = await getNextPageQuestions(questionPagination.next, lastFetchPayload);
+      console.log("Next page fetched in context:", response);
+
+      if (response) {
+        setQuestionData((prev) => [...prev, ...response.results]);
+        setQuestionPagination({
+          count: response.count,
+          next: response.next,
+          total_pages: response.total_pages,
+        });
+      }
+    } catch (e) {
+      console.error("Error fetching next page:", e);
+    } finally {
+      setIsFetchingNextPage(false);
     }
   };
 
@@ -71,7 +109,10 @@ const QuestionProvider = ({ children }: { children: React.ReactNode }) => {
         selectedSubSubCategoryId,
         handleSubSubCategorySelection,
         fetchQuestions,
+        fetchNextPage,
         questionData,
+        questionPagination,
+        isFetchingNextPage,
       }}
     >
       {children}
