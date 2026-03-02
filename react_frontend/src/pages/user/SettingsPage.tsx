@@ -28,7 +28,9 @@ const SettingsPage = () => {
       <Card className="max-w-4xl">
         <CardHeader className="border-b">
           <CardTitle className="text-2xl">Security</CardTitle>
-          <p className="mt-1 text-sm text-gray-600">Change your password and phone number</p>
+          <p className="text-muted-foreground mt-1 text-sm">
+            Change your password and phone number
+          </p>
         </CardHeader>
         <CardContent className="space-y-8">
           {/* Change Password Section */}
@@ -146,7 +148,7 @@ const SettingsPage = () => {
             <h3 className="mb-6 text-lg font-semibold">Change Phone Number</h3>
             <form onSubmit={phoneReset.handleSubmit(phoneReset.onSubmit)} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="current_phone" className="text-gray-600">
+                <Label htmlFor="current_phone" className="text-muted-foreground">
                   Current Phone Number
                 </Label>
                 <Input
@@ -154,7 +156,7 @@ const SettingsPage = () => {
                   type="text"
                   value={user.phonenumber}
                   disabled
-                  className="cursor-not-allowed bg-gray-100"
+                  className="bg-muted cursor-not-allowed"
                 />
               </div>
 
