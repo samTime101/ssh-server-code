@@ -39,46 +39,46 @@ const CategoryList: React.FC<{ category: Category }> = ({ category }) => {
   return (
     <li
       key={category.id}
-      className="overflow-hidden rounded-lg border border-gray-200 transition-all duration-200 hover:shadow-md"
+      className="border-border overflow-hidden rounded-lg border transition-all duration-200 hover:shadow-md"
     >
-      <div className="bg-white p-4">
+      <div className="bg-card p-4">
         {/* Category Level */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <ChevronRight
-              className={`h-5 w-5 cursor-pointer text-gray-400 transition-all duration-200 hover:text-gray-600 ${
+              className={`text-muted-foreground hover:text-foreground h-5 w-5 cursor-pointer transition-all duration-200 ${
                 isCategoryExpanded ? "rotate-90" : ""
               }`}
               onClick={() => toggleCategoryExpansion(category.id)}
             />
             <Checkbox
               id={`category-${category.id}`}
-              className="border-gray-300"
+              className="border-input"
               checked={selectedCategoriesId.includes(category.id)}
               onCheckedChange={() => handleCategorySelection(category.id)}
             />
             <label
               htmlFor={`category-${category.id}`}
-              className="cursor-pointer text-lg font-medium text-gray-900"
+              className="text-foreground cursor-pointer text-lg font-medium"
             >
               {category.name}
             </label>
           </div>
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-3">
-              <div className="h-2 w-24 overflow-hidden rounded-full bg-gray-200">
+              <div className="bg-muted h-2 w-24 overflow-hidden rounded-full">
                 {/* <div
                   className="bg-gradient-to-r from-green-400 to-green-600 h-full rounded-full transition-all duration-300"
                   style={{ width: `${completedPercentage}%` }}
                 ></div> */}
               </div>
-              <div className="min-w-max text-sm text-gray-600">
-                { <span className="font-medium text-gray-900">{category.attempted_count}</span> }
-                <span className="mx-1 text-gray-400">/</span>
-                { <span>{category.question_count}</span> }
+              <div className="text-muted-foreground min-w-max text-sm">
+                {<span className="text-foreground font-medium">{category.attempted_count}</span>}
+                <span className="text-muted-foreground mx-1">/</span>
+                {<span>{category.question_count}</span>}
               </div>
             </div>
-            <div className="text-sm font-medium text-gray-500">
+            <div className="text-muted-foreground text-sm font-medium">
               {/* {Math.round(completedPercentage)}% */}
             </div>
           </div>
@@ -86,7 +86,7 @@ const CategoryList: React.FC<{ category: Category }> = ({ category }) => {
 
         {/* Sub-categories */}
         {isCategoryExpanded && (
-          <div className="mt-4 border-t border-gray-100 pt-4">
+          <div className="border-border mt-4 border-t pt-4">
             <ul className="space-y-2 pl-8">
               {category.sub_categories?.map((subCategory) => {
                 // const isSubCategoryExpanded = expandedSubCategories.includes(subCategory.id);
@@ -94,9 +94,9 @@ const CategoryList: React.FC<{ category: Category }> = ({ category }) => {
                 return (
                   <li
                     key={subCategory.id}
-                    className="overflow-hidden rounded-md border border-gray-100"
+                    className="border-border overflow-hidden rounded-md border"
                   >
-                    <div className="bg-gray-50 p-3">
+                    <div className="bg-muted p-3">
                       <div className="flex items-center gap-2">
                         {/* {subCategory.subSubCategories.length > 0 && (
                           <ChevronRight
@@ -108,12 +108,12 @@ const CategoryList: React.FC<{ category: Category }> = ({ category }) => {
                         )} */}
                         <Checkbox
                           id={`subcategory-${subCategory.id}`}
-                          className="border-gray-300"
+                          className="border-input"
                           onCheckedChange={() => handleSubCategorySelection(subCategory.id)}
                         />
                         <label
                           htmlFor={`subcategory-${subCategory.id}`}
-                          className="cursor-pointer font-medium text-gray-800"
+                          className="text-foreground cursor-pointer font-medium"
                         >
                           {subCategory.name}
                         </label>

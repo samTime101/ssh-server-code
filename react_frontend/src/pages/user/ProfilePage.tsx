@@ -29,7 +29,7 @@ const ProfilePage = () => {
       <Card className="max-w-4xl">
         <CardHeader className="border-b">
           <div className="flex items-center gap-4">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#323A67] text-lg font-semibold text-white">
+            <div className="bg-primary text-primary-foreground flex h-16 w-16 items-center justify-center rounded-full text-lg font-semibold">
               {user?.first_name[0]}
               {user?.last_name[0]}
             </div>
@@ -37,7 +37,7 @@ const ProfilePage = () => {
               <CardTitle className="text-2xl">
                 {user.first_name} {user.last_name}
               </CardTitle>
-              <p className="text-sm text-gray-500">{user.username}</p>
+              <p className="text-muted-foreground text-sm">{user.username}</p>
             </div>
           </div>
         </CardHeader>
@@ -47,10 +47,10 @@ const ProfilePage = () => {
             <div className="grid gap-6 md:grid-cols-2">
               {profileFields.map((field) => (
                 <div key={field.label}>
-                  <Label className="text-xs font-semibold text-gray-600 uppercase">
+                  <Label className="text-muted-foreground text-xs font-semibold uppercase">
                     {field.label}
                   </Label>
-                  <p className="text-gray-900">{field.value}</p>
+                  <p className="text-foreground">{field.value}</p>
                 </div>
               ))}
             </div>
@@ -60,7 +60,7 @@ const ProfilePage = () => {
             <h3 className="mb-4 text-lg font-semibold">Account Status</h3>
             <div className="grid gap-6 md:grid-cols-2">
               <div>
-                <Label className="text-xs font-semibold text-gray-600 uppercase">
+                <Label className="text-muted-foreground text-xs font-semibold uppercase">
                   Account Status
                 </Label>
                 <div className="mt-1">
@@ -70,7 +70,7 @@ const ProfilePage = () => {
                 </div>
               </div>
               <div>
-                <Label className="text-xs font-semibold text-gray-600 uppercase">
+                <Label className="text-muted-foreground text-xs font-semibold uppercase">
                   Email Verified
                 </Label>
                 <div className="mt-1">
@@ -99,25 +99,29 @@ const ProfilePage = () => {
             <h3 className="mb-4 text-lg font-semibold">Performance Statistics</h3>
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
               <div>
-                <Label className="text-xs font-semibold text-gray-600 uppercase">
+                <Label className="text-muted-foreground text-xs font-semibold uppercase">
                   Total Attempts
                 </Label>
-                <p className="text-2xl font-bold text-gray-900">{user.total_attempts}</p>
+                <p className="text-foreground text-2xl font-bold">{user.total_attempts}</p>
               </div>
               <div>
-                <Label className="text-xs font-semibold text-gray-600 uppercase">
+                <Label className="text-muted-foreground text-xs font-semibold uppercase">
                   Correct Answers
                 </Label>
                 <p className="text-2xl font-bold text-green-600">{user.total_right_attempts}</p>
               </div>
               <div>
-                <Label className="text-xs font-semibold text-gray-600 uppercase">Accuracy</Label>
-                <p className="text-2xl font-bold text-blue-600">
+                <Label className="text-muted-foreground text-xs font-semibold uppercase">
+                  Accuracy
+                </Label>
+                <p className="text-primary text-2xl font-bold">
                   {parseFloat(user.accuracy_percent).toFixed(2)}%
                 </p>
               </div>
               <div>
-                <Label className="text-xs font-semibold text-gray-600 uppercase">Completion</Label>
+                <Label className="text-muted-foreground text-xs font-semibold uppercase">
+                  Completion
+                </Label>
                 <p className="text-2xl font-bold text-purple-600">{user.completion_percent}%</p>
               </div>
             </div>

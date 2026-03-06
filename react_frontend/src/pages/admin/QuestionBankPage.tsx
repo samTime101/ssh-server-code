@@ -116,13 +116,13 @@ const QuestionBankPage = () => {
   return (
     <div>
       <div className="manage-questions-header">
-        <h1 className="manage-questions-title text-2xl font-bold">Manage Questions</h1>
+        <h1 className="manage-questions-title text-2xl font-bold text-foreground">Manage Questions</h1>
       </div>
-      <div className="manage-questions-content">
+      <div className="manage-questions-content text-muted-foreground mt-1">
         {/* User management functionalities will go here */}
         <p>This is where admin can manage questions.</p>
       </div>
-      <div className="manage-questions-main-content mt-4 rounded-md border bg-white p-4 shadow-md">
+      <div className="manage-questions-main-content border-border bg-card mt-4 rounded-md border p-4 shadow-md">
         <div className="questions-search-section">
           <Input placeholder="Search questions by name or email" />
         </div>
@@ -149,7 +149,7 @@ const QuestionBankPage = () => {
                 </TableRow>
               ) : (
                 questionList.map((question: any, index) => (
-                  <TableRow key={index + question.question_text}>
+                  <TableRow className="text-muted-foreground" key={index + question.question_text}>
                     <TableCell>
                       <p className="font-normal">{question.question_text}</p>
                     </TableCell>
@@ -167,7 +167,7 @@ const QuestionBankPage = () => {
                         {question.category_names.map((cat: string) => (
                           <Badge
                             key={cat}
-                            className="rounded-md bg-blue-400 px-3 py-1 text-sm text-white"
+                            className="bg-primary text-primary-foreground rounded-md px-3 py-1 text-sm"
                           >
                             {cat}
                           </Badge>
@@ -179,7 +179,7 @@ const QuestionBankPage = () => {
                         {question.subcategory_names.map((subcat: string) => (
                           <Badge
                             key={subcat}
-                            className="rounded-md bg-green-800 px-3 py-1 text-sm text-white"
+                            className="bg-secondary text-secondary-foreground rounded-md px-3 py-1 text-sm"
                           >
                             {subcat}
                           </Badge>
@@ -188,13 +188,13 @@ const QuestionBankPage = () => {
                     </TableCell>
                     <TableCell className="flex gap-2">
                       <Button
-                        className="btn-edit cursor-pointer rounded bg-blue-500 text-white"
+                        className="btn-edit bg-primary text-primary-foreground cursor-pointer rounded"
                         onClick={() => handleEditClick(question)}
                       >
                         <PenIcon size={12} />
                       </Button>
                       <Button
-                        className="btn-delete cursor-pointer rounded bg-red-500 text-white"
+                        className="btn-delete bg-destructive text-primary-foreground cursor-pointer rounded"
                         onClick={() => handleDeleteClick(question)}
                       >
                         <TrashIcon size={12} />

@@ -53,7 +53,7 @@ const AddRolePage = () => {
 
   return (
     <section className="p-6">
-      <h1 className="text-2xl font-semibold mb-4">Add Role</h1>
+      <h1 className="text-2xl font-semibold mb-4 text-foreground">Add Role</h1>
 
       <form onSubmit={handleAddRole} className="flex gap-3 mb-6">
         <Input 
@@ -65,7 +65,7 @@ const AddRolePage = () => {
         </Button>
       </form>
 
-      <h2 className="text-xl font-medium mb-2">Existing roles</h2>
+      <h2 className="text-xl font-medium mb-2 text-foreground">Existing roles</h2>
       <Table>
         <TableHeader>
           <TableRow>
@@ -82,7 +82,7 @@ const AddRolePage = () => {
             </TableRow>
           )}
           {roles.map((r) => (
-            <TableRow key={r.id}>
+            <TableRow className="text-muted-foreground" key={r.id}>
               <TableCell>{r.id}</TableCell>
               <TableCell>{r.name}</TableCell>
             </TableRow>
