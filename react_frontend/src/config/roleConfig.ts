@@ -3,6 +3,8 @@ const ROLE_CONFIG = {
     "dashboard",
     "add-question",
     "create-category",
+    "manage-categories",
+    "manage-subcategories",
     "manage-users",
     "manage-users/:id",
     "add-role",
@@ -10,13 +12,8 @@ const ROLE_CONFIG = {
     "question-bank",
     "analytics",
   ],
-  CONTRIBUTOR: [
-    "add-question",
-  ],
-  DOCTOR: [
-    "add-question",
-    "question-bank",
-  ],
+  CONTRIBUTOR: ["add-question"],
+  DOCTOR: ["add-question", "question-bank"],
 };
 
 export default ROLE_CONFIG;

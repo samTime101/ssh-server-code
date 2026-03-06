@@ -1,93 +1,89 @@
-import {
-  LayoutDashboard,
-  Plus,
-  Folder,
-  Users,
-  BarChart3,
-  FileText,
-  Settings,
-  LogOut,
-  X,
-} from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
+import { Settings, LogOut, X, ChevronDown, ChevronRight, FolderOpen, BookOpen } from "lucide-react";
+import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import ROLE_CONFIG from "@/config/roleConfig";
+import { useAdminSidebar } from "@/hooks/useAdminSidebar";
+import type { AdminSidebarProps, CollapsibleNavGroupProps } from "@/types/sidebar";
 
-interface AdminSidebarProps {
-  isOpen: boolean;
-  onClose: () => void;
-}
+const CollapsibleNavGroup = ({
+  icon: GroupIcon,
+  label,
+  items,
+  isGroupActive,
+  isOpen,
+  onToggle,
+  onNavClick,
+  currentPath,
+}: CollapsibleNavGroupProps) => {
+  const chevronClass = isGroupActive ? "text-sidebar-primary-foreground" : "text-muted-foreground";
 
-interface MenuItem {
-  icon: typeof Plus;
-  text: string;
-  path: string;
-  allowedPermissions: string[];
-}
+  return (
+    <li className="flex flex-col">
+      <button
+        onClick={onToggle}
+        className={`flex items-center gap-4 rounded-lg px-4 py-3 transition-all duration-200 ${
+          isGroupActive
+            ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-sm"
+            : "text-sidebar-foreground hover:bg-sidebar-accent"
+        }`}
+      >
+        <GroupIcon
+          size={18}
+          className={isGroupActive ? "text-sidebar-primary-foreground" : "text-muted-foreground"}
+        />
+        <p className="flex-1 text-left text-sm font-medium">{label}</p>
+        {isOpen ? (
+          <ChevronDown size={16} className={chevronClass} />
+        ) : (
+          <ChevronRight size={16} className={chevronClass} />
+        )}
+      </button>
+
+      {isOpen && (
+        <ul className="mt-1 flex flex-col gap-1 pl-4">
+          {items.map((item) => {
+            const ItemIcon = item.icon;
+            const isActive = currentPath === item.path;
+
+            return (
+              <Link
+                key={item.path}
+                to={item.path}
+                onClick={onNavClick}
+                className={`flex items-center gap-3 rounded-lg px-4 py-2.5 text-sm transition-all duration-200 ${
+                  isActive
+                    ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-sm"
+                    : "text-sidebar-foreground hover:bg-sidebar-accent"
+                }`}
+              >
+                <ItemIcon
+                  size={15}
+                  className={isActive ? "text-sidebar-primary-foreground" : "text-muted-foreground"}
+                />
+                <span className="font-medium">{item.text}</span>
+              </Link>
+            );
+          })}
+        </ul>
+      )}
+    </li>
+  );
+};
 
 const AdminSidebar = ({ isOpen, onClose }: AdminSidebarProps) => {
-  const { logout, user } = useAuth();
-  const location = useLocation();
-
-  // Define all available menu items with their required roles
-  const allMenuItems: MenuItem[] = [
-    {
-      icon: LayoutDashboard,
-      text: "Dashboard",
-      path: "/admin/",
-      allowedPermissions: ["dashboard"],
-    },
-    {
-      icon: Plus,
-      text: "Add Question",
-      path: "/admin/add-question",
-      allowedPermissions: ["add-question"],
-    },
-    {
-      icon: Folder,
-      text: "Create Category",
-      path: "/admin/create-category",
-      allowedPermissions: ["create-category"],
-    },
-    {
-      icon: Users,
-      text: "Manage Users",
-      path: "/admin/manage-users",
-      allowedPermissions: ["manage-users"],
-    },
-    {
-      icon: BarChart3,
-      text: "Analytics",
-      path: "/admin/analytics",
-      allowedPermissions: ["analytics"],
-    },
-    {
-      icon: FileText,
-      text: "Question Bank",
-      path: "/admin/question-bank",
-      allowedPermissions: ["question-bank"],
-    },
-    { icon: Plus, text: "Add Role", path: "/admin/add-role", allowedPermissions: ["add-role"] },
-    {
-      icon: Folder,
-      text: "Manage Colleges",
-      path: "/admin/add-college",
-      allowedPermissions: ["add-college"],
-    },
-  ];
-
-  // Filter menu items based on user's roles and permissions
-  const menuItems = allMenuItems.filter((item) =>
-    user?.roles?.some((role: string) =>
-      item.allowedPermissions.every((perm) =>
-        ROLE_CONFIG[role as keyof typeof ROLE_CONFIG]?.includes(perm)
-      )
-    )
-  );
-
-  const handleLogout = () => {
-    logout();
-  };
+  const { logout } = useAuth();
+  const {
+    currentPath,
+    visibleTopItems,
+    visibleBottomItems,
+    visibleQuestionItems,
+    visibleCategoryItems,
+    isQuestionGroupActive,
+    isCategoryGroupActive,
+    questionsOpen,
+    categoriesOpen,
+    toggleQuestions,
+    toggleCategories,
+  } = useAdminSidebar();
 
   return (
     <>
@@ -109,7 +105,6 @@ const AdminSidebar = ({ isOpen, onClose }: AdminSidebarProps) => {
               </div>
               <h2 className="text-sidebar-foreground text-lg font-semibold">Admin Panel</h2>
             </div>
-            {/* Close button for mobile */}
             <button onClick={onClose} className="hover:bg-sidebar-accent rounded-lg p-2 lg:hidden">
               <X size={20} className="text-muted-foreground" />
             </button>
@@ -119,17 +114,67 @@ const AdminSidebar = ({ isOpen, onClose }: AdminSidebarProps) => {
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto py-6">
           <ul className="flex flex-col gap-2 px-4">
-            {menuItems.map((item, index) => {
+            {visibleTopItems.map((item) => {
               const IconComponent = item.icon;
-              const isActive = location.pathname === item.path;
+              const isActive = currentPath === item.path;
 
               return (
                 <Link
-                  key={index}
+                  key={item.path}
                   to={item.path}
-                  onClick={() => {
-                    onClose(); // Close sidebar on mobile after selecting
-                  }}
+                  onClick={onClose}
+                  className={`flex items-center gap-4 rounded-lg px-4 py-3 transition-all duration-200 ${
+                    isActive
+                      ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-sm"
+                      : "text-sidebar-foreground hover:bg-sidebar-accent"
+                  }`}
+                >
+                  <IconComponent
+                    size={18}
+                    className={
+                      isActive ? "text-sidebar-primary-foreground" : "text-muted-foreground"
+                    }
+                  />
+                  <p className="text-sm font-medium">{item.text}</p>
+                </Link>
+              );
+            })}
+
+            {visibleQuestionItems.length > 0 && (
+              <CollapsibleNavGroup
+                icon={BookOpen}
+                label="Questions"
+                items={visibleQuestionItems}
+                isGroupActive={isQuestionGroupActive}
+                isOpen={questionsOpen}
+                onToggle={toggleQuestions}
+                onNavClick={onClose}
+                currentPath={currentPath}
+              />
+            )}
+
+            {visibleCategoryItems.length > 0 && (
+              <CollapsibleNavGroup
+                icon={FolderOpen}
+                label="Categories"
+                items={visibleCategoryItems}
+                isGroupActive={isCategoryGroupActive}
+                isOpen={categoriesOpen}
+                onToggle={toggleCategories}
+                onNavClick={onClose}
+                currentPath={currentPath}
+              />
+            )}
+
+            {visibleBottomItems.map((item) => {
+              const IconComponent = item.icon;
+              const isActive = currentPath === item.path;
+
+              return (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  onClick={onClose}
                   className={`flex items-center gap-4 rounded-lg px-4 py-3 transition-all duration-200 ${
                     isActive
                       ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-sm"
@@ -157,7 +202,7 @@ const AdminSidebar = ({ isOpen, onClose }: AdminSidebarProps) => {
           </div>
 
           <button
-            onClick={handleLogout}
+            onClick={logout}
             className="text-destructive hover:bg-destructive/10 flex w-full items-center gap-4 rounded-lg px-4 py-3 transition-all duration-200"
           >
             <LogOut size={18} className="text-destructive" />

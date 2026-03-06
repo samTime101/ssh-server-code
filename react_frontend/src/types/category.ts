@@ -11,7 +11,7 @@ export interface SubCategory {
   name: string;
   subSubCategories: SubSubCategory[];
   question_count: number;
-  attempted_count?: number; 
+  attempted_count?: number;
 }
 
 export interface SubSubCategory {
@@ -42,5 +42,13 @@ export interface CreateSubSubCategoryResponse {
   name: string;
   subCategoryId: string;
   subCategoryName: string;
+  question_count?: number;
+}
+
+export interface SubCategoryDetail {
+  id: string;
+  name: string;
+  categoryId: string;
+  categoryName: string;
   question_count?: number;
 }
