@@ -238,7 +238,7 @@ const SignupPage = () => {
                     variant="outline"
                     role="combobox"
                     aria-expanded={open}
-                    className="w-full justify-between"
+                    className="w-full justify-between bg-card"
                   >
                     {collegeValue || "Select college"}
                     <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50" />
