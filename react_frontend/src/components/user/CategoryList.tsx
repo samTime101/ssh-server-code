@@ -97,8 +97,9 @@ const CategoryList: React.FC<{ category: Category }> = ({ category }) => {
                     className="border-border overflow-hidden rounded-md border"
                   >
                     <div className="bg-muted p-3">
-                      <div className="flex items-center gap-2">
-                        {/* {subCategory.subSubCategories.length > 0 && (
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          {/* {subCategory.subSubCategories.length > 0 && (
                           <ChevronRight
                             className={`text-gray-400 hover:text-gray-600 transition-all duration-200 w-4 h-4 cursor-pointer ${
                               isSubCategoryExpanded ? "rotate-90" : ""
@@ -106,17 +107,30 @@ const CategoryList: React.FC<{ category: Category }> = ({ category }) => {
                             onClick={() => toggleSubCategoryExpansion(subCategory.id)}
                           />
                         )} */}
-                        <Checkbox
-                          id={`subcategory-${subCategory.id}`}
-                          className="border-input"
-                          onCheckedChange={() => handleSubCategorySelection(subCategory.id)}
-                        />
-                        <label
-                          htmlFor={`subcategory-${subCategory.id}`}
-                          className="text-foreground cursor-pointer font-medium"
-                        >
-                          {subCategory.name}
-                        </label>
+                          <Checkbox
+                            id={`subcategory-${subCategory.id}`}
+                            className="border-input"
+                            onCheckedChange={() => handleSubCategorySelection(subCategory.id)}
+                          />
+                          <label
+                            htmlFor={`subcategory-${subCategory.id}`}
+                            className="text-foreground cursor-pointer font-medium"
+                          >
+                            {subCategory.name}
+                          </label>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <div className="bg-muted h-2 w-16 overflow-hidden rounded-full">
+                            {/* optional progress bar */}
+                          </div>
+                          <div className="text-muted-foreground min-w-max text-sm">
+                            <span className="text-foreground font-medium">
+                              {subCategory.attempted_count}
+                            </span>
+                            <span className="text-muted-foreground mx-1">/</span>
+                            <span>{subCategory.question_count}</span>
+                          </div>
+                        </div>
                       </div>
 
                       {/* Sub-sub-categories */}

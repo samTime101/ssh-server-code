@@ -16,6 +16,28 @@ export interface Question {
   contributor_specialization: string;
 }
 
+export interface PaginatedQuestionsResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: Question[];
+  current_page: number;
+  total_pages: number;
+}
+
+export interface QuestionPaginationMeta {
+  count: number;
+  next: string | null;
+  total_pages: number;
+}
+
+export interface FetchQuestionsPayload {
+  category_ids: string[];
+  sub_category_ids: string[];
+  subSubCategoryId: string[];
+  wrong_only?: boolean;
+}
+
 export interface QuestionAttemptState {
   selectedOption?: string;
   selectedOptions: string[];

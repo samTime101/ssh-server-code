@@ -1,5 +1,7 @@
 import { Bell, Menu } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 
 interface AdminHeaderProps {
   onMenuClick: () => void;
@@ -7,6 +9,7 @@ interface AdminHeaderProps {
 
 const AdminHeader = ({ onMenuClick }: AdminHeaderProps) => {
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   return (
     <header className="bg-card border-border border-b px-4 py-4 lg:px-6">
@@ -23,6 +26,9 @@ const AdminHeader = ({ onMenuClick }: AdminHeaderProps) => {
 
         {/* Right Section - Notifications and Profile */}
         <div className="flex items-center gap-3 lg:gap-8">
+          {user?.roles?.includes("ADMIN") && (
+            <Button onClick={() => navigate("/userpanel")}>User Panel</Button>
+          )}
           {/* Notifications */}
           <button className="text-muted-foreground hover:text-foreground hover:bg-muted relative rounded-lg p-2 transition-colors">
             <Bell size={18} />

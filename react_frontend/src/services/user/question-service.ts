@@ -1,12 +1,6 @@
 import { API_ENDPOINTS } from "@/config/apiConfig";
 import axiosInstance from "@/services/axios";
-
-interface FetchQuestionsPayload {
-  category_ids: string[];
-  sub_category_ids: string[];
-  subSubCategoryId: string[];
-  wrong_only?: boolean;
-}
+import type { PaginatedQuestionsResponse, FetchQuestionsPayload } from "@/types/question";
 
 export const getCategories = async () => {
   try {
@@ -23,25 +17,49 @@ export const getCategories = async () => {
   }
 };
 
-export const getQuestions = async (payload: FetchQuestionsPayload) => {
+export const getQuestions = async (
+  payload: FetchQuestionsPayload
+): Promise<PaginatedQuestionsResponse | null> => {
   console.log("the category payload", payload);
   const { wrong_only, ...bodyPayload } = payload;
   try {
     const response = await axiosInstance.post(API_ENDPOINTS.selectQuestions, bodyPayload, {
       params: {
         wrong_only: wrong_only,
-        non_attempted: false
+        non_attempted: false,
       },
     });
 
     if (!response) {
-      return [];
+      return null;
     }
 
-    return response.data;
+    return response.data as PaginatedQuestionsResponse;
   } catch (error) {
     console.error("Error fetching questions:", error);
-    return [];
+    return null;
+  }
+};
+
+export const getNextPageQuestions = async (
+  nextUrl: string,
+  payload: FetchQuestionsPayload
+): Promise<PaginatedQuestionsResponse | null> => {
+  const { wrong_only, ...bodyPayload } = payload;
+  try {
+    // nextUrl is the full URL from the paginated response (e.g. "http://api.../questions/select/?page=2")
+    const response = await axiosInstance.post(nextUrl, bodyPayload, {
+      params: { wrong_only: wrong_only, non_attempted: false },
+    });
+
+    if (!response) {
+      return null;
+    }
+
+    return response.data as PaginatedQuestionsResponse;
+  } catch (error) {
+    console.error("Error fetching next page of questions:", error);
+    return null;
   }
 };
 

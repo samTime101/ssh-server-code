@@ -122,7 +122,7 @@ const ProfilePage = () => {
                 <Label className="text-muted-foreground text-xs font-semibold uppercase">
                   Completion
                 </Label>
-                <p className="text-2xl font-bold text-purple-600">{user.completion_percent}%</p>
+                <p className="text-2xl font-bold text-purple-600">{parseFloat(user.completion_percent).toFixed(2)}%</p>
               </div>
             </div>
           </div>

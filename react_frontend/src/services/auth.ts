@@ -1,9 +1,9 @@
 import { API_ENDPOINTS } from "@/config/apiConfig";
 import type { LoginRequest, SignupRequest } from "@/types/auth";
-import axios from "axios";
+import axiosInstance from "@/services/axios";
 
 export const loginService = async ({ email, password }: LoginRequest) => {
-  return axios.post(API_ENDPOINTS.login, {
+  return axiosInstance.post(API_ENDPOINTS.login, {
     email,
     password,
   });
@@ -19,7 +19,7 @@ export const signupService = async ({
   confirm_password,
   college,
 }: SignupRequest) => {
-  return axios.post(API_ENDPOINTS.signup, {
+  return axiosInstance.post(API_ENDPOINTS.signup, {
     email,
     username,
     phonenumber,
@@ -32,5 +32,5 @@ export const signupService = async ({
 };
 
 export const verifyEmailService = async (token: string) => {
-  return axios.get(`${API_ENDPOINTS.verifyEmail}${token}/`);
+  return axiosInstance.get(`${API_ENDPOINTS.verifyEmail}${token}/`);
 };

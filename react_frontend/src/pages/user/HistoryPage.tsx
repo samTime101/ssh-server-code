@@ -83,7 +83,7 @@ const HistoryPage = () => {
             <TableBody>
               {submissionHistory.map((attempt, idx) => (
                 <TableRow key={idx}>
-                  <TableCell>{attempt.question_text}</TableCell>
+                  <TableCell className="max-w-md whitespace-normal">{attempt.question_text}</TableCell>
                   <TableCell>
                     {attempt.categories.map((cat) => (
                       <Badge key={cat} className="mr-1">
