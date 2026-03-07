@@ -150,7 +150,7 @@ const QuestionBankPage = () => {
               ) : (
                 questionList.map((question: any, index) => (
                   <TableRow className="text-muted-foreground" key={index + question.question_text}>
-                    <TableCell>
+                    <TableCell className="max-w-md whitespace-normal">
                       <p className="font-normal">{question.question_text}</p>
                     </TableCell>
                     {/* <TableCell>
