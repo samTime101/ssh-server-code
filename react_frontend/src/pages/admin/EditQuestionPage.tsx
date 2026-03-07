@@ -2,7 +2,15 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { ImageIcon, Upload, X } from "lucide-react";
 import { useQuestionForm } from "@/hooks/useQuestionForm";
 import { useEffect } from "react";
@@ -81,11 +89,10 @@ const EditQuestionForm = ({ selectedQuestion, handleEditSuccess }: EditQuestionF
       {/* Question Text */}
       <div className="space-y-2">
         <Label htmlFor="questionText">Question Text</Label>
-        <textarea
+        <Textarea
           id="questionText"
           name="questionText"
           rows={3}
-          className="border-input bg-background text-foreground focus:ring-ring w-full rounded-md border px-3 py-2 focus:ring-2 focus:outline-none"
           value={questionFormData.questionText}
           onChange={handleInputChange}
         />
@@ -94,11 +101,10 @@ const EditQuestionForm = ({ selectedQuestion, handleEditSuccess }: EditQuestionF
       {/* Description */}
       <div className="space-y-2">
         <Label htmlFor="description">Description</Label>
-        <textarea
+        <Textarea
           id="description"
           name="description"
           rows={2}
-          className="border-input bg-background text-foreground focus:ring-ring w-full rounded-md border px-3 py-2 focus:ring-2 focus:outline-none"
           value={questionFormData.description}
           onChange={handleInputChange}
         />
@@ -109,7 +115,7 @@ const EditQuestionForm = ({ selectedQuestion, handleEditSuccess }: EditQuestionF
         <div className="space-y-2">
           <Label>Question Image</Label>
           <div className="flex items-center gap-4">
-            <input
+            <Input
               type="file"
               id="questionImage"
               accept="image/*"
@@ -151,7 +157,7 @@ const EditQuestionForm = ({ selectedQuestion, handleEditSuccess }: EditQuestionF
         <div className="space-y-2">
           <Label>Description Image</Label>
           <div className="flex items-center gap-4">
-            <input
+            <Input
               type="file"
               id="descriptionImage"
               accept="image/*"
@@ -196,29 +202,20 @@ const EditQuestionForm = ({ selectedQuestion, handleEditSuccess }: EditQuestionF
           <Label htmlFor="category">
             Categories <span className="text-destructive">*</span>
           </Label>
-          <select
-            id="category"
-            name="categoryIds"
-            className="border-input bg-background text-foreground focus:ring-ring w-full rounded-md border px-3 py-2 focus:ring-2 focus:outline-none"
-            value=""
-            onChange={(e) => {
-              const selectedId = e.target.value;
-              if (selectedId) {
-                handleAddCategory(selectedId);
-              }
-            }}
-          >
-            <option value="" disabled>
-              Select category
-            </option>
-            {categories
-              .filter((cat) => !questionFormData.categoryIds.includes(cat.id.toString()))
-              .map((cat) => (
-                <option key={cat.id} value={cat.id}>
-                  {cat.name}
-                </option>
-              ))}
-          </select>
+          <Select value="" onValueChange={(value) => handleAddCategory(value)}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select category" />
+            </SelectTrigger>
+            <SelectContent>
+              {categories
+                .filter((cat) => !questionFormData.categoryIds.includes(cat.id.toString()))
+                .map((cat) => (
+                  <SelectItem key={cat.id} value={cat.id.toString()}>
+                    {cat.name}
+                  </SelectItem>
+                ))}
+            </SelectContent>
+          </Select>
 
           {/* Display selected categories */}
           <div className="mt-2 flex flex-wrap gap-2">
@@ -246,29 +243,20 @@ const EditQuestionForm = ({ selectedQuestion, handleEditSuccess }: EditQuestionF
 
         <div className="space-y-2">
           <Label htmlFor="subcategory">Subcategory</Label>
-          <select
-            id="subcategory"
-            name="subCategories"
-            className="border-input bg-background text-foreground focus:ring-ring w-full rounded-md border px-3 py-2 focus:ring-2 focus:outline-none"
-            value=""
-            onChange={(e) => {
-              const selectedId = e.target.value;
-              if (selectedId) {
-                handleAddSubCategory(selectedId);
-              }
-            }}
-          >
-            <option value="" disabled>
-              Select subcategory
-            </option>
-            {subCategories
-              .filter((subCat) => !questionFormData.subCategories.includes(subCat.id.toString()))
-              .map((subCat) => (
-                <option key={subCat.id} value={subCat.id.toString()}>
-                  {subCat.name}
-                </option>
-              ))}
-          </select>
+          <Select value="" onValueChange={(value) => handleAddSubCategory(value)}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select subcategory" />
+            </SelectTrigger>
+            <SelectContent>
+              {subCategories
+                .filter((subCat) => !questionFormData.subCategories.includes(subCat.id.toString()))
+                .map((subCat) => (
+                  <SelectItem key={subCat.id} value={subCat.id.toString()}>
+                    {subCat.name}
+                  </SelectItem>
+                ))}
+            </SelectContent>
+          </Select>
 
           {/* Display selected subcategories */}
           <div className="mt-2 flex flex-wrap gap-2">
@@ -298,16 +286,24 @@ const EditQuestionForm = ({ selectedQuestion, handleEditSuccess }: EditQuestionF
       {/* Difficulty */}
       <div className="space-y-2">
         <Label>Difficulty</Label>
-        <select
-          name="difficulty"
+        <Select
           value={questionFormData.difficulty}
-          onChange={handleInputChange}
-          className="border-input bg-background text-foreground focus:ring-ring w-full rounded-md border px-3 py-2 focus:ring-2 focus:outline-none"
+          onValueChange={(value) =>
+            setQuestionFormData((prev) => ({
+              ...prev!,
+              difficulty: value as "easy" | "medium" | "hard",
+            }))
+          }
         >
-          <option value="easy">Easy</option>
-          <option value="medium">Medium</option>
-          <option value="hard">Hard</option>
-        </select>
+          <SelectTrigger className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="easy">Easy</SelectItem>
+            <SelectItem value="medium">Medium</SelectItem>
+            <SelectItem value="hard">Hard</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Answer Type */}
@@ -377,7 +373,7 @@ const EditQuestionForm = ({ selectedQuestion, handleEditSuccess }: EditQuestionF
           type="button"
           variant="outline"
           size="sm"
-          className="border-primary text-primary hover:bg-primary/5 mt-3"
+          className="border-primary text-primary bg-card hover:bg-primary/5 mt-3"
           onClick={handleAddMoreAnswers}
         >
           + Add Another Answer

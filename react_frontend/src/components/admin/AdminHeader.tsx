@@ -12,7 +12,7 @@ const AdminHeader = ({ onMenuClick }: AdminHeaderProps) => {
   const navigate = useNavigate();
 
   return (
-    <header className="bg-card border-border border-b px-4 py-4 lg:px-6">
+    <header className="bg-sidebar border-border border-b px-4 py-4 lg:px-6">
       <div className="flex items-center justify-between">
         {/* Left Section - Hamburger and Title */}
         <div className="flex items-center gap-4">

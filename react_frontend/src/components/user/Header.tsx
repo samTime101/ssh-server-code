@@ -6,7 +6,7 @@ const Header = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   return (
-    <header className="border-border bg-card sticky top-0 flex justify-between border-b px-8 py-4">
+    <header className="border-border bg-sidebar sticky top-0 flex justify-between border-b px-8 py-4">
       <div className="header-left">
         <div className="header-logo">
           <img

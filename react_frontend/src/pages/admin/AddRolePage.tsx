@@ -66,6 +66,8 @@ const AddRolePage = () => {
       </form>
 
       <h2 className="text-xl font-medium mb-2 text-foreground">Existing roles</h2>
+      <div className="border-border bg-card rounded-md border shadow-md">
+
       <Table>
         <TableHeader>
           <TableRow>
@@ -89,6 +91,7 @@ const AddRolePage = () => {
           ))}
         </TableBody>
       </Table>
+      </div>
     </section>
   );
 };
