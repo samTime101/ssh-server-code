@@ -7,8 +7,10 @@ import LandingPage from "@/pages/LandingPage";
 import UserLayout from "@/layouts/UserLayout";
 import AdminLayout from "@/layouts/AdminLayout";
 import QuestionBankSection from "@/components/user/QuestionBankSection";
+import CEEPracticeSection from "@/components/user/CEEPracticeSection";
 import QuestionProvider from "@/contexts/QuestionContext.tsx";
 import QuestionPage from "@/pages/user/QuestionPage";
+import CEEQuestionPage from "@/pages/user/CEEQuestionPage";
 import AddQuestionPage from "@/pages/admin/AddQuestionPage";
 import CreateCategoryPage from "@/pages/admin/CreateCategoryPage";
 import ManageUsersPage from "@/pages/admin/ManageUsersPage";
@@ -95,6 +97,8 @@ const App = () => {
           <Route index element={<Navigate to="question-bank" replace />} />
           <Route path="question-bank" element={<QuestionBankSection />} />
           <Route path="question" element={<QuestionPage />} />
+          <Route path="cee-practice" element={<CEEPracticeSection />} />
+          <Route path="cee-question" element={<CEEQuestionPage />} />
           <Route path="profile" element={<ProfilePage />} />
           <Route path="history" element={<HistoryPage />} />
           <Route path="settings" element={<SettingsPage />} />
