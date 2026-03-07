@@ -2,7 +2,7 @@
 # Paila models mai thyo, paila Question model vitra save() ra delete() method was overridden
 from datetime import datetime
 from mongoengine import signals
-from .models import Question, QuestionClassification, SubCategory, Category
+from .models import Question, QuestionClassification, SubCategory, Category, Submissions
 from core.cloudinary import delete_question_folder
 
 
@@ -30,6 +30,8 @@ def question_post_save(sender, document, **kwargs):
 # Question delete huda unlink it from QuestionClassification and delete its image folder
 def question_post_delete(sender, document, **kwargs):
     QuestionClassification.objects(questions=document).update(pull__questions=document, set__updated_at=datetime.utcnow())
+    # Removing attempts referencing the question
+    Submissions.objects(attempts_question=document).update(pull_attempts_question=document)
     delete_question_folder(document.id)
 
 
