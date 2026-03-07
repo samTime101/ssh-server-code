@@ -31,7 +31,7 @@ def question_post_save(sender, document, **kwargs):
 def question_post_delete(sender, document, **kwargs):
     QuestionClassification.objects(questions=document).update(pull__questions=document, set__updated_at=datetime.utcnow())
     # Removing attempts referencing the question
-    Submissions.objects(attempts_question=document).update(pull_attempts_question=document)
+    Submissions.objects(attempts__question=document).update(pull__attempts__question=document)
     delete_question_folder(document.id)
 
 
