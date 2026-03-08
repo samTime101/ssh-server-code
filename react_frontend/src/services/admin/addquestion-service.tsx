@@ -16,6 +16,13 @@ export const fetchQuestions = async (page: number, pageSize: number) => {
   }
 };
 
+export const searchQuestions = async (searchText: string) => {
+  const response = await axiosInstance.get(API_ENDPOINTS.adminQuestions, {
+    params: { search: searchText },
+  });
+  return response.data;
+};
+
 export const createQuestion = async (
   questionData: CreateQuestionPayload,
   images: { question: File | null; description: File | null }
@@ -34,7 +41,7 @@ export const createQuestion = async (
     const response = await axiosInstance.post(API_ENDPOINTS.adminQuestions, formData);
     return response.data;
   } catch (error) {
-    throw new Error("Failed to create questions");
+    throw error;
   }
 };
 
@@ -60,7 +67,7 @@ export const updateQuestion = async (
     return response.data;
   } catch (error) {
     console.error("Failed to update question", error);
-    throw new Error("Failed to update question");
+    throw error;
   }
 };
 

@@ -3,12 +3,18 @@ import { useAuth } from "./useAuth";
 import type { Category, SubCategory } from "@/types/category";
 import { fetchCategories } from "@/services/admin/category-service";
 import { toast } from "sonner";
-import { createQuestion, updateQuestion } from "@/services/admin/addquestion-service";
+import {
+  createQuestion,
+  searchQuestions,
+  updateQuestion,
+} from "@/services/admin/addquestion-service";
 import type {
   CreateQuestionPayload,
   QuestionFormData,
   UseQuestionFormProps,
 } from "@/types/question";
+import { collectSubcategoriesFromCategories } from "@/utils/categoryUtils";
+import { extractBackendErrorMessages } from "@/utils/errorUtils";
 
 export const useQuestionForm = ({
   mode,
@@ -67,25 +73,11 @@ export const useQuestionForm = ({
     if (!questionFormData || questionFormData.categoryIds.length === 0 || categories.length === 0)
       return;
 
-    // Combine subcategories from all selected categories
-    const allSubCategories: SubCategory[] = [];
-    const subCategoryIds = new Set<string>();
-
-    questionFormData.categoryIds.forEach((catId) => {
-      const selectedCategory = categories.find((cat) => cat.id == catId);
-      if (selectedCategory?.sub_categories) {
-        selectedCategory.sub_categories.forEach((subCat) => {
-          if (!subCategoryIds.has(subCat.id.toString())) {
-            allSubCategories.push(subCat);
-            subCategoryIds.add(subCat.id.toString());
-          }
-        });
-      }
-    });
-
+    const allSubCategories = collectSubcategoriesFromCategories(
+      questionFormData.categoryIds,
+      categories
+    );
     setSubCategories(allSubCategories);
-    console.log("Selected Categories:", questionFormData.categoryIds);
-    console.log("Combined Sub Categories:", allSubCategories);
   }, [questionFormData?.categoryIds, categories]);
 
   const handleInputChange = (
@@ -247,6 +239,13 @@ export const useQuestionForm = ({
       errors.push("At least one category is required");
     }
 
+    if (
+      mode === "create" &&
+      (!questionFormData?.subCategories || questionFormData.subCategories.length === 0)
+    ) {
+      errors.push("At least one subcategory is required");
+    }
+
     if (!questionFormData?.difficulty) {
       errors.push("Difficulty is required");
     }
@@ -296,6 +295,18 @@ export const useQuestionForm = ({
       let response;
       console.log("Running in mode:", mode);
       if (mode === "create") {
+        // Check for duplicate question text before submitting
+        const searchResult = await searchQuestions(questionFormData.questionText.trim());
+        const duplicate = searchResult?.results?.find(
+          (q: { question_text: string }) =>
+            q.question_text.trim().toLowerCase() ===
+            questionFormData.questionText.trim().toLowerCase()
+        );
+        if (duplicate) {
+          toast.error("A question with this text already exists.");
+          setIsSubmitting(false);
+          return;
+        }
         response = await createQuestion(apiData, selectedImages);
         toast.success("Question created successfully");
       } else {
@@ -310,9 +321,19 @@ export const useQuestionForm = ({
       console.log("Question created successfully:", response);
       // Reset form or navigate as needed
       setQuestionFormData(defaultFormData);
-    } catch (e) {
+    } catch (e: any) {
       console.error(`Failed to ${mode} question:`, e);
-      toast.error(`Failed to ${mode} question`);
+      const data = e?.response?.data;
+      if (data && typeof data === "object") {
+        const messages = extractBackendErrorMessages(data);
+        if (messages.length > 0) {
+          messages.forEach((msg) => toast.error(msg));
+        } else {
+          toast.error(`Failed to ${mode} question`);
+        }
+      } else {
+        toast.error(`Failed to ${mode} question`);
+      }
       onError?.(e as Error);
     } finally {
       setIsSubmitting(false);

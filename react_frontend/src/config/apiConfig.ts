@@ -1,34 +1,30 @@
-//import { getQuestionHierarchy } from "@/services/user/questionService";
-
-// export const API_BASE_URL = "http://localhost:8000/api"; //import.meta.env.VITE_API_BASE_URL || "http://localhost:5000"; //"http://localhost:5173"
-export const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api";
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api";
 
 export const API_ENDPOINTS = {
-  login: `${API_BASE_URL}/auth/signin/`,
-  signup: `${API_BASE_URL}/auth/signup/`,
-  verifyEmail: `${API_BASE_URL}/auth/verify-email/`,
-  resetPassword: `${API_BASE_URL}/auth/reset-password/`,
-  resetPhoneNumber: `${API_BASE_URL}/auth/reset-phonenumber/`,
+  login: "/auth/signin/",
+  signup: "/auth/signup/",
+  verifyEmail: "/auth/verify-email/",
+  resetPassword: "/auth/reset-password/",
+  resetPhoneNumber: "/auth/reset-phonenumber/",
 
-  colleges: `${API_BASE_URL}/colleges/`,
+  colleges: "/colleges/",
 
-  accountInfo: `${API_BASE_URL}/users/profile/`,
+  accountInfo: "/users/profile/",
 
-  createCategory: `${API_BASE_URL}/categories/`,
-  getCategories: `${API_BASE_URL}/categories/`,
-  getCategoriesWithHierarchy: `${API_BASE_URL}/questions/hierarchy/`,
-  createSubCategory: `${API_BASE_URL}/subcategories/`,
-  createSubSubCategory: `${API_BASE_URL}/create/subsubcategory/`,
+  createCategory: "/categories/",
+  getCategories: "/categories/",
+  getCategoriesWithHierarchy: "/questions/hierarchy/",
+  createSubCategory: "/subcategories/",
+  createSubSubCategory: "/create/subsubcategory/",
 
-  selectQuestions: `${API_BASE_URL}/questions/select/`,
-  attemptQuestion: `${API_BASE_URL}/submissions/`,
-  createQuestion: `${API_BASE_URL}/questions/`,
+  selectQuestions: "/questions/select/",
+  attemptQuestion: "/submissions/",
+  createQuestion: "/questions/",
 
   // Admin Routes
-  usersList: `${API_BASE_URL}/users/`,
-  adminQuestions: `${API_BASE_URL}/questions/`,
+  usersList: "/users/",
+  adminQuestions: "/questions/",
   // Roles (backend endpoint should expose /roles/)
-  roles: `${API_BASE_URL}/roles/`,
-  userRoles: `${API_BASE_URL}/user-roles/`,
+  roles: "/roles/",
+  userRoles: "/user-roles/",
 };

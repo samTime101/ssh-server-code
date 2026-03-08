@@ -11,6 +11,8 @@ import QuestionProvider from "@/contexts/QuestionContext.tsx";
 import QuestionPage from "@/pages/user/QuestionPage";
 import AddQuestionPage from "@/pages/admin/AddQuestionPage";
 import CreateCategoryPage from "@/pages/admin/CreateCategoryPage";
+import ManageCategoriesPage from "@/pages/admin/ManageCategoriesPage";
+import ManageSubcategoriesPage from "@/pages/admin/ManageSubcategoriesPage";
 import ManageUsersPage from "@/pages/admin/ManageUsersPage";
 import EditUserPage from "@/pages/admin/EditUserPage";
 import QuestionBankPage from "@/pages/admin/QuestionBankPage";
@@ -112,6 +114,14 @@ const App = () => {
 
           <Route element={<RoleRoute allowedPermissions={["create-category"]} />}>
             <Route path="create-category" element={<CreateCategoryPage />} />
+          </Route>
+
+          <Route element={<RoleRoute allowedPermissions={["manage-categories"]} />}>
+            <Route path="manage-categories" element={<ManageCategoriesPage />} />
+          </Route>
+
+          <Route element={<RoleRoute allowedPermissions={["manage-subcategories"]} />}>
+            <Route path="manage-subcategories" element={<ManageSubcategoriesPage />} />
           </Route>
 
           <Route element={<RoleRoute allowedPermissions={["manage-users"]} />}>
