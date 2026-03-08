@@ -112,9 +112,11 @@ django_backend/
 
 ## VPS CONFIGURATION
 
-fronedn build path: `/var/www/react_frontend/`
+frontend build path: `/var/www/react_frontend/`
 
-nginx config path: `/etc/nginx/sites-available/react_django.conf`
+frontend media path: `/var/www/django_media/`
+
+nginx config path: `/etc/nginx/sites-available/react_frontend.conf`
 
 supervisor config path: `/etc/supervisor/conf.d/django_backend.conf`
 
@@ -122,7 +124,7 @@ supervisor config path: `/etc/supervisor/conf.d/django_backend.conf`
 ## RESTART NGINX CONFIG
 
 ```sh
-ln -s /etc/nginx/sites-available/react_django.conf /etc/nginx/sites-enabled/
+ln -s /etc/nginx/sites-available/react_frontend.conf /etc/nginx/sites-enabled/
 systemctl restart nginx
 nginx -t
 ```
