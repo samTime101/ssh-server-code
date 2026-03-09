@@ -206,26 +206,6 @@ const QuestionPage = () => {
 
         <Card className="shadow-lg">
           <CardHeader className="pb-4">
-            <div className="mb-4 flex flex-wrap gap-2">
-              <Badge variant="secondary" className="capitalize">
-                {currentQuestion.category}
-              </Badge>
-              <Badge
-                variant={
-                  currentQuestion.difficulty === "easy"
-                    ? "default"
-                    : currentQuestion.difficulty === "medium"
-                      ? "secondary"
-                      : "destructive"
-                }
-                className="capitalize"
-              >
-                {currentQuestion.difficulty}
-              </Badge>
-              <Badge variant="outline" className="capitalize">
-                {currentQuestion.option_type}
-              </Badge>
-            </div>
             <h2 className="text-foreground text-xl leading-relaxed font-semibold">
               {currentQuestion.question_text}
             </h2>
