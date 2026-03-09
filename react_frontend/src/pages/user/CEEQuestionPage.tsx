@@ -2,7 +2,6 @@ import { Button } from "@/components/ui/button";
 import { useQuestions } from "@/hooks/useQuestions";
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, ArrowRight, Lightbulb } from "lucide-react";
 import { attemptQuestion } from "@/services/user/question-service";
 import { useAuth } from "@/hooks/useAuth";
@@ -62,7 +61,7 @@ const CEEQuestionPage = () => {
     const nextIndex = currentIndex + 1;
     if (!questionData || nextIndex >= questionData.length) {
       toast.info("You've completed all questions!");
-      navigate("/userpanel/cee-practice");
+      navigate("/userpanel/question-bank");
       return;
     }
     setCurrentIndex(nextIndex);
@@ -123,7 +122,7 @@ const CEEQuestionPage = () => {
   };
 
   const handleBack = () => {
-    navigate("/userpanel/cee-practice");
+    navigate("/userpanel/question-bank");
   };
 
   if (!currentQuestion) {
@@ -164,26 +163,6 @@ const CEEQuestionPage = () => {
 
         <Card className="shadow-lg">
           <CardHeader className="pb-4">
-            <div className="mb-4 flex flex-wrap gap-2">
-              <Badge variant="secondary" className="capitalize">
-                {currentQuestion.category}
-              </Badge>
-              <Badge
-                variant={
-                  currentQuestion.difficulty === "easy"
-                    ? "default"
-                    : currentQuestion.difficulty === "medium"
-                      ? "secondary"
-                      : "destructive"
-                }
-                className="capitalize"
-              >
-                {currentQuestion.difficulty}
-              </Badge>
-              <Badge variant="outline" className="capitalize">
-                {currentQuestion.option_type}
-              </Badge>
-            </div>
             <h2 className="text-foreground text-xl leading-relaxed font-semibold">
               {currentQuestion.question_text}
             </h2>
