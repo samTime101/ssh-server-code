@@ -28,7 +28,15 @@ const Sidebar = () => {
   const { logout } = useAuth();
   const location = useLocation();
 
-  const isActive = (path: string) => location.pathname.startsWith(path);
+  const isActive = (path: string) => {
+    if (path === "/userpanel/cee-practice") {
+      return (
+        location.pathname.startsWith("/userpanel/cee-practice") ||
+        location.pathname.startsWith("/userpanel/cee-question")
+      );
+    }
+    return location.pathname.startsWith(path);
+  };
 
   return (
     <aside className="border-sidebar-border bg-sidebar fixed top-[64px] left-0 z-10 flex h-[calc(100vh-64px)] w-64 flex-col border-r">
