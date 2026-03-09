@@ -13,21 +13,22 @@ from api.questions.serializers.hierarchy import *
 from api.questions.serializers.selection import *
 from core.heirarchy import get_heirarchy
 from core.selection.selection import get_questions_by_selection
-from core.pagination import StandardResultsSetPagination
+from core.pagination import StandardResultsSetPagination,QuestionResultsSetPagination
 # from rest_framework.permissions import IsAdminUser, IsAuthenticated
-from core.permissions.permissions import IsAdminUser, IsContributor, IsAuthenticated
+from core.permissions.permissions import IsAdminUser, IsAuthenticated,AllowAny
 from rest_framework.parsers import JSONParser
 from core.parser import QuestionMultipartJsonParser
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework.exceptions import NotFound
+from api.questions.serializers.question import QuestionFilterSerializer
+from api.questions.filters import filter_questions_queryset
 
-# For drf-spectacular exclude POST/PUT/PATCH methods on UI
 @extend_schema_view(
     create=extend_schema(exclude=True),
     update=extend_schema(exclude=True),
     partial_update=extend_schema(exclude=True),
+    list=extend_schema(parameters=[QuestionFilterSerializer])
 )
-
 class QuestionViewSet(viewsets.ModelViewSet):
     # Core CRUD handled under this viewset automatically
     queryset = Question.objects.all()
@@ -45,6 +46,16 @@ class QuestionViewSet(viewsets.ModelViewSet):
     # both admin and contributor can access
     permission_classes = [IsAdminUser]
 
+    def get_queryset(self):
+        base_queryset = Question.objects.all()            
+        return filter_questions_queryset(base_queryset, self.request.query_params)
+
+    # for get/questions/<id>, allow from any authenticated user, not just admin
+    # https://github.com/users/sisani9/projects/2/views/1?pane=issue&itemId=159302989&issue=sisani9%7Csisani-eps%7C147
+    def retrieve(self, request, *args, **kwargs):
+        self.permission_classes = [AllowAny]
+        return super().retrieve(request, *args, **kwargs)
+        
     # For api/questions/hierarchy/
     @action(detail=False,methods=['get'],url_path='hierarchy',serializer_class=HierarchySerializer,permission_classes=[IsAuthenticated])
     def hierarchy(self, request):
@@ -57,7 +68,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
     # For question selection
     # /api/questions/select/
     @extend_schema(request=QuestionSelectionSerializer, responses=QuestionPublicSerializer(many=True), parameters=[WrongOnlyQuerySerializer, NonAttemptedQuerySerializer ])
-    @action(detail=False, methods=['post'],url_path='select',serializer_class=QuestionSelectionSerializer,permission_classes=[IsAuthenticated],parser_classes=[JSONParser])
+    @action(detail=False, methods=['post'],url_path='select',serializer_class=QuestionSelectionSerializer,permission_classes=[IsAuthenticated],parser_classes=[JSONParser],pagination_class=QuestionResultsSetPagination)
     def select(self, request):
         query_serializer = WrongOnlyQuerySerializer(data=request.query_params)
         query_serializer.is_valid(raise_exception=True)
@@ -85,8 +96,8 @@ class QuestionViewSet(viewsets.ModelViewSet):
         queryset = get_questions_by_selection(category_ids, sub_category_ids, wrong_only=wrong_only, user_guid=user_guid, non_attempted=not_attempted)
         if not queryset:
             raise NotFound("No questions found for requested criteria.")
-        # page = self.paginate_queryset(queryset)
-        # serializer = QuestionPublicSerializer(page, many=True)
-        # return self.get_paginated_response(serializer.data)
-        response_data = QuestionPublicSerializer(queryset, many=True)
-        return Response(response_data.data, status=status.HTTP_200_OK)        
+        page = self.paginate_queryset(queryset)
+        serializer = QuestionPublicSerializer(page, many=True)
+        return self.get_paginated_response(serializer.data)
+        # response_data = QuestionPublicSerializer(queryset, many=True)
+        # return Response(response_data.data, status=status.HTTP_200_OK)        

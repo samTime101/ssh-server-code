@@ -33,14 +33,14 @@ class UserSerializer(serializers.ModelSerializer):
         if total_attempts == 0:
             return 0.0
         total_right_attempts = self.get_total_right_attempts(obj)
-        return (total_right_attempts / total_attempts) * 100
+        return round(((total_right_attempts / total_attempts) * 100), 2)
     
     def get_completion_percent(self, obj):
         total_questions = Question.objects.count()
         if total_questions == 0:
             return 0.0
         total_attempts = self.get_total_attempts(obj)
-        return (total_attempts / total_questions) * 100
+        return round((total_attempts / total_questions) * 100, 2)
     
     def get_roles(self, obj):
         return obj.get_roles()
