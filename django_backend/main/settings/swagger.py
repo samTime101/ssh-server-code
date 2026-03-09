@@ -3,7 +3,11 @@ SPECTACULAR_SETTINGS = {
     "TITLE": "MCQ API",
     "DESCRIPTION": """
 
-# March 8, 2026
+## March 9, 2026
+- Restructured the UserManager to another file called `managers/user_manager.py` to improve code organization and maintainability. Updated the User model to use the new UserManager for user creation and management operations.
+    
+
+## March 8, 2026
 - Fixed email verification, created a new google account with app password and updated SMTP settings in `.env` and `emails.py` accordingly. Now email verification should work properly with the new credentials.
     
 
