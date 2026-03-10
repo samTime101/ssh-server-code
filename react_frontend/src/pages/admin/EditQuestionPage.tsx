@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import EditorField from "@/components/EditorField";
 import {
   Select,
   SelectContent,
@@ -40,12 +41,11 @@ const EditQuestionForm = ({ selectedQuestion, handleEditSuccess }: EditQuestionF
     handleRemoveCategory,
     handleAddSubCategory,
     handleRemoveSubCategory,
+    handleDescriptionChange,
   } = useQuestionForm({
     mode: "edit",
     questionId: selectedQuestion.id,
-    // initial data use nai vako xaina hook ma tesaile nadeko data,
-    onSuccess: (response) => {
-      console.log("Edit Successful", response);
+    onSuccess: (_response) => {
       handleEditSuccess();
     },
     onError: (error) => {
@@ -53,11 +53,9 @@ const EditQuestionForm = ({ selectedQuestion, handleEditSuccess }: EditQuestionF
     },
   });
 
-  //data lai populate garna ko lagi
   useEffect(() => {
     if (!selectedQuestion) return;
 
-    // Map category names to category IDs
     const categoryIds = selectedQuestion.category_names
       .map((catName: string) => {
         const category = categories.find((c) => c.name === catName);
@@ -84,7 +82,7 @@ const EditQuestionForm = ({ selectedQuestion, handleEditSuccess }: EditQuestionF
   }, [selectedQuestion, setQuestionFormData, categories]);
 
   return (
-    // @see: react_frontend\src\components\admin\AddQuestionForm.tsx [exacct same code]
+    // @see: AddQuestionForm.tsx
     <form onSubmit={handleCreateQuestionSubmit} className="space-y-6">
       {/* Question Text */}
       <div className="space-y-2">
@@ -100,13 +98,11 @@ const EditQuestionForm = ({ selectedQuestion, handleEditSuccess }: EditQuestionF
 
       {/* Description */}
       <div className="space-y-2">
-        <Label htmlFor="description">Description</Label>
-        <Textarea
-          id="description"
-          name="description"
-          rows={2}
+        <Label>Description</Label>
+        <EditorField
           value={questionFormData.description}
-          onChange={handleInputChange}
+          onChange={handleDescriptionChange}
+          placeholder="Additional context or explanation"
         />
       </div>
 

@@ -27,8 +27,6 @@ export const createQuestion = async (
   questionData: CreateQuestionPayload,
   images: { question: File | null; description: File | null }
 ): Promise<CreateQuestionResponse> => {
-  console.log(JSON.stringify(questionData));
-
   const formData = new FormData();
   formData.append("data", JSON.stringify(questionData));
   if (images.question) {
@@ -50,7 +48,6 @@ export const updateQuestion = async (
   questionData: CreateQuestionPayload,
   images: { question: File | null; description: File | null }
 ): Promise<CreateQuestionResponse> => {
-  console.log(JSON.stringify(questionData));
   try {
     const formData = new FormData();
     formData.append("data", JSON.stringify(questionData));
