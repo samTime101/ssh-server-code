@@ -2,14 +2,17 @@ import axiosInstance from "../axios";
 import { API_ENDPOINTS } from "@/config/apiConfig";
 import type { CreateQuestionPayload, CreateQuestionResponse } from "@/types/question";
 
-export const fetchQuestions = async (page: number, pageSize: number) => {
+export const fetchQuestions = async (
+  page: number,
+  pageSize: number,
+  categoryId?: string,
+  subCategoryId?: string
+) => {
   try {
-    const response = await axiosInstance.get(API_ENDPOINTS.adminQuestions, {
-      params: {
-        page,
-        page_size: pageSize,
-      },
-    });
+    const params: Record<string, string | number> = { page, page_size: pageSize };
+    if (categoryId) params.category_id = categoryId;
+    if (subCategoryId) params.sub_category_id = subCategoryId;
+    const response = await axiosInstance.get(API_ENDPOINTS.adminQuestions, { params });
     return response.data;
   } catch (error) {
     throw new Error("Failed to fetch questions");
