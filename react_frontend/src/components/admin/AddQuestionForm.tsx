@@ -13,7 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ImageIcon, Upload, X } from "lucide-react";
-import { useQuestionForm } from "@/hooks/useQuestionForm";
+import { useQuestionForm } from "@/hooks/admin/useQuestionForm";
 
 const AddQuestionForm = () => {
   const {

@@ -1,7 +1,3 @@
-import React, { useState, useEffect } from "react";
-import { API_ENDPOINTS } from "@/config/apiConfig";
-import { useAuth } from "@/hooks/useAuth";
-import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -9,137 +5,29 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  getCategories,
-  createSubCategory,
-} from "@/services/admin/subcategory-service";
-import { createSubSubCategory } from "@/services/admin/subsubcategory-service";
-import axiosInstance from "@/services/axios";
+import { Input } from "@/components/ui/input";
+import { useCreateCategory } from "@/hooks/admin/useCreateCategory";
 
 const CreateCategoryPage = () => {
-  const { token } = useAuth();
-
-  const [categories, setCategories] = useState<any[]>([]);
-  const [categoryName, setCategoryName] = useState("");
-  const [subCategoryName, setSubCategoryName] = useState("");
-  const [subSubCategoryName, setSubSubCategoryName] = useState("");
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string>("");
-  const [selectedSubCategoryId, setSelectedSubCategoryId] = useState<string>("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [message, setMessage] = useState("");
-  const [messageType, setMessageType] = useState<"success" | "error" | "">("");
-
-  // Fetch categories and subcategories
-  useEffect(() => {
-    async function fetchCategories() {
-      if (!token) return;
-      try {
-        const data = await getCategories();
-        console.log("The data is :", data);
-        setCategories(data.categories);
-      } catch (err) {
-        setMessage("Failed to fetch categories");
-        setMessageType("error");
-      }
-    }
-    fetchCategories();
-  }, [token]);
-
-  // Create Category
-  const handleCategorySubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!categoryName.trim()) {
-      setMessage("Please enter a category name");
-      setMessageType("error");
-      return;
-    }
-    setIsLoading(true);
-    setMessage("");
-    setMessageType("");
-    try {
-      if (!token) throw new Error("Authentication token not found");
-      const categoryData = { name: categoryName };
-
-      const result = await axiosInstance.post(API_ENDPOINTS.createCategory, categoryData, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setMessage(`Category \"${result.data.name}\" created successfully!`);
-      setMessageType("success");
-      setCategoryName("");
-      // Refresh categories
-      const data = await getCategories();
-      setCategories(data.categories);
-    } catch (error: any) {
-      const errorMsg =
-        error.response?.data?.detail ||
-        error.response?.data?.name?.[0] ||
-        error.message ||
-        "Failed to create category. Please try again.";
-      setMessage(errorMsg);
-      setMessageType("error");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Create SubCategory
-  const handleSubCategorySubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedCategoryId || !subCategoryName.trim()) {
-      setMessage("Select category and enter subcategory name");
-      setMessageType("error");
-      return;
-    }
-    setIsLoading(true);
-    setMessage("");
-    setMessageType("");
-    try {
-      if (!token) throw new Error("Authentication token not found");
-      const result = await createSubCategory(selectedCategoryId, subCategoryName);
-
-      setMessage(`Subcategory \"${result.name}\" created successfully!`);
-      setMessageType("success");
-      setSubCategoryName("");
-      // Refresh categories
-      const data = await getCategories();
-      setCategories(data.categories);
-    } catch (error: any) {
-      setMessage(error.message || "Failed to create subcategory. Please try again.");
-      setMessageType("error");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Create SubSubCategory
-  const handleSubSubCategorySubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedSubCategoryId || !subSubCategoryName.trim()) {
-      setMessage("Select subcategory and enter subsubcategory name");
-      setMessageType("error");
-      return;
-    }
-    setIsLoading(true);
-    setMessage("");
-    setMessageType("");
-    try {
-      if (!token) throw new Error("Authentication token not found");
-      const result = await createSubSubCategory(selectedSubCategoryId, subSubCategoryName);
-      setMessage(
-        `Subsubcategory \"${result.subsubcategory.subSubCategoryName}\" created successfully!`
-      );
-      setMessageType("success");
-      setSubSubCategoryName("");
-      // Refresh categories
-      const data = await getCategories();
-      setCategories(data.categories);
-    } catch (error: any) {
-      setMessage(error.message || "Failed to create subsubcategory. Please try again.");
-      setMessageType("error");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const {
+    categories,
+    categoryName,
+    setCategoryName,
+    subCategoryName,
+    setSubCategoryName,
+    subSubCategoryName,
+    setSubSubCategoryName,
+    selectedCategoryId,
+    setSelectedCategoryId,
+    selectedSubCategoryId,
+    setSelectedSubCategoryId,
+    isLoading,
+    message,
+    messageType,
+    handleCategorySubmit,
+    handleSubCategorySubmit,
+    handleSubSubCategorySubmit,
+  } = useCreateCategory();
 
   return (
     <div className="bg-background min-h-screen py-8">

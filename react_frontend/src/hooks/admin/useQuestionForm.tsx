@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useAuth } from "./useAuth";
+import { useAuth } from "@/hooks/useAuth";
 import type { Category, SubCategory } from "@/types/category";
 import { fetchCategories } from "@/services/admin/category-service";
 import { toast } from "sonner";
