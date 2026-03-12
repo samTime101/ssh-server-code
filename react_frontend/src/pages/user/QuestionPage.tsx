@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { useQuestions } from "@/hooks/useQuestions";
 import { useState, useEffect, useRef } from "react"; //React,
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+// import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, ArrowRight, Lightbulb, Loader2 } from "lucide-react";
 import { attemptQuestion } from "@/services/user/question-service";
 import { useAuth } from "@/hooks/useAuth";
