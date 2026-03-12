@@ -1,4 +1,3 @@
-import React, { useEffect, useState } from "react";
 import {
   Table,
   TableBody,
@@ -11,80 +10,23 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PenIcon, TrashIcon } from "lucide-react";
-import { toast } from "sonner";
-import {
-  fetchSubcategories,
-  updateSubCategory,
-  deleteSubCategory,
-} from "@/services/admin/subcategory-service";
 import Modal from "@/components/Modal";
 import TableSkeletonLoader from "@/components/TableSkeletonLoader";
-import type { SubCategoryDetail } from "@/types/category";
+import { useManageSubcategories } from "@/hooks/admin/useManageSubcategories";
 
 const ManageSubcategoriesPage = () => {
-  const [subcategories, setSubcategories] = useState<SubCategoryDetail[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [editTarget, setEditTarget] = useState<SubCategoryDetail | null>(null);
-  const [editName, setEditName] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  useEffect(() => {
-    loadSubcategories();
-  }, []);
-
-  const loadSubcategories = async () => {
-    setIsLoading(true);
-    try {
-      const data = await fetchSubcategories();
-      setSubcategories(data);
-    } catch {
-      toast.error("Failed to load subcategories");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const openEditModal = (subcategory: SubCategoryDetail) => {
-    setEditTarget(subcategory);
-    setEditName(subcategory.name);
-  };
-
-  const closeEditModal = () => {
-    setEditTarget(null);
-    setEditName("");
-  };
-
-  const handleEditSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editTarget || !editName.trim()) return;
-    setIsSubmitting(true);
-    try {
-      await updateSubCategory(editTarget.id, editName.trim(), editTarget.categoryId);
-      toast.success("Subcategory updated successfully");
-      closeEditModal();
-      await loadSubcategories();
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to update subcategory");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleDelete = async (subcategory: SubCategoryDetail) => {
-    if (
-      !confirm(
-        `Are you sure you want to delete "${subcategory.name}"? This may affect associated questions.`
-      )
-    )
-      return;
-    try {
-      await deleteSubCategory(subcategory.id);
-      toast.success("Subcategory deleted successfully");
-      await loadSubcategories();
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to delete subcategory");
-    }
-  };
+  const {
+    subcategories,
+    isLoading,
+    editTarget,
+    editName,
+    setEditName,
+    isSubmitting,
+    openEditModal,
+    closeEditModal,
+    handleEditSubmit,
+    handleDelete,
+  } = useManageSubcategories();
 
   return (
     <div>

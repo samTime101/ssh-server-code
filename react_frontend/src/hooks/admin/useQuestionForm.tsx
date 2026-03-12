@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useAuth } from "./useAuth";
+import { useAuth } from "@/hooks/useAuth";
 import type { Category, SubCategory } from "@/types/category";
 import { fetchCategories } from "@/services/admin/category-service";
 import { toast } from "sonner";
@@ -18,7 +18,6 @@ import { extractBackendErrorMessages } from "@/utils/errorUtils";
 
 export const useQuestionForm = ({
   mode,
-  initialData,
   questionId,
   onSuccess,
   onError,
@@ -39,7 +38,6 @@ export const useQuestionForm = ({
     contributor: "",
     contributorSpecialization: "",
   };
-  console.log("squiggly lines lai banda garum", initialData);
 
   const [questionFormData, setQuestionFormData] = useState<QuestionFormData>(defaultFormData);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -215,6 +213,10 @@ export const useQuestionForm = ({
     );
   };
 
+  const handleDescriptionChange = (value: string) => {
+    setQuestionFormData((prev) => ({ ...(prev ?? defaultFormData), description: value }));
+  };
+
   const handleImageChange = (type: "question" | "description", file: File | null) => {
     setSelectedImages((prev) => ({ ...prev, [type]: file }));
   };
@@ -291,9 +293,7 @@ export const useQuestionForm = ({
           contributor_specialization: questionFormData.contributorSpecialization,
         }),
       };
-      console.log("Question created successfully API:", apiData);
       let response;
-      console.log("Running in mode:", mode);
       if (mode === "create") {
         // Check for duplicate question text before submitting
         const searchResult = await searchQuestions(questionFormData.questionText.trim());
@@ -318,8 +318,6 @@ export const useQuestionForm = ({
       }
 
       onSuccess?.(response);
-      console.log("Question created successfully:", response);
-      // Reset form or navigate as needed
       setQuestionFormData(defaultFormData);
     } catch (e: any) {
       console.error(`Failed to ${mode} question:`, e);
@@ -363,6 +361,7 @@ export const useQuestionForm = ({
     handleOptionTextChange,
 
     isSubmitting,
+    handleDescriptionChange,
     handleCreateQuestionSubmit,
   };
 };

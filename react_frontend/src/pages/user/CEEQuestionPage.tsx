@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import type { Question, QuestionAttemptState } from "@/types/question";
 import MultipleChoiceOption from "@/components/user/MultipleChoiceOption";
 import SingleChoiceOption from "@/components/user/SingleChoiceOption";
+import EditorRenderer from "@/components/EditorRenderer";
 import { useNavigate } from "react-router-dom";
 
 const CEEQuestionPage = () => {
@@ -214,9 +215,10 @@ const CEEQuestionPage = () => {
                     <h3 className="text-primary flex items-center text-sm font-semibold">
                       Explanation
                     </h3>
-                    <p className="text-foreground text-sm leading-relaxed">
-                      {currentQuestion.description}
-                    </p>
+                    <EditorRenderer
+                      data={currentQuestion.description}
+                      className="text-foreground"
+                    />
                     {currentQuestion.description_image_url && (
                       <div className="flex justify-center">
                         <img

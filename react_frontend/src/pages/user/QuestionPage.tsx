@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import type { Question, QuestionAttemptState } from "@/types/question";
 import MultipleChoiceOption from "@/components/user/MultipleChoiceOption";
 import SingleChoiceOption from "@/components/user/SingleChoiceOption";
+import EditorRenderer from "@/components/EditorRenderer";
 import { useNavigate } from "react-router-dom";
 
 const QuestionPage = () => {
@@ -193,7 +194,11 @@ const QuestionPage = () => {
   return (
     <div className="min-h-screen p-6">
       <div className="mx-auto max-w-4xl space-y-6">
-        <Button variant="outline" onClick={handleBack} className="hover:bg-muted px-4 py-2 text-muted-foreground bg-card">
+        <Button
+          variant="outline"
+          onClick={handleBack}
+          className="hover:bg-muted text-muted-foreground bg-card px-4 py-2"
+        >
           <ArrowLeft />
           Back
         </Button>
@@ -260,9 +265,7 @@ const QuestionPage = () => {
                 <h3 className="text-primary flex items-center text-sm font-semibold">
                   Explanation
                 </h3>
-                <p className="text-foreground text-sm leading-relaxed">
-                  {currentQuestion.description}
-                </p>
+                <EditorRenderer data={currentQuestion.description} className="text-foreground" />
                 {currentQuestion.description_image_url && (
                   <div className="flex justify-center">
                     <img
@@ -291,7 +294,7 @@ const QuestionPage = () => {
           <Button
             variant="outline"
             onClick={handlePreviousQuestion}
-            className="hover:bg-muted px-6 py-2 text-muted-foreground bg-card"
+            className="hover:bg-muted text-muted-foreground bg-card px-6 py-2"
           >
             <ArrowLeft />
             <p>Previous</p>
