@@ -96,5 +96,6 @@ export const useManageUsers = () => {
     handleSearchChange,
     handleDeleteUser,
     handleEditUser,
+    fetchUsers
   };
 };
