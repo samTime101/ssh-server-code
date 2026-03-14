@@ -137,7 +137,10 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       });
       if (response) {
         toast.success("Registration successful! Check your email to verify your account.");
-        navigate("/auth/login");
+        // navigate("/auth/login");
+        if(!token){
+          navigate("/auth/login");
+        }
       }
     } catch (error: any) {
       console.error("Registration failed:", error);

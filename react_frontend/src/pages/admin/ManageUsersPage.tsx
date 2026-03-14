@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import {
   Table,
@@ -13,7 +14,8 @@ import { Button } from "@/components/ui/button";
 import Paginator from "@/components/Paginator";
 import TableSkeletonLoader from "@/components/TableSkeletonLoader";
 import { useManageUsers } from "@/hooks/admin/useManageUsers";
-
+import Modal from "@/components/Modal";
+import SignupForm from "@/components/SignupForm";
 const ManageUsersPage = () => {
   const {
     filteredUsers,
@@ -28,13 +30,22 @@ const ManageUsersPage = () => {
     handleSearchChange,
     handleDeleteUser,
     handleEditUser,
+    fetchUsers    
   } = useManageUsers();
+
+  const [isSignupModalOpen, setIsSignupModalOpen] = useState(false);
 
   return (
     <div>
       <div className="manage-users-header">
         <h1 className="manage-users-title text-foreground text-2xl font-bold">Manage Users</h1>
       </div>
+        <Button
+          onClick={() => setIsSignupModalOpen(true)}
+          className="bg-primary text-primary-foreground"
+        >
+          Add New User
+        </Button>      
       <div className="manage-users-content text-muted-foreground mt-1">
         <p>This is where admin can manage users.</p>
       </div>
@@ -56,6 +67,7 @@ const ManageUsersPage = () => {
                 <TableHead>Email</TableHead>
                 <TableHead>Role</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead>Email Verified</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -96,6 +108,16 @@ const ManageUsersPage = () => {
                         {user.is_active ? "Active" : "Inactive"}
                       </span>
                     </TableCell>
+                    <TableCell>
+                      <span
+                        className={`${user.is_email_verified
+                          ? "bg-green-100 text-green-600"
+                          : "bg-destructive/10 text-destructive"
+                        } rounded-md px-2 py-1 text-sm font-medium shadow-xs`}
+                      >
+                        {user.is_email_verified ? "Verified" : "Not Verified"}
+                      </span>
+                    </TableCell>
                     <TableCell className="flex gap-2">
                       <Button
                         className="btn-edit bg-primary text-primary-foreground cursor-pointer rounded"
@@ -128,6 +150,12 @@ const ManageUsersPage = () => {
           />
         </div>
       </div>
+      <Modal open={isSignupModalOpen} onOpenChange={setIsSignupModalOpen} title="Add New User">
+        <SignupForm onSuccess={() => {
+          setIsSignupModalOpen(false);
+          fetchUsers();
+        }} addUser={true} />
+      </Modal>
     </div>
   );
 };
