@@ -22,6 +22,8 @@ export const useQuestionBank = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState("all");
   const [selectedSubCategoryId, setSelectedSubCategoryId] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
 
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [selectedQuestion, setSelectedQuestion] = useState<any>(null);
@@ -43,7 +45,22 @@ export const useQuestionBank = () => {
 
   useEffect(() => {
     if (token) loadQuestions();
-  }, [token, currentPage, pageSize, selectedCategoryId, selectedSubCategoryId]);
+  }, [
+    token,
+    currentPage,
+    pageSize,
+    selectedCategoryId,
+    selectedSubCategoryId,
+    debouncedSearchQuery,
+  ]);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery.trim());
+    }, 350);
+
+    return () => clearTimeout(timeout);
+  }, [searchQuery]);
 
   const loadQuestions = async () => {
     setIsLoading(true);
@@ -52,7 +69,8 @@ export const useQuestionBank = () => {
         currentPage,
         pageSize,
         selectedCategoryId === "all" ? undefined : selectedCategoryId,
-        selectedSubCategoryId === "all" ? undefined : selectedSubCategoryId
+        selectedSubCategoryId === "all" ? undefined : selectedSubCategoryId,
+        debouncedSearchQuery || undefined
       );
       setQuestionList(data.results);
       setPagination({
@@ -84,6 +102,11 @@ export const useQuestionBank = () => {
 
   const handleSubCategoryChange = (value: string) => {
     setSelectedSubCategoryId(value);
+    setCurrentPage(1);
+  };
+
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
     setCurrentPage(1);
   };
 
@@ -123,6 +146,7 @@ export const useQuestionBank = () => {
     subCategories,
     selectedCategoryId,
     selectedSubCategoryId,
+    searchQuery,
     editModalOpen,
     setEditModalOpen,
     selectedQuestion,
@@ -130,6 +154,7 @@ export const useQuestionBank = () => {
     handlePageSizeChange,
     handleCategoryChange,
     handleSubCategoryChange,
+    handleSearchChange,
     handleEditClick,
     handleEditSuccess,
     handleDeleteClick,
