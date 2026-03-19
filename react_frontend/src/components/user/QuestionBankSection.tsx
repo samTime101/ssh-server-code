@@ -9,7 +9,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { useQuestions } from "@/hooks/useQuestions.tsx";
 import CategoryList from "./CategoryList";
-import type { GetCategoriesResponse } from "@/types/category";
+import type { Category, GetCategoriesResponse } from "@/types/category";
 import { getCategories } from "@/services/user/question-service";
 import { AuthContext } from "@/contexts/AuthContext";
 import { getAttemptStats } from "@/utils/attemptUtils";
@@ -30,6 +30,7 @@ const QuestionBankSection = () => {
 
   const [categories, setCategories] = useState<GetCategoriesResponse>();
   const [reattemptWrongOnly, setReattemptWrongOnly] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     if (!token) return;
@@ -52,6 +53,31 @@ const QuestionBankSection = () => {
     await fetchQuestions(reattemptWrongOnly);
     navigate("/userpanel/question");
   };
+
+  const normalizeSearch = searchQuery.trim().toLowerCase();
+  const filteredCategories: Category[] = !normalizeSearch
+    ? (categories?.categories ?? [])
+    : (categories?.categories ?? [])
+        .map((category) => {
+          const categoryMatches =
+            category.name.toLowerCase().includes(normalizeSearch) ||
+            category.id.toLowerCase().includes(normalizeSearch);
+
+          const matchingSubCategories = (category.sub_categories ?? []).filter(
+            (subCategory) =>
+              subCategory.name.toLowerCase().includes(normalizeSearch) ||
+              subCategory.id.toLowerCase().includes(normalizeSearch)
+          );
+
+          if (categoryMatches) return category;
+          if (matchingSubCategories.length === 0) return null;
+
+          return {
+            ...category,
+            sub_categories: matchingSubCategories,
+          };
+        })
+        .filter((category): category is Category => category !== null);
 
   const stats = getAttemptStats(user, categories);
 
@@ -92,6 +118,8 @@ const QuestionBankSection = () => {
             <Input
               placeholder="Search by Topic, Keyword, or Question ID"
               className="border-input focus:border-ring focus:ring-ring rounded-lg py-3 pr-4 pl-12 text-base"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
           <div className="mt-4 flex justify-end">
@@ -107,11 +135,17 @@ const QuestionBankSection = () => {
 
         <div className="space-y-4">
           <h3 className="text-foreground mb-4 text-lg font-medium">Select Categories</h3>
-          <ul className="space-y-3">
-            {categories?.categories.map((category) => (
-              <CategoryList key={category.id} category={category} />
-            ))}
-          </ul>
+          {filteredCategories.length === 0 ? (
+            <p className="text-muted-foreground text-sm">
+              No matching topics found for your search.
+            </p>
+          ) : (
+            <ul className="space-y-3">
+              {filteredCategories.map((category) => (
+                <CategoryList key={category.id} category={category} />
+              ))}
+            </ul>
+          )}
         </div>
 
         <div className="border-border mt-8 flex gap-4 border-t pt-6">

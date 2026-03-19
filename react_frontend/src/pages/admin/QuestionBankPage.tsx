@@ -36,6 +36,7 @@ const QuestionBankPage = () => {
     subCategories,
     selectedCategoryId,
     selectedSubCategoryId,
+    searchQuery,
     editModalOpen,
     setEditModalOpen,
     selectedQuestion,
@@ -43,6 +44,7 @@ const QuestionBankPage = () => {
     handlePageSizeChange,
     handleCategoryChange,
     handleSubCategoryChange,
+    handleSearchChange,
     handleEditClick,
     handleEditSuccess,
     handleDeleteClick,
@@ -69,7 +71,11 @@ const QuestionBankPage = () => {
       </div>
       <div className="manage-questions-main-content border-border bg-card mt-4 rounded-md border p-4 shadow-md">
         <div className="questions-search-section flex gap-3">
-          <Input placeholder="Search questions by name or email" />
+          <Input
+            placeholder="Search by question text or description"
+            value={searchQuery}
+            onChange={(e) => handleSearchChange(e.target.value)}
+          />
           <Select value={selectedCategoryId} onValueChange={handleCategoryChange}>
             <SelectTrigger className="w-52">
               <SelectValue placeholder="Filter by category" />
