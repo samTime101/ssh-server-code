@@ -2,9 +2,18 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import EditorField from "@/components/EditorField";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { ImageIcon, Upload, X } from "lucide-react";
-import { useQuestionForm } from "@/hooks/useQuestionForm";
+import { useQuestionForm } from "@/hooks/admin/useQuestionForm";
 import { useEffect } from "react";
 
 // uta questionbank bata aako data
@@ -32,12 +41,11 @@ const EditQuestionForm = ({ selectedQuestion, handleEditSuccess }: EditQuestionF
     handleRemoveCategory,
     handleAddSubCategory,
     handleRemoveSubCategory,
+    handleDescriptionChange,
   } = useQuestionForm({
     mode: "edit",
     questionId: selectedQuestion.id,
-    // initial data use nai vako xaina hook ma tesaile nadeko data,
-    onSuccess: (response) => {
-      console.log("Edit Successful", response);
+    onSuccess: (_response) => {
       handleEditSuccess();
     },
     onError: (error) => {
@@ -45,11 +53,9 @@ const EditQuestionForm = ({ selectedQuestion, handleEditSuccess }: EditQuestionF
     },
   });
 
-  //data lai populate garna ko lagi
   useEffect(() => {
     if (!selectedQuestion) return;
 
-    // Map category names to category IDs
     const categoryIds = selectedQuestion.category_names
       .map((catName: string) => {
         const category = categories.find((c) => c.name === catName);
@@ -76,16 +82,15 @@ const EditQuestionForm = ({ selectedQuestion, handleEditSuccess }: EditQuestionF
   }, [selectedQuestion, setQuestionFormData, categories]);
 
   return (
-    // @see: react_frontend\src\components\admin\AddQuestionForm.tsx [exacct same code]
+    // @see: AddQuestionForm.tsx
     <form onSubmit={handleCreateQuestionSubmit} className="space-y-6">
       {/* Question Text */}
       <div className="space-y-2">
         <Label htmlFor="questionText">Question Text</Label>
-        <textarea
+        <Textarea
           id="questionText"
           name="questionText"
           rows={3}
-          className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-slate-600 dark:bg-slate-700 dark:text-gray-100 dark:focus:ring-blue-400"
           value={questionFormData.questionText}
           onChange={handleInputChange}
         />
@@ -93,14 +98,11 @@ const EditQuestionForm = ({ selectedQuestion, handleEditSuccess }: EditQuestionF
 
       {/* Description */}
       <div className="space-y-2">
-        <Label htmlFor="description">Description</Label>
-        <textarea
-          id="description"
-          name="description"
-          rows={2}
-          className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-slate-600 dark:bg-slate-700 dark:text-gray-100 dark:focus:ring-blue-400"
+        <Label>Description</Label>
+        <EditorField
           value={questionFormData.description}
-          onChange={handleInputChange}
+          onChange={handleDescriptionChange}
+          placeholder="Additional context or explanation"
         />
       </div>
 
@@ -109,7 +111,7 @@ const EditQuestionForm = ({ selectedQuestion, handleEditSuccess }: EditQuestionF
         <div className="space-y-2">
           <Label>Question Image</Label>
           <div className="flex items-center gap-4">
-            <input
+            <Input
               type="file"
               id="questionImage"
               accept="image/*"
@@ -118,7 +120,7 @@ const EditQuestionForm = ({ selectedQuestion, handleEditSuccess }: EditQuestionF
             />
             <label
               htmlFor="questionImage"
-              className="flex cursor-pointer items-center gap-2 rounded-md border border-gray-300 px-4 py-2 text-sm transition-colors hover:bg-gray-50 dark:border-slate-600 dark:hover:bg-slate-700"
+              className="border-input hover:bg-muted flex cursor-pointer items-center gap-2 rounded-md border px-4 py-2 text-sm transition-colors"
             >
               <Upload size={16} /> Choose Question Image
             </label>
@@ -126,13 +128,13 @@ const EditQuestionForm = ({ selectedQuestion, handleEditSuccess }: EditQuestionF
             {selectedImages.question ? (
               <div className="flex items-center gap-2">
                 <ImageIcon size={16} className="text-green-600" />
-                <span className="text-sm text-gray-600 dark:text-gray-400">
+                <span className="text-muted-foreground text-sm">
                   {selectedImages.question.name}
                 </span>
                 <button
                   type="button"
                   onClick={() => handleImageChange("question", null)}
-                  className="ml-2 text-red-500 hover:text-red-700"
+                  className="text-destructive hover:text-destructive/70 ml-2"
                 >
                   <X size={14} />
                 </button>
@@ -141,7 +143,7 @@ const EditQuestionForm = ({ selectedQuestion, handleEditSuccess }: EditQuestionF
               <img
                 src={selectedQuestion.question_image_url}
                 alt="Current question"
-                className="h-20 rounded border border-gray-200 dark:border-slate-600"
+                className="border-border h-20 rounded border"
               />
             ) : null}
           </div>
@@ -151,7 +153,7 @@ const EditQuestionForm = ({ selectedQuestion, handleEditSuccess }: EditQuestionF
         <div className="space-y-2">
           <Label>Description Image</Label>
           <div className="flex items-center gap-4">
-            <input
+            <Input
               type="file"
               id="descriptionImage"
               accept="image/*"
@@ -160,7 +162,7 @@ const EditQuestionForm = ({ selectedQuestion, handleEditSuccess }: EditQuestionF
             />
             <label
               htmlFor="descriptionImage"
-              className="flex cursor-pointer items-center gap-2 rounded-md border border-gray-300 px-4 py-2 text-sm transition-colors hover:bg-gray-50 dark:border-slate-600 dark:hover:bg-slate-700"
+              className="border-input hover:bg-muted flex cursor-pointer items-center gap-2 rounded-md border px-4 py-2 text-sm transition-colors"
             >
               <Upload size={16} /> Choose Description Image
             </label>
@@ -168,13 +170,13 @@ const EditQuestionForm = ({ selectedQuestion, handleEditSuccess }: EditQuestionF
             {selectedImages.description ? (
               <div className="flex items-center gap-2">
                 <ImageIcon size={16} className="text-green-600" />
-                <span className="text-sm text-gray-600 dark:text-gray-400">
+                <span className="text-muted-foreground text-sm">
                   {selectedImages.description.name}
                 </span>
                 <button
                   type="button"
                   onClick={() => handleImageChange("description", null)}
-                  className="ml-2 text-red-500 hover:text-red-700"
+                  className="text-destructive hover:text-destructive/70 ml-2"
                 >
                   <X size={14} />
                 </button>
@@ -183,7 +185,7 @@ const EditQuestionForm = ({ selectedQuestion, handleEditSuccess }: EditQuestionF
               <img
                 src={selectedQuestion.description_image_url}
                 alt="Current description"
-                className="h-20 rounded border border-gray-200 dark:border-slate-600"
+                className="border-border h-20 rounded border"
               />
             ) : null}
           </div>
@@ -194,31 +196,22 @@ const EditQuestionForm = ({ selectedQuestion, handleEditSuccess }: EditQuestionF
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor="category">
-            Categories <span className="text-red-500">*</span>
+            Categories <span className="text-destructive">*</span>
           </Label>
-          <select
-            id="category"
-            name="categoryIds"
-            className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-slate-600 dark:bg-slate-700 dark:text-gray-100 dark:focus:ring-blue-400"
-            value=""
-            onChange={(e) => {
-              const selectedId = e.target.value;
-              if (selectedId) {
-                handleAddCategory(selectedId);
-              }
-            }}
-          >
-            <option value="" disabled>
-              Select category
-            </option>
-            {categories
-              .filter((cat) => !questionFormData.categoryIds.includes(cat.id.toString()))
-              .map((cat) => (
-                <option key={cat.id} value={cat.id}>
-                  {cat.name}
-                </option>
-              ))}
-          </select>
+          <Select value="" onValueChange={(value) => handleAddCategory(value)}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select category" />
+            </SelectTrigger>
+            <SelectContent>
+              {categories
+                .filter((cat) => !questionFormData.categoryIds.includes(cat.id.toString()))
+                .map((cat) => (
+                  <SelectItem key={cat.id} value={cat.id.toString()}>
+                    {cat.name}
+                  </SelectItem>
+                ))}
+            </SelectContent>
+          </Select>
 
           {/* Display selected categories */}
           <div className="mt-2 flex flex-wrap gap-2">
@@ -234,7 +227,7 @@ const EditQuestionForm = ({ selectedQuestion, handleEditSuccess }: EditQuestionF
                   <button
                     type="button"
                     onClick={() => handleRemoveCategory(catId)}
-                    className="ml-1 rounded-full p-0.5 hover:bg-gray-300 dark:hover:bg-slate-600"
+                    className="hover:bg-muted ml-1 rounded-full p-0.5"
                   >
                     <X size={12} />
                   </button>
@@ -246,29 +239,20 @@ const EditQuestionForm = ({ selectedQuestion, handleEditSuccess }: EditQuestionF
 
         <div className="space-y-2">
           <Label htmlFor="subcategory">Subcategory</Label>
-          <select
-            id="subcategory"
-            name="subCategories"
-            className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-slate-600 dark:bg-slate-700 dark:text-gray-100 dark:focus:ring-blue-400"
-            value=""
-            onChange={(e) => {
-              const selectedId = e.target.value;
-              if (selectedId) {
-                handleAddSubCategory(selectedId);
-              }
-            }}
-          >
-            <option value="" disabled>
-              Select subcategory
-            </option>
-            {subCategories
-              .filter((subCat) => !questionFormData.subCategories.includes(subCat.id.toString()))
-              .map((subCat) => (
-                <option key={subCat.id} value={subCat.id.toString()}>
-                  {subCat.name}
-                </option>
-              ))}
-          </select>
+          <Select value="" onValueChange={(value) => handleAddSubCategory(value)}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select subcategory" />
+            </SelectTrigger>
+            <SelectContent>
+              {subCategories
+                .filter((subCat) => !questionFormData.subCategories.includes(subCat.id.toString()))
+                .map((subCat) => (
+                  <SelectItem key={subCat.id} value={subCat.id.toString()}>
+                    {subCat.name}
+                  </SelectItem>
+                ))}
+            </SelectContent>
+          </Select>
 
           {/* Display selected subcategories */}
           <div className="mt-2 flex flex-wrap gap-2">
@@ -284,7 +268,7 @@ const EditQuestionForm = ({ selectedQuestion, handleEditSuccess }: EditQuestionF
                   <button
                     type="button"
                     onClick={() => handleRemoveSubCategory(subCatId)}
-                    className="ml-1 rounded-full p-0.5 hover:bg-gray-300 dark:hover:bg-slate-600"
+                    className="hover:bg-muted ml-1 rounded-full p-0.5"
                   >
                     <X size={12} />
                   </button>
@@ -298,16 +282,24 @@ const EditQuestionForm = ({ selectedQuestion, handleEditSuccess }: EditQuestionF
       {/* Difficulty */}
       <div className="space-y-2">
         <Label>Difficulty</Label>
-        <select
-          name="difficulty"
+        <Select
           value={questionFormData.difficulty}
-          onChange={handleInputChange}
-          className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-slate-600 dark:bg-slate-700 dark:text-gray-100 dark:focus:ring-blue-400"
+          onValueChange={(value) =>
+            setQuestionFormData((prev) => ({
+              ...prev!,
+              difficulty: value as "easy" | "medium" | "hard",
+            }))
+          }
         >
-          <option value="easy">Easy</option>
-          <option value="medium">Medium</option>
-          <option value="hard">Hard</option>
-        </select>
+          <SelectTrigger className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="easy">Easy</SelectItem>
+            <SelectItem value="medium">Medium</SelectItem>
+            <SelectItem value="hard">Hard</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Answer Type */}
@@ -321,9 +313,9 @@ const EditQuestionForm = ({ selectedQuestion, handleEditSuccess }: EditQuestionF
               value="single"
               checked={questionFormData.optionType === "single"}
               onChange={handleOptionTypeChange}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500"
+              className="text-primary focus:ring-ring h-4 w-4"
             />
-            <span className="text-sm text-gray-700 dark:text-gray-300">Single Correct Answer</span>
+            <span className="text-foreground text-sm">Single Correct Answer</span>
           </label>
           <label className="flex cursor-pointer items-center gap-2">
             <input
@@ -332,11 +324,9 @@ const EditQuestionForm = ({ selectedQuestion, handleEditSuccess }: EditQuestionF
               value="multiple"
               checked={questionFormData.optionType === "multiple"}
               onChange={handleOptionTypeChange}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500"
+              className="text-primary focus:ring-ring h-4 w-4"
             />
-            <span className="text-sm text-gray-700 dark:text-gray-300">
-              Multiple Correct Answers
-            </span>
+            <span className="text-foreground text-sm">Multiple Correct Answers</span>
           </label>
         </div>
       </div>
@@ -353,19 +343,17 @@ const EditQuestionForm = ({ selectedQuestion, handleEditSuccess }: EditQuestionF
                   name="correctAnswer"
                   checked={option.isCorrect}
                   onChange={(e) => handleCorrectAnswerChange(option.label, e.target.checked)}
-                  className="text-blue-600 focus:ring-blue-500"
+                  className="text-primary focus:ring-ring"
                 />
               ) : (
                 <input
                   type="checkbox"
                   checked={option.isCorrect}
                   onChange={(e) => handleCorrectAnswerChange(option.label, e.target.checked)}
-                  className="text-blue-600 focus:ring-blue-500"
+                  className="text-primary focus:ring-ring"
                 />
               )}
-              <div className="mt-2 w-8 font-medium text-gray-700 dark:text-gray-300">
-                {option.label}
-              </div>
+              <div className="text-foreground mt-2 w-8 font-medium">{option.label}</div>
               <Input
                 type="text"
                 value={option.text}
@@ -381,7 +369,7 @@ const EditQuestionForm = ({ selectedQuestion, handleEditSuccess }: EditQuestionF
           type="button"
           variant="outline"
           size="sm"
-          className="mt-3 border-blue-600 text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:text-blue-400 dark:hover:bg-blue-900/20"
+          className="border-primary text-primary bg-card hover:bg-primary/5 mt-3"
           onClick={handleAddMoreAnswers}
         >
           + Add Another Answer
@@ -389,9 +377,9 @@ const EditQuestionForm = ({ selectedQuestion, handleEditSuccess }: EditQuestionF
       </div>
 
       {/* Submit Button */}
-      <div className="flex justify-end border-t border-gray-200 pt-4 dark:border-slate-700">
+      <div className="border-border flex justify-end border-t pt-4">
         <Button
-          className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
+          className="bg-primary hover:bg-primary/90 text-primary-foreground"
           onClick={handleCreateQuestionSubmit}
         >
           {isSubmitting ? "Updating..." : " Update Question"}

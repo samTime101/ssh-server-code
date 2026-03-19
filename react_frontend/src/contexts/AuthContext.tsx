@@ -5,6 +5,7 @@ import type { LoginRequest, SignupRequest, User } from "@/types/auth";
 import { createContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { getAlreadyExistsErrors } from "@/utils/errorUtils";
 
 let globalLogout: (() => void) | null = null;
 export const getGlobalLogout = () => globalLogout;
@@ -136,27 +137,18 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       });
       if (response) {
         toast.success("Registration successful! Check your email to verify your account.");
-        navigate("/auth/login");
+        // navigate("/auth/login");
+        if(!token){
+          navigate("/auth/login");
+        }
       }
     } catch (error: any) {
       console.error("Registration failed:", error);
-      // Try to extract detailed error messages from backend
-      if (error?.response?.data) {
-        const data = error.response.data;
-        if (typeof data === "object" && data !== null) {
-          let hasErrors = false;
-          for (const [key, value] of Object.entries(data)) {
-            if (
-              Array.isArray(value) &&
-              value.some((msg: string) => msg.includes("already exists"))
-            ) {
-              toast.error(`User with this ${key} already exists.`);
-              hasErrors = true;
-            }
-          }
-          if (hasErrors) {
-            return;
-          }
+      if (error?.response?.data && typeof error.response.data === "object") {
+        const messages = getAlreadyExistsErrors(error.response.data);
+        if (messages.length > 0) {
+          messages.forEach((msg) => toast.error(msg));
+          return;
         }
       }
       // Fallback for other errors

@@ -2,26 +2,36 @@ import axiosInstance from "../axios";
 import { API_ENDPOINTS } from "@/config/apiConfig";
 import type { CreateQuestionPayload, CreateQuestionResponse } from "@/types/question";
 
-export const fetchQuestions = async (page: number, pageSize: number) => {
+export const fetchQuestions = async (
+  page: number,
+  pageSize: number,
+  categoryId?: string,
+  subCategoryId?: string,
+  search?: string
+) => {
   try {
-    const response = await axiosInstance.get(API_ENDPOINTS.adminQuestions, {
-      params: {
-        page,
-        page_size: pageSize,
-      },
-    });
+    const params: Record<string, string | number> = { page, page_size: pageSize };
+    if (categoryId) params.category_id = categoryId;
+    if (subCategoryId) params.sub_category_id = subCategoryId;
+    if (search?.trim()) params.search = search.trim();
+    const response = await axiosInstance.get(API_ENDPOINTS.adminQuestions, { params });
     return response.data;
   } catch (error) {
     throw new Error("Failed to fetch questions");
   }
 };
 
+export const searchQuestions = async (searchText: string) => {
+  const response = await axiosInstance.get(API_ENDPOINTS.adminQuestions, {
+    params: { search: searchText },
+  });
+  return response.data;
+};
+
 export const createQuestion = async (
   questionData: CreateQuestionPayload,
   images: { question: File | null; description: File | null }
 ): Promise<CreateQuestionResponse> => {
-  console.log(JSON.stringify(questionData));
-
   const formData = new FormData();
   formData.append("data", JSON.stringify(questionData));
   if (images.question) {
@@ -34,7 +44,7 @@ export const createQuestion = async (
     const response = await axiosInstance.post(API_ENDPOINTS.adminQuestions, formData);
     return response.data;
   } catch (error) {
-    throw new Error("Failed to create questions");
+    throw error;
   }
 };
 
@@ -43,7 +53,6 @@ export const updateQuestion = async (
   questionData: CreateQuestionPayload,
   images: { question: File | null; description: File | null }
 ): Promise<CreateQuestionResponse> => {
-  console.log(JSON.stringify(questionData));
   try {
     const formData = new FormData();
     formData.append("data", JSON.stringify(questionData));
@@ -60,7 +69,7 @@ export const updateQuestion = async (
     return response.data;
   } catch (error) {
     console.error("Failed to update question", error);
-    throw new Error("Failed to update question");
+    throw error;
   }
 };
 

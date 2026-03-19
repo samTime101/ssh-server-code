@@ -1,5 +1,3 @@
-import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,123 +7,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { toast } from "sonner";
-import { useAuth } from "@/hooks/useAuth";
-import {
-  fetchUserById,
-  updateUser,
-  assignRoleToUser,
-  removeRoleFromUser,
-} from "@/services/admin/user-service";
-import type { User } from "@/types/user";
-import { fetchRoles } from "@/services/admin/role-service";
-import type { Role } from "@/types/role";
+import { useEditUser } from "@/hooks/admin/useEditUser";
 
 const EditUserPage = () => {
-  const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
-  const { token} = useAuth();
-
-  const [user, setUser] = useState<User | null>(null);
-  const [roles, setRoles] = useState<Role[]>([]);
-  const [selectedRoleId, setSelectedRoleId] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [saving, setSaving] = useState(false);
-
-
-  // const isSelfEditing = currentUser && user && currentUser.id === user.id;
-
-  useEffect(() => {
-    if (!id || !token) return;
-    loadUserData();
-  }, [id, token]);
-
-  const loadUserData = async () => {
-    if (!id || !token) return;
-    try {
-      setLoading(true);
-      const [userData, rolesData] = await Promise.all([
-        fetchUserById(id),
-        fetchRoles(),
-      ]);
-      setUser(userData);
-      setRoles(rolesData);
-    } catch (err: any) {
-      console.error(err);
-      toast.error("Failed to load user data");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSaveChanges = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!id || !token || !user) return toast.error("Missing user ID or token");
-    if (!user.username.trim()) return toast.error("Username is required");
-    if (!user.email.trim()) return toast.error("Email is required");
-
-    try {
-      setSaving(true);
-      await updateUser(id, {
-        username: user.username.trim(),
-        email: user.email.trim(),
-        first_name: user.first_name.trim(),
-        last_name: user.last_name.trim(),
-        is_active: user.is_active,
-      });
-      toast.success("User updated successfully");
-      await loadUserData();
-    } catch (err: any) {
-      console.error(err);
-      toast.error(err?.message || "Failed to update user");
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleInputChange = (field: keyof User, value: string | boolean) => {
-    if (!user) return;
-    setUser({ ...user, [field]: value });
-  };
-
-  const handleAddRole = async () => {
-    if (!user || !token || !selectedRoleId) {
-      return toast.error("Please select a role");
-    }
-    if (user.roles.includes(selectedRoleId)) {
-      return toast.error("User already has this role");
-    }
-    try {
-      setSaving(true);
-      await assignRoleToUser(user.user_guid || user.id.toString(), selectedRoleId);
-      toast.success("Role assigned successfully");
-      setSelectedRoleId("");
-      await loadUserData();
-    } catch (err: any) {
-      console.error(err);
-      toast.error(err?.message || "Failed to assign role");
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleRemoveRole = async (roleId: string) => {
-    if (!user || !token) return;
-    // Find the user-role relation ID (if needed) or use a backend endpoint that removes by user+role
-    try {
-      setSaving(true);
-      // You may need to adjust this if your backend expects a user-role ID
-      // Here, assuming removeRoleFromUser can take userId and roleName
-      await removeRoleFromUser(user.user_guid || user.id.toString(), roleId);
-      toast.success("Role removed successfully");
-      await loadUserData();
-    } catch (err: any) {
-      console.error(err);
-      toast.error(err?.message || "Failed to remove role");
-    } finally {
-      setSaving(false);
-    }
-  };
+  const {
+    user,
+    roles,
+    selectedRoleId,
+    setSelectedRoleId,
+    loading,
+    saving,
+    handleInputChange,
+    handleSaveChanges,
+    handleAddRole,
+    handleRemoveRole,
+    handleCancel,
+  } = useEditUser();
 
   if (loading) {
     return (
@@ -139,7 +36,7 @@ const EditUserPage = () => {
     return (
       <section className="p-6">
         <div className="text-center">User not found</div>
-        <Button onClick={() => navigate(-1)} className="mt-4">
+        <Button onClick={handleCancel} className="mt-4">
           Go Back
         </Button>
       </section>
@@ -147,20 +44,22 @@ const EditUserPage = () => {
   }
 
   return (
-    
-    <section className="p-6 max-w-2xl">
+    <section className="max-w-2xl p-6">
       <div className="mb-6">
-        <h1 className="text-2xl font-semibold mb-1">Edit User</h1>
-        <p className="text-sm text-gray-600">Manage user details and roles</p>
+        <h1 className="mb-1 text-2xl font-semibold">Edit User</h1>
+        <p className="text-muted-foreground text-sm">Manage user details and roles</p>
       </div>
 
       {/* User Details Form */}
-      <form onSubmit={handleSaveChanges} className="bg-white rounded-lg border p-6 mb-6">
-        <h2 className="text-lg font-medium mb-4">User Details</h2>
+      <form
+        onSubmit={handleSaveChanges}
+        className="bg-card border-border mb-6 rounded-lg border p-6"
+      >
+        <h2 className="mb-4 text-lg font-medium">User Details</h2>
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-2">Username</label>
+            <label className="mb-2 block text-sm font-medium">Username</label>
             <Input
               value={user.username}
               onChange={(e) => handleInputChange("username", e.target.value)}
@@ -170,7 +69,7 @@ const EditUserPage = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">Email Address</label>
+            <label className="mb-2 block text-sm font-medium">Email Address</label>
             <Input
               value={user.email}
               onChange={(e) => handleInputChange("email", e.target.value)}
@@ -182,7 +81,7 @@ const EditUserPage = () => {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium mb-2">First Name</label>
+              <label className="mb-2 block text-sm font-medium">First Name</label>
               <Input
                 value={user.first_name}
                 onChange={(e) => handleInputChange("first_name", e.target.value)}
@@ -192,7 +91,7 @@ const EditUserPage = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2">Last Name</label>
+              <label className="mb-2 block text-sm font-medium">Last Name</label>
               <Input
                 value={user.last_name}
                 onChange={(e) => handleInputChange("last_name", e.target.value)}
@@ -203,22 +102,16 @@ const EditUserPage = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">Status</label>
+            <label className="mb-2 block text-sm font-medium">Status</label>
             <Select value={user.is_active ? "active" : "inactive"}>
               <SelectTrigger disabled={saving}>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem
-                  value="active"
-                  onClick={() => handleInputChange("is_active", true)}
-                >
+                <SelectItem value="active" onClick={() => handleInputChange("is_active", true)}>
                   Active
                 </SelectItem>
-                <SelectItem
-                  value="inactive"
-                  onClick={() => handleInputChange("is_active", false)}
-                >
+                <SelectItem value="inactive" onClick={() => handleInputChange("is_active", false)}>
                   Inactive
                 </SelectItem>
               </SelectContent>
@@ -226,20 +119,19 @@ const EditUserPage = () => {
           </div>
         </div>
 
-        <div className="flex gap-3 mt-6">
+        <div className="mt-6 flex gap-3">
           <Button type="submit" disabled={saving}>
             {saving ? "Saving..." : "Save Changes"}
-
           </Button>
-          <Button type="button" variant="outline" onClick={() => navigate(-1)}>
+          <Button type="button" variant="outline" onClick={handleCancel}>
             Cancel
           </Button>
         </div>
       </form>
 
       {/* Role Management */}
-      <div className="bg-white rounded-lg border p-6">
-        <h2 className="text-lg font-medium mb-4">Role Management</h2>
+      <div className="bg-card border-border rounded-lg border p-6">
+        <h2 className="mb-4 text-lg font-medium">Role Management</h2>
 
         {/* Add Role */}
         <div className="mb-6 flex gap-3">
@@ -264,30 +156,31 @@ const EditUserPage = () => {
 
         {/* Current Roles */}
         <div>
-          <h3 className="text-sm font-medium mb-3">Current Roles</h3>
+          <h3 className="mb-3 text-sm font-medium">Current Roles</h3>
           {user.roles.length === 0 ? (
-            <div className="text-sm text-gray-500 p-3 bg-gray-50 rounded">
+            <div className="text-muted-foreground bg-muted rounded p-3 text-sm">
               No roles assigned
             </div>
           ) : (
-            // DISABLE REMOVE BUTTON FOR EDITING OWN USER TO AVOID LOCKING YOURSELF OUT
             <div className="space-y-2">
-              {roles.filter((role) => user.roles.includes(role.name)).map((role) => (
-                <div
-                  key={role.id}
-                  className="flex items-center justify-between p-3 bg-gray-50 rounded border"
-                >
-                  <span className="text-sm font-medium">{role.name}</span>
-                  <Button
-                    size="sm"
-                    variant="destructive"
-                    onClick={() => handleRemoveRole(role.id)}
-                    disabled={saving || role.name === "USER"}
+              {roles
+                .filter((role) => user.roles.includes(role.name))
+                .map((role) => (
+                  <div
+                    key={role.id}
+                    className="bg-muted border-border flex items-center justify-between rounded border p-3"
                   >
-                    Remove
-                  </Button>
-                </div>
-              ))}
+                    <span className="text-sm font-medium">{role.name}</span>
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      onClick={() => handleRemoveRole(role.id)}
+                      disabled={saving || role.name === "USER"}
+                    >
+                      Remove
+                    </Button>
+                  </div>
+                ))}
             </div>
           )}
         </div>

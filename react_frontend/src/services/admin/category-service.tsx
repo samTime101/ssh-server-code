@@ -26,3 +26,25 @@ export const fetchCategories = async (): Promise<GetCategoriesResponse> => {
     throw new Error("Failed to fetch categories");
   }
 };
+
+export const updateCategory = async (
+  id: string,
+  name: string
+): Promise<{ id: string; name: string }> => {
+  try {
+    const response = await axiosInstance.put(`${API_ENDPOINTS.createCategory}${id}/`, { name });
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw new Error("Failed to update category");
+  }
+};
+
+export const deleteCategory = async (id: string): Promise<void> => {
+  try {
+    await axiosInstance.delete(`${API_ENDPOINTS.createCategory}${id}/`);
+  } catch (error) {
+    console.error(error);
+    throw new Error("Failed to delete category");
+  }
+};

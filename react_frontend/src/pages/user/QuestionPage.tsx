@@ -1,20 +1,21 @@
 import { Button } from "@/components/ui/button";
 import { useQuestions } from "@/hooks/useQuestions";
-import { useState, useEffect } from "react"; //React,
+import { useState, useEffect, useRef } from "react"; //React,
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, ArrowRight, Lightbulb } from "lucide-react";
+// import { Badge } from "@/components/ui/badge";
+import { ArrowLeft, ArrowRight, Lightbulb, Loader2 } from "lucide-react";
 import { attemptQuestion } from "@/services/user/question-service";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import type { Question, QuestionAttemptState } from "@/types/question";
 import MultipleChoiceOption from "@/components/user/MultipleChoiceOption";
 import SingleChoiceOption from "@/components/user/SingleChoiceOption";
+import EditorRenderer from "@/components/EditorRenderer";
 import { useNavigate } from "react-router-dom";
 
 const QuestionPage = () => {
   const { token } = useAuth();
-  const { questionData } = useQuestions();
+  const { questionData, questionPagination, fetchNextPage, isFetchingNextPage } = useQuestions();
   const navigate = useNavigate();
 
   // use an index instead of storing whole object
@@ -25,6 +26,9 @@ const QuestionPage = () => {
   // single source for per-question state
   const [attempts, setAttempts] = useState<{ [id: string]: QuestionAttemptState }>({});
 
+  // track the data length from the previous render to distinguish a fresh fetch from a page append
+  const prevDataLengthRef = useRef(0);
+
   // derive currentQuestion from index and questionData
   const currentQuestion: Question | null =
     questionData && questionData.length > 0 ? questionData[currentIndex] || null : null;
@@ -32,11 +36,18 @@ const QuestionPage = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
 
-    // reset index and UI if questionData changes
+    const prevLength = prevDataLengthRef.current;
+    prevDataLengthRef.current = questionData?.length ?? 0;
+
     if (!questionData || questionData.length === 0) {
       setCurrentIndex(0);
       return;
     }
+
+    // If the new length is greater than before, this is a page append — keep the current index.
+    // Otherwise it's a fresh session fetch — reset everything.
+    if (questionData.length > prevLength) return;
+
     setCurrentIndex(0);
     setSelectedOptions([]);
     setSelectedOption("");
@@ -58,11 +69,6 @@ const QuestionPage = () => {
   const handleNextQuestion = async () => {
     if (!currentQuestion) return;
 
-    // if (!token) {
-    //   console.error("No token available");
-    //   return;
-    // }
-
     // validate selection before going next
     if (
       (currentQuestion.option_type === "multiple" && selectedOptions.length === 0) ||
@@ -75,17 +81,22 @@ const QuestionPage = () => {
     const nextIndex = currentIndex + 1;
 
     if (!questionData || nextIndex >= questionData.length) {
-      toast.info("You've completed all questions!");
-      navigate("/userpanel");
+      // try to load the next page if available
+      if (questionPagination?.next) {
+        await fetchNextPage();
+        setCurrentIndex(nextIndex);
+      } else {
+        toast.info("You've completed all questions!");
+        navigate("/userpanel");
+      }
       return;
     }
     setCurrentIndex(nextIndex);
   };
 
   const handlePreviousQuestion = () => {
-    if (!questionData || questionData.length === 0) return;
-    const prevIndex = (currentIndex - 1 + questionData.length) % questionData.length;
-    setCurrentIndex(prevIndex);
+    if (!questionData || questionData.length === 0 || currentIndex === 0) return;
+    setCurrentIndex(currentIndex - 1);
   };
 
   const handleAttemptQuestion = async (question: Question) => {
@@ -146,9 +157,19 @@ const QuestionPage = () => {
   };
 
   if (!currentQuestion) {
+    if (isFetchingNextPage) {
+      return (
+        <div className="flex min-h-screen items-center justify-center gap-3">
+          <Loader2 className="text-primary h-6 w-6 animate-spin" />
+          <p className="text-muted-foreground text-lg">Loading next questions...</p>
+        </div>
+      );
+    }
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <p className="text-lg text-gray-600">No questions available. Please select categories.</p>
+        <p className="text-muted-foreground text-lg">
+          No questions available. Please select categories.
+        </p>
       </div>
     );
   }
@@ -167,38 +188,30 @@ const QuestionPage = () => {
   const currentAttempt = currentQuestion ? attempts[currentQuestion.id] : undefined;
   const isAttempted = !!currentAttempt?.isAttempted;
 
+  // total question count — use total from pagination meta if available, otherwise length of loaded data
+  const totalCount = questionPagination?.count ?? questionData.length;
+
   return (
     <div className="min-h-screen p-6">
       <div className="mx-auto max-w-4xl space-y-6">
-        <Button variant="outline" onClick={handleBack} className="px-4 py-2 hover:bg-gray-100">
+        <Button
+          variant="outline"
+          onClick={handleBack}
+          className="hover:bg-muted text-muted-foreground bg-card px-4 py-2"
+        >
           <ArrowLeft />
           Back
         </Button>
-        <h1 className="text-3xl font-bold text-gray-800">Entrance Preparation Test</h1>
+        <div className="flex items-center justify-between">
+          <h1 className="text-foreground text-3xl font-bold">Entrance Preparation Test</h1>
+          <span className="text-muted-foreground text-sm font-medium">
+            {currentIndex + 1} / {totalCount}
+          </span>
+        </div>
 
         <Card className="shadow-lg">
           <CardHeader className="pb-4">
-            <div className="mb-4 flex flex-wrap gap-2">
-              <Badge variant="secondary" className="capitalize">
-                {currentQuestion.category}
-              </Badge>
-              <Badge
-                variant={
-                  currentQuestion.difficulty === "easy"
-                    ? "default"
-                    : currentQuestion.difficulty === "medium"
-                      ? "secondary"
-                      : "destructive"
-                }
-                className="capitalize"
-              >
-                {currentQuestion.difficulty}
-              </Badge>
-              <Badge variant="outline" className="capitalize">
-                {currentQuestion.option_type}
-              </Badge>
-            </div>
-            <h2 className="text-xl leading-relaxed font-semibold text-gray-800">
+            <h2 className="text-foreground text-xl leading-relaxed font-semibold">
               {currentQuestion.question_text}
             </h2>
             {currentQuestion.question_image_url && (
@@ -236,42 +249,44 @@ const QuestionPage = () => {
                     />
                   ))}
             </div>
-
-            {isAttempted && (
-              <div className="rounded-lg border-l-4 border-blue-500 bg-blue-50 p-5 dark:bg-blue-900/20">
-                <div className="flex items-start gap-3">
-                  <div className="mt-1 flex-shrink-0">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-500">
-                      <Lightbulb size={18} className="text-white" />
-                    </div>
-                  </div>
-                  <div className="flex-1 space-y-2">
-                    <h3 className="flex items-center text-sm font-semibold text-blue-900 dark:text-blue-100">
-                      Explanation
-                    </h3>
-                    <p className="text-sm leading-relaxed text-blue-800 dark:text-blue-200">
-                      {currentQuestion.description}
-                    </p>
-                    {currentQuestion.description_image_url && (
-                      <div className="flex justify-center">
-                        <img
-                          src={currentQuestion.description_image_url}
-                          alt="Question illustration"
-                          className="h-auto max-w-full rounded-lg shadow-md"
-                        />
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
           </CardContent>
         </Card>
 
-        {/* Contributor Display */}
+        {/* Explanation */}
+        {isAttempted && (
+          <div className="border-primary bg-primary/5 rounded-lg border-l-4 p-5">
+            <div className="flex items-start gap-3">
+              <div className="mt-1 flex-shrink-0">
+                <div className="bg-primary flex h-8 w-8 items-center justify-center rounded-full">
+                  <Lightbulb size={18} className="text-primary-foreground" />
+                </div>
+              </div>
+              <div className="flex-1 space-y-2">
+                <h3 className="text-primary flex items-center text-sm font-semibold">
+                  Explanation
+                </h3>
+                <EditorRenderer data={currentQuestion.description} className="text-foreground" />
+                {currentQuestion.description_image_url && (
+                  <div className="flex justify-center">
+                    <img
+                      src={currentQuestion.description_image_url}
+                      alt="Question illustration"
+                      className="h-auto max-w-full rounded-lg shadow-md"
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Contributor */}
         {currentQuestion?.contributor && (
-          <div className="text-sm text-gray-600 dark:text-gray-400">
-            {currentQuestion.contributor} - {currentQuestion.contributor_specialization}
+          <div className="text-muted-foreground text-right text-sm">
+            <div>{currentQuestion.contributor}</div>
+            {currentQuestion.contributor_specialization && (
+              <div className="text-xs">{currentQuestion.contributor_specialization}</div>
+            )}
           </div>
         )}
 
@@ -279,33 +294,45 @@ const QuestionPage = () => {
           <Button
             variant="outline"
             onClick={handlePreviousQuestion}
-            className="px-6 py-2 hover:bg-gray-100"
+            className="hover:bg-muted text-muted-foreground bg-card px-6 py-2"
           >
             <ArrowLeft />
             <p>Previous</p>
           </Button>
 
-          {!isAttempted ? (
-            <Button
-              className="mt-6 bg-blue-600 hover:bg-blue-700"
-              onClick={() => handleAttemptQuestion(currentQuestion)}
-              disabled={
-                currentQuestion.option_type === "multiple"
-                  ? selectedOptions.length === 0
-                  : selectedOption === ""
-              }
-            >
-              Attempt
-            </Button>
-          ) : (
-            <Button
-              onClick={handleNextQuestion}
-              className="bg-blue-600 px-6 py-2 hover:bg-blue-700"
-            >
-              <p>Next</p>
-              <ArrowRight />
-            </Button>
-          )}
+          <div className="flex items-center gap-4">
+            {!isAttempted ? (
+              <Button
+                className="bg-primary hover:bg-primary/90 text-primary-foreground mt-6"
+                onClick={() => handleAttemptQuestion(currentQuestion)}
+                disabled={
+                  currentQuestion.option_type === "multiple"
+                    ? selectedOptions.length === 0
+                    : selectedOption === ""
+                }
+              >
+                Attempt
+              </Button>
+            ) : (
+              <Button
+                onClick={handleNextQuestion}
+                disabled={isFetchingNextPage}
+                className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2"
+              >
+                {isFetchingNextPage ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <p>Loading...</p>
+                  </>
+                ) : (
+                  <>
+                    <p>Next</p>
+                    <ArrowRight />
+                  </>
+                )}
+              </Button>
+            )}
+          </div>
         </div>
 
         <div className="text-center">

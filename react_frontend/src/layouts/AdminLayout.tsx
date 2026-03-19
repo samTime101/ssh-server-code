@@ -1,7 +1,7 @@
-import { useState } from 'react';
-import { Outlet } from 'react-router-dom';
-import AdminSidebar from '@/components/admin/AdminSidebar';
-import AdminHeader from '@/components/admin/AdminHeader';
+import { useState } from "react";
+import { Outlet } from "react-router-dom";
+import AdminSidebar from "@/components/admin/AdminSidebar";
+import AdminHeader from "@/components/admin/AdminHeader";
 
 const AdminLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -15,13 +15,13 @@ const AdminLayout = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-slate-900 flex">
+    <div className="bg-background flex min-h-screen">
       <AdminSidebar isOpen={sidebarOpen} onClose={closeSidebar} />
-      
+
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex flex-1 flex-col">
         <AdminHeader onMenuClick={toggleSidebar} />
-        <main className="flex-1 p-4 lg:p-6 bg-gray-50 ">
+        <main className="bg-background flex-1 p-4 lg:p-6">
           <Outlet /> {/* This will render admin pages */}
         </main>
       </div>

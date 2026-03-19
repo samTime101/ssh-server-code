@@ -7,10 +7,14 @@ import LandingPage from "@/pages/LandingPage";
 import UserLayout from "@/layouts/UserLayout";
 import AdminLayout from "@/layouts/AdminLayout";
 import QuestionBankSection from "@/components/user/QuestionBankSection";
+import CEEPracticeSection from "@/components/user/CEEPracticeSection";
 import QuestionProvider from "@/contexts/QuestionContext.tsx";
 import QuestionPage from "@/pages/user/QuestionPage";
+import CEEQuestionPage from "@/pages/user/CEEQuestionPage";
 import AddQuestionPage from "@/pages/admin/AddQuestionPage";
 import CreateCategoryPage from "@/pages/admin/CreateCategoryPage";
+import ManageCategoriesPage from "@/pages/admin/ManageCategoriesPage";
+import ManageSubcategoriesPage from "@/pages/admin/ManageSubcategoriesPage";
 import ManageUsersPage from "@/pages/admin/ManageUsersPage";
 import EditUserPage from "@/pages/admin/EditUserPage";
 import QuestionBankPage from "@/pages/admin/QuestionBankPage";
@@ -95,6 +99,8 @@ const App = () => {
           <Route index element={<Navigate to="question-bank" replace />} />
           <Route path="question-bank" element={<QuestionBankSection />} />
           <Route path="question" element={<QuestionPage />} />
+          <Route path="cee-practice" element={<CEEPracticeSection />} />
+          <Route path="cee-question" element={<CEEQuestionPage />} />
           <Route path="profile" element={<ProfilePage />} />
           <Route path="history" element={<HistoryPage />} />
           <Route path="settings" element={<SettingsPage />} />
@@ -112,6 +118,14 @@ const App = () => {
 
           <Route element={<RoleRoute allowedPermissions={["create-category"]} />}>
             <Route path="create-category" element={<CreateCategoryPage />} />
+          </Route>
+
+          <Route element={<RoleRoute allowedPermissions={["manage-categories"]} />}>
+            <Route path="manage-categories" element={<ManageCategoriesPage />} />
+          </Route>
+
+          <Route element={<RoleRoute allowedPermissions={["manage-subcategories"]} />}>
+            <Route path="manage-subcategories" element={<ManageSubcategoriesPage />} />
           </Route>
 
           <Route element={<RoleRoute allowedPermissions={["manage-users"]} />}>

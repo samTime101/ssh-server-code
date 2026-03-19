@@ -59,7 +59,7 @@ const HistoryPage = () => {
             <CardTitle>Incorrect</CardTitle>
           </CardHeader>
           <CardContent>
-            <span className="text-2xl font-bold text-red-600">{incorrect}</span>
+            <span className="text-destructive text-2xl font-bold">{incorrect}</span>
           </CardContent>
         </Card>
       </div>
@@ -83,7 +83,7 @@ const HistoryPage = () => {
             <TableBody>
               {submissionHistory.map((attempt, idx) => (
                 <TableRow key={idx}>
-                  <TableCell>{attempt.question_text}</TableCell>
+                  <TableCell className="max-w-md whitespace-normal">{attempt.question_text}</TableCell>
                   <TableCell>
                     {attempt.categories.map((cat) => (
                       <Badge key={cat} className="mr-1">
@@ -111,7 +111,7 @@ const HistoryPage = () => {
                         Correct
                       </Badge>
                     ) : (
-                      <Badge variant="destructive" className="bg-red-100 text-red-700">
+                      <Badge variant="destructive" className="bg-destructive/10 text-destructive">
                         Incorrect
                       </Badge>
                     )}
