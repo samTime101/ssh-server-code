@@ -14,6 +14,7 @@ import {
 import { ImageIcon, Upload, X } from "lucide-react";
 import { useQuestionForm } from "@/hooks/useQuestionForm";
 import { useEffect } from "react";
+import { getImageUrl } from "@/config/apiConfig";
 
 // uta questionbank bata aako data
 interface EditQuestionFormProps {
@@ -145,7 +146,7 @@ const EditQuestionForm = ({ selectedQuestion, handleEditSuccess }: EditQuestionF
               </div>
             ) : selectedQuestion?.question_image_url ? (
               <img
-                src={selectedQuestion.question_image_url}
+                src={getImageUrl(selectedQuestion.question_image_url)}
                 alt="Current question"
                 className="border-border h-20 rounded border"
               />
@@ -187,7 +188,7 @@ const EditQuestionForm = ({ selectedQuestion, handleEditSuccess }: EditQuestionF
               </div>
             ) : selectedQuestion?.description_image_url ? (
               <img
-                src={selectedQuestion.description_image_url}
+                src={getImageUrl(selectedQuestion.description_image_url)}
                 alt="Current description"
                 className="border-border h-20 rounded border"
               />

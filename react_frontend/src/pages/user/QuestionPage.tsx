@@ -11,6 +11,7 @@ import type { Question, QuestionAttemptState } from "@/types/question";
 import MultipleChoiceOption from "@/components/user/MultipleChoiceOption";
 import SingleChoiceOption from "@/components/user/SingleChoiceOption";
 import { useNavigate } from "react-router-dom";
+import { getImageUrl } from "@/config/apiConfig";
 
 const QuestionPage = () => {
   const { token } = useAuth();
@@ -212,9 +213,9 @@ const QuestionPage = () => {
             {currentQuestion.question_image_url && (
               <div className="flex justify-center">
                 <img
-                  src={currentQuestion.question_image_url}
+                  src={getImageUrl(currentQuestion.question_image_url)}
                   alt="Question illustration"
-                  className="h-auto max-w-full rounded-lg border shadow-md"
+                  className="max-h-72 w-auto max-w-full rounded-lg border shadow-md object-contain"
                 />
               </div>
             )}
@@ -266,9 +267,9 @@ const QuestionPage = () => {
                 {currentQuestion.description_image_url && (
                   <div className="flex justify-center">
                     <img
-                      src={currentQuestion.description_image_url}
+                      src={getImageUrl(currentQuestion.description_image_url)}
                       alt="Question illustration"
-                      className="h-auto max-w-full rounded-lg shadow-md"
+                      className="max-h-72 w-auto max-w-full rounded-lg shadow-md object-contain"
                     />
                   </div>
                 )}
