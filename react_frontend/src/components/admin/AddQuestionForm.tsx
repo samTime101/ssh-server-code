@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import EditorField from "@/components/EditorField";
 import {
   Select,
   SelectContent,
@@ -12,7 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ImageIcon, Upload, X } from "lucide-react";
-import { useQuestionForm } from "@/hooks/useQuestionForm";
+import { useQuestionForm } from "@/hooks/admin/useQuestionForm";
 
 const AddQuestionForm = () => {
   const {
@@ -33,14 +34,9 @@ const AddQuestionForm = () => {
     isSubmitting,
     handleCreateQuestionSubmit,
     handleOptionTextChange,
+    handleDescriptionChange,
   } = useQuestionForm({
     mode: "create",
-    onSuccess: (response) => {
-      console.log("Question created successfully:", response);
-    },
-    onError: (error) => {
-      console.error("Failed to create question:", error);
-    },
   });
 
   return (
@@ -169,16 +165,13 @@ const AddQuestionForm = () => {
 
           {/* Description */}
           <div className="space-y-2">
-            <Label htmlFor="description">
+            <Label>
               Description <span className="text-destructive">*</span>
             </Label>
-            <Textarea
-              id="description"
-              name="description"
-              rows={2}
-              placeholder="Additional context or explanation"
+            <EditorField
               value={questionFormData.description}
-              onChange={handleInputChange}
+              onChange={handleDescriptionChange}
+              placeholder="Additional context or explanation"
             />
           </div>
 

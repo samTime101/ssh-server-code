@@ -1,5 +1,3 @@
-import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,119 +7,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { toast } from "sonner";
-import { useAuth } from "@/hooks/useAuth";
-import {
-  fetchUserById,
-  updateUser,
-  assignRoleToUser,
-  removeRoleFromUser,
-} from "@/services/admin/user-service";
-import type { User } from "@/types/user";
-import { fetchRoles } from "@/services/admin/role-service";
-import type { Role } from "@/types/role";
+import { useEditUser } from "@/hooks/admin/useEditUser";
 
 const EditUserPage = () => {
-  const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
-  const { token } = useAuth();
-
-  const [user, setUser] = useState<User | null>(null);
-  const [roles, setRoles] = useState<Role[]>([]);
-  const [selectedRoleId, setSelectedRoleId] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [saving, setSaving] = useState(false);
-
-  // const isSelfEditing = currentUser && user && currentUser.id === user.id;
-
-  useEffect(() => {
-    if (!id || !token) return;
-    loadUserData();
-  }, [id, token]);
-
-  const loadUserData = async () => {
-    if (!id || !token) return;
-    try {
-      setLoading(true);
-      const [userData, rolesData] = await Promise.all([fetchUserById(id), fetchRoles()]);
-      setUser(userData);
-      setRoles(rolesData);
-    } catch (err: any) {
-      console.error(err);
-      toast.error("Failed to load user data");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSaveChanges = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!id || !token || !user) return toast.error("Missing user ID or token");
-    if (!user.username.trim()) return toast.error("Username is required");
-    if (!user.email.trim()) return toast.error("Email is required");
-
-    try {
-      setSaving(true);
-      await updateUser(id, {
-        username: user.username.trim(),
-        email: user.email.trim(),
-        first_name: user.first_name.trim(),
-        last_name: user.last_name.trim(),
-        is_active: user.is_active,
-      });
-      toast.success("User updated successfully");
-      await loadUserData();
-    } catch (err: any) {
-      console.error(err);
-      toast.error(err?.message || "Failed to update user");
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleInputChange = (field: keyof User, value: string | boolean) => {
-    if (!user) return;
-    setUser({ ...user, [field]: value });
-  };
-
-  const handleAddRole = async () => {
-    if (!user || !token || !selectedRoleId) {
-      return toast.error("Please select a role");
-    }
-    if (user.roles.includes(selectedRoleId)) {
-      return toast.error("User already has this role");
-    }
-    try {
-      setSaving(true);
-      await assignRoleToUser(user.user_guid || user.id.toString(), selectedRoleId);
-      toast.success("Role assigned successfully");
-      setSelectedRoleId("");
-      await loadUserData();
-    } catch (err: any) {
-      console.error(err);
-      toast.error(err?.message || "Failed to assign role");
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleRemoveRole = async (roleId: string) => {
-    if (!user || !token) return;
-    // Find the user-role relation ID (if needed) or use a backend endpoint that removes by user+role
-    try {
-      setSaving(true);
-      // You may need to adjust this if your backend expects a user-role ID
-      // Here, assuming removeRoleFromUser can take userId and roleName
-      await removeRoleFromUser(user.user_guid || user.id.toString(), roleId);
-      toast.success("Role removed successfully");
-      await loadUserData();
-    } catch (err: any) {
-      console.error(err);
-      toast.error(err?.message || "Failed to remove role");
-    } finally {
-      setSaving(false);
-    }
-  };
+  const {
+    user,
+    roles,
+    selectedRoleId,
+    setSelectedRoleId,
+    loading,
+    saving,
+    handleInputChange,
+    handleSaveChanges,
+    handleAddRole,
+    handleRemoveRole,
+    handleCancel,
+  } = useEditUser();
 
   if (loading) {
     return (
@@ -135,7 +36,7 @@ const EditUserPage = () => {
     return (
       <section className="p-6">
         <div className="text-center">User not found</div>
-        <Button onClick={() => navigate(-1)} className="mt-4">
+        <Button onClick={handleCancel} className="mt-4">
           Go Back
         </Button>
       </section>
@@ -222,7 +123,7 @@ const EditUserPage = () => {
           <Button type="submit" disabled={saving}>
             {saving ? "Saving..." : "Save Changes"}
           </Button>
-          <Button type="button" variant="outline" onClick={() => navigate(-1)}>
+          <Button type="button" variant="outline" onClick={handleCancel}>
             Cancel
           </Button>
         </div>
@@ -261,7 +162,6 @@ const EditUserPage = () => {
               No roles assigned
             </div>
           ) : (
-            // DISABLE REMOVE BUTTON FOR EDITING OWN USER TO AVOID LOCKING YOURSELF OUT
             <div className="space-y-2">
               {roles
                 .filter((role) => user.roles.includes(role.name))
