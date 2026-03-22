@@ -5,7 +5,7 @@ from mongo.models import Question, Category, SubCategory, Submissions
 
 def get_heirarchy(user_guid: str | None = None) -> dict:
     categories = Category.objects.all()
-    total_questions = Question.objects.count()
+    total_questions = Question.objects(status="approved").count()
     category_list = []
 
     # load user's submission if user_guid provided
@@ -17,6 +17,8 @@ def get_heirarchy(user_guid: str | None = None) -> dict:
             for attempt in submission.attempts:
                 try:
                     q = attempt.question
+                    if not q or q.status != "approved":
+                        continue
                     qid = str(q.id)
                     for sc in q.sub_categories:
                         sid = str(sc.id)
@@ -31,7 +33,7 @@ def get_heirarchy(user_guid: str | None = None) -> dict:
         category_attempted_count = 0
 
         for subcategory in subcategories:
-            question_count = Question.objects.filter(sub_categories=subcategory).count()
+            question_count = Question.objects.filter(sub_categories=subcategory, status="approved").count()
             category_question_count += question_count
 
             # compute attempted count for this subcategory for the user

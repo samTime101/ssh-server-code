@@ -7,7 +7,7 @@ from rest_framework_mongoengine import viewsets
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import action
-from mongo.models import Question
+from mongo.models import Question, Bookmark, Bookmarks
 from api.questions.serializers.question import *
 from api.questions.serializers.hierarchy import *
 from api.questions.serializers.selection import *
@@ -22,6 +22,7 @@ from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework.exceptions import NotFound
 from api.questions.serializers.question import QuestionFilterSerializer
 from api.questions.filters import filter_questions_queryset
+from core.filters.status import filter_status
 
 @extend_schema_view(
     create=extend_schema(exclude=True),
@@ -46,15 +47,27 @@ class QuestionViewSet(viewsets.ModelViewSet):
     # both admin and contributor can access
     permission_classes = [IsAdminUser]
 
+
+    def get_permissions(self):
+        if self.action == 'retrieve':
+            return [AllowAny()]
+        return super().get_permissions()
+
     def get_queryset(self):
         base_queryset = Question.objects.all()            
-        return filter_questions_queryset(base_queryset, self.request.query_params)
+        qs = filter_questions_queryset(base_queryset, self.request.query_params)
+        qs = filter_status(qs,self.request)
+        return qs
 
     # for get/questions/<id>, allow from any authenticated user, not just admin
     # https://github.com/users/sisani9/projects/2/views/1?pane=issue&itemId=159302989&issue=sisani9%7Csisani-eps%7C147
     def retrieve(self, request, *args, **kwargs):
-        self.permission_classes = [AllowAny]
-        return super().retrieve(request, *args, **kwargs)
+        qs = Question.objects(status="approved")
+        instance = qs.filter(id=kwargs.get("id")).first()
+        if not instance:
+            raise NotFound("Question not found.")
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
         
     # For api/questions/hierarchy/
     @action(detail=False,methods=['get'],url_path='hierarchy',serializer_class=HierarchySerializer,permission_classes=[IsAuthenticated])
@@ -63,7 +76,33 @@ class QuestionViewSet(viewsets.ModelViewSet):
         user_guid = getattr(request.user, "user_guid", None)
         hierarchy_data = get_heirarchy(user_guid=user_guid)
         serializer = self.get_serializer(hierarchy_data)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.data, status=status.HTTP_200_OK)    
+
+    # For GET api/questions/<id>/bookmark/
+    @action(detail=True, methods=['post'], url_path='bookmark', permission_classes=[IsAuthenticated], serializer_class=None)
+    def bookmark(self, request, id=None):
+        question = self.get_object()
+        if question.status != "approved":
+            raise NotFound("Question not found.")
+        user_guid = getattr(request.user, "user_guid", None)
+        existing_bookmark = Bookmarks.objects(user_guid=user_guid, bookmark__question=question.id).first()
+        if existing_bookmark:
+            return Response({"detail": "Question already bookmarked"}, status=status.HTTP_200_OK)
+        bookmark = Bookmark(question=question)
+        Bookmarks.objects(user_guid=user_guid).update_one(add_to_set__bookmark=bookmark, upsert=True)
+        return Response({"detail": "Question bookmarked successfully"}, status=status.HTTP_200_OK)
+    
+    # for DELETE api/questions/<id>/bookmark/
+    @bookmark.mapping.delete
+    def remove_bookmark(self, request, id=None):
+        question = self.get_object()
+        user_guid = getattr(request.user, "user_guid", None)
+        # check if bookmark exists before trying to remove
+        existing_bookmark = Bookmarks.objects(user_guid=user_guid, bookmark__question=question.id).first()
+        if not existing_bookmark:
+            raise NotFound("Bookmark not found.")
+        Bookmarks.objects(user_guid=user_guid).update_one(pull__bookmark__question=question.id)
+        return Response({"detail": "Bookmark removed successfully"}, status=status.HTTP_200_OK)
 
     # For question selection
     # /api/questions/select/
@@ -100,4 +139,4 @@ class QuestionViewSet(viewsets.ModelViewSet):
         serializer = QuestionPublicSerializer(page, many=True)
         return self.get_paginated_response(serializer.data)
         # response_data = QuestionPublicSerializer(queryset, many=True)
-        # return Response(response_data.data, status=status.HTTP_200_OK)        
+        # return Response(response_data.data, status=status.HTTP_200_OK)

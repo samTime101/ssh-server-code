@@ -12,11 +12,13 @@ connect(host=mongo_uri)
 
 class Category(TimeStampedDocument):
     name = StringField(required=True, unique=True)
+    status = StringField(required=True, choices=["pending", "approved", "rejected"], default="approved")
     meta = {'collection': 'categories'}
 
 class SubCategory(TimeStampedDocument):
     name = StringField(required=True, unique=True)
     category = ReferenceField(Category, required=True, reverse_delete_rule=CASCADE)
+    status = StringField(required=True, choices=["pending", "approved", "rejected"], default="approved")
     meta = {'collection': 'sub_categories','indexes': ['category']}
 
 class Option(EmbeddedDocument):
@@ -35,6 +37,7 @@ class Question(TimeStampedDocument):
     contributor_specialization = StringField(required=False)
     question_image_url = StringField(required=False)
     description_image_url = StringField(required=False)
+    status = StringField(required=True, choices=["pending", "approved", "rejected"], default="approved")
     meta = {'collection': 'questions','indexes': ['sub_categories']}
 
     def correct_answers(self):
@@ -79,3 +82,13 @@ class College(TimeStampedDocument):
     country = StringField(required=True)
     postal_code = StringField(required=True)
     meta = {'collection': 'colleges'}
+
+class Bookmark(EmbeddedDocument):
+    question = ReferenceField(Question, required=True)
+    created_at = DateTimeField(default=datetime.utcnow)
+
+class Bookmarks(TimeStampedDocument):
+    user_guid = UUIDField(required=True, binary=False)
+    bookmark = ListField(EmbeddedDocumentField(Bookmark))
+    
+    meta = {'collection': 'bookmarks','indexes': ['user_guid', 'bookmark.question']}

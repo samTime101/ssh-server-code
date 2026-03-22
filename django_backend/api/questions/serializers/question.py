@@ -2,7 +2,7 @@ from rest_framework import serializers
 from rest_framework_mongoengine import serializers as me_serializers
 from core.mixins.option_mixin import OptionValidationMixin
 from core.validators.obj_ids_validator import validate_object_ids
-from mongo.models import Question, Option, SubCategory
+from mongo.models import Question, Option, SubCategory, Bookmark
 from core.cloudinary import upload_question_image, delete_question_image
 
 class OptionSerializer(me_serializers.EmbeddedDocumentSerializer):
@@ -22,7 +22,6 @@ class QuestionSerializer(me_serializers.DocumentSerializer,OptionValidationMixin
     subcategory_names = serializers.SerializerMethodField(read_only=True)
     question_image_unchanged = serializers.BooleanField(write_only=True, required=False, default=True)
     description_image_unchanged = serializers.BooleanField(write_only=True, required=False, default=True)
-
     class Meta:
         model = Question
         fields = (
@@ -32,7 +31,7 @@ class QuestionSerializer(me_serializers.DocumentSerializer,OptionValidationMixin
             'description_image_url','sub_categories_ids',
             'created_at','updated_at','category_names',
             'subcategory_names','question_image_unchanged',
-            'description_image_unchanged'
+            'description_image_unchanged','status'
             )
         extra_kwargs = {'created_at': {'read_only': True},'updated_at': {'read_only': True},'question_image_url': {'read_only': True},'description_image_url': {'read_only': True}}
         
@@ -133,3 +132,4 @@ class QuestionFilterSerializer(serializers.Serializer):
     search = serializers.CharField(required=False)
     category_id = serializers.CharField(required=False)
     sub_category_id = serializers.CharField(required=False)
+    status = serializers.CharField(required=False)

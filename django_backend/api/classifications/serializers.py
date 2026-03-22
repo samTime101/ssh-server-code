@@ -27,3 +27,9 @@ class SubCategorySerializer(me_serializers.DocumentSerializer):
     
     def get_category_name(self, obj):
         return obj.category.name
+    
+class FilterSerializer(serializers.Serializer):
+    status = serializers.CharField(required=False)
+
+class SubCategoryFilterSerializer(FilterSerializer):
+    category_status = serializers.CharField(required=False)
