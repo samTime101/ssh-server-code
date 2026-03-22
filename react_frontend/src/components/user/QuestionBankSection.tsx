@@ -24,13 +24,17 @@ import { getAttemptStats } from "@/utils/attemptUtils";
 
 const QuestionBankSection = () => {
   const { token } = useAuth();
-  const { fetchQuestions } = useQuestions(); //selectedCategoriesId, selectedSubSubCategoryId, selectedSubCategoryId,
+  const { fetchQuestions, sessionTimerSeconds, configureSessionTimer, startSessionTimer } =
+    useQuestions(); //selectedCategoriesId, selectedSubSubCategoryId, selectedSubCategoryId,
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
 
   const [categories, setCategories] = useState<GetCategoriesResponse>();
   const [reattemptWrongOnly, setReattemptWrongOnly] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+
+  const timerMinutes = Math.floor(sessionTimerSeconds / 60);
+  const timerSeconds = sessionTimerSeconds % 60;
 
   useEffect(() => {
     if (!token) return;
@@ -50,8 +54,19 @@ const QuestionBankSection = () => {
   }, [token]);
 
   const handleStartSession = async (reattemptWrongOnly: boolean) => {
+    startSessionTimer(sessionTimerSeconds);
     await fetchQuestions(reattemptWrongOnly);
     navigate("/userpanel/question");
+  };
+
+  const handleTimerMinutesChange = (value: string) => {
+    const parsedMinutes = Number.parseInt(value, 10);
+    configureSessionTimer(Number.isNaN(parsedMinutes) ? 0 : parsedMinutes, timerSeconds);
+  };
+
+  const handleTimerSecondsChange = (value: string) => {
+    const parsedSeconds = Number.parseInt(value, 10);
+    configureSessionTimer(timerMinutes, Number.isNaN(parsedSeconds) ? 0 : parsedSeconds);
   };
 
   const normalizeSearch = searchQuery.trim().toLowerCase();
@@ -148,7 +163,30 @@ const QuestionBankSection = () => {
           )}
         </div>
 
-        <div className="border-border mt-8 flex gap-4 border-t pt-6">
+        <div className="border-border mt-8 flex flex-wrap items-center gap-3 border-t pt-6">
+          <div className="flex items-center gap-2">
+            <span className="text-muted-foreground text-xs font-medium">Timer</span>
+            <Input
+              type="number"
+              min={0}
+              className="h-8 w-16 px-2 text-center"
+              value={timerMinutes}
+              onChange={(e) => handleTimerMinutesChange(e.target.value)}
+              aria-label="Timer minutes"
+            />
+            <span className="text-muted-foreground text-xs">m</span>
+            <Input
+              type="number"
+              min={0}
+              max={59}
+              className="h-8 w-16 px-2 text-center"
+              value={timerSeconds}
+              onChange={(e) => handleTimerSecondsChange(e.target.value)}
+              aria-label="Timer seconds"
+            />
+            <span className="text-muted-foreground text-xs">s</span>
+          </div>
+
           <Button
             className="cursor-pointer rounded-lg px-8 py-6 font-medium shadow-sm transition-all duration-200 hover:shadow-md"
             onClick={() => handleStartSession(reattemptWrongOnly)}

@@ -5,6 +5,12 @@ import type { Question, QuestionPaginationMeta, FetchQuestionsPayload } from "@/
 
 export const QuestionContext = createContext<any>(null);
 
+const MIN_SESSION_SECONDS = 1;
+const MAX_SESSION_SECONDS = 180 * 60;
+
+const clampSessionSeconds = (seconds: number) =>
+  Math.min(MAX_SESSION_SECONDS, Math.max(MIN_SESSION_SECONDS, Math.floor(seconds)));
+
 const QuestionProvider = ({ children }: { children: React.ReactNode }) => {
   const { token } = useAuth();
 
@@ -15,6 +21,8 @@ const QuestionProvider = ({ children }: { children: React.ReactNode }) => {
   const [questionPagination, setQuestionPagination] = useState<QuestionPaginationMeta | null>(null);
   const [lastFetchPayload, setLastFetchPayload] = useState<FetchQuestionsPayload | null>(null);
   const [isFetchingNextPage, setIsFetchingNextPage] = useState(false);
+  const [sessionTimerSeconds, setSessionTimerSeconds] = useState(30 * 60);
+  const [sessionEndsAtMs, setSessionEndsAtMs] = useState<number | null>(null);
 
   const handleCategorySelection = (categoryId: string) => {
     // Filters and removes duplicates and adds the selected category ID
@@ -99,6 +107,23 @@ const QuestionProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
+  const configureSessionTimer = (minutes: number, seconds: number) => {
+    const safeMinutes = Number.isFinite(minutes) ? Math.max(0, Math.floor(minutes)) : 0;
+    const safeSeconds = Number.isFinite(seconds) ? Math.max(0, Math.floor(seconds)) : 0;
+    const totalSeconds = safeMinutes * 60 + safeSeconds;
+    setSessionTimerSeconds(clampSessionSeconds(totalSeconds));
+  };
+
+  const startSessionTimer = (totalSeconds: number) => {
+    const clampedSeconds = clampSessionSeconds(totalSeconds);
+    setSessionTimerSeconds(clampedSeconds);
+    setSessionEndsAtMs(Date.now() + clampedSeconds * 1000);
+  };
+
+  const clearSessionTimer = () => {
+    setSessionEndsAtMs(null);
+  };
+
   return (
     <QuestionContext.Provider
       value={{
@@ -113,6 +138,11 @@ const QuestionProvider = ({ children }: { children: React.ReactNode }) => {
         questionData,
         questionPagination,
         isFetchingNextPage,
+        sessionTimerSeconds,
+        sessionEndsAtMs,
+        configureSessionTimer,
+        startSessionTimer,
+        clearSessionTimer,
       }}
     >
       {children}
