@@ -60,7 +60,7 @@ const Navbar = () => {
       </div>
 
       {/* CTA Button */}
-      <Link to="/auth/signup">
+      <Link to="/auth/login">
         <button
           className="px-6 py-2.5 rounded-full text-sm font-semibold transition-all duration-200 cursor-pointer"
           style={{

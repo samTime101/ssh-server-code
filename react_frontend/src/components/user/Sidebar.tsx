@@ -41,7 +41,40 @@ const Sidebar = () => {
   return (
     <aside className="border-sidebar-border bg-sidebar fixed top-[64px] left-0 z-10 flex h-[calc(100vh-64px)] w-64 flex-col border-r">
       <div className="border-sidebar-border flex-shrink-0 border-b px-4 py-6">
-        <h2 className="text-sidebar-primary text-center text-xl font-bold">SISANI-EPS</h2>
+        <Link to="/userpanel" className="flex items-center justify-center gap-3">
+          <div
+            className="flex items-center justify-center rounded-xl shrink-0"
+            style={{
+              width: 44,
+              height: 44,
+              background: "linear-gradient(135deg, #0d9488 0%, #14b8a6 100%)",
+            }}
+          >
+            <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+              <polyline
+                points="2,15 6,15 9,8 13,20 17,6 20,15 24,15"
+                stroke="white"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </div>
+          <div>
+            <span
+              className="text-xl font-bold tracking-tight text-sidebar-primary"
+              style={{ fontFamily: "'DM Sans', sans-serif" }}
+            >
+              Vaidix
+            </span>
+            <span
+              className="block text-[10px] font-semibold tracking-[0.18em] uppercase text-muted-foreground"
+              style={{ marginTop: -2 }}
+            >
+              Medical MCQ Platform
+            </span>
+          </div>
+        </Link>
       </div>
 
       <nav className="flex-1 overflow-y-auto py-6">
