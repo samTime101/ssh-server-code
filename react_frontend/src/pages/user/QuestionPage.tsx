@@ -16,19 +16,28 @@ import { getImageUrl } from "@/config/apiConfig";
 
 const QuestionPage = () => {
   const { token } = useAuth();
-  const { questionData, questionPagination, fetchNextPage, isFetchingNextPage } = useQuestions();
+  const {
+    questionData,
+    questionPagination,
+    fetchNextPage,
+    isFetchingNextPage,
+    sessionEndsAtMs,
+    clearSessionTimer,
+  } = useQuestions();
   const navigate = useNavigate();
 
   // use an index instead of storing whole object
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
   const [selectedOption, setSelectedOption] = useState<string>("");
+  const [remainingMs, setRemainingMs] = useState<number | null>(null);
 
   // single source for per-question state
   const [attempts, setAttempts] = useState<{ [id: string]: QuestionAttemptState }>({});
 
   // track the data length from the previous render to distinguish a fresh fetch from a page append
   const prevDataLengthRef = useRef(0);
+  const timeoutHandledRef = useRef(false);
 
   // derive currentQuestion from index and questionData
   const currentQuestion: Question | null =
@@ -53,6 +62,34 @@ const QuestionPage = () => {
     setSelectedOptions([]);
     setSelectedOption("");
   }, [questionData]);
+
+  useEffect(() => {
+    timeoutHandledRef.current = false;
+
+    if (!sessionEndsAtMs) {
+      setRemainingMs(null);
+      return;
+    }
+
+    const updateRemaining = () => {
+      const timeLeft = Math.max(0, sessionEndsAtMs - Date.now());
+      setRemainingMs(timeLeft);
+
+      if (timeLeft > 0 || timeoutHandledRef.current) return;
+
+      timeoutHandledRef.current = true;
+      clearSessionTimer();
+      toast.error("Time is up. Session ended.");
+      navigate("/userpanel");
+    };
+
+    updateRemaining();
+    const intervalId = window.setInterval(updateRemaining, 1000);
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
+  }, [sessionEndsAtMs, clearSessionTimer, navigate]);
 
   // keep UI selections synchronized with saved attempt for the current question
   useEffect(() => {
@@ -88,6 +125,7 @@ const QuestionPage = () => {
         setCurrentIndex(nextIndex);
       } else {
         toast.info("You've completed all questions!");
+        clearSessionTimer();
         navigate("/userpanel");
       }
       return;
@@ -154,7 +192,15 @@ const QuestionPage = () => {
   };
 
   const handleBack = () => {
+    clearSessionTimer();
     navigate("/userpanel");
+  };
+
+  const formatRemainingTime = (milliseconds: number) => {
+    const totalSeconds = Math.ceil(milliseconds / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
   };
 
   if (!currentQuestion) {
@@ -205,9 +251,16 @@ const QuestionPage = () => {
         </Button>
         <div className="flex items-center justify-between">
           <h1 className="text-foreground text-3xl font-bold">Entrance Preparation Test</h1>
-          <span className="text-muted-foreground text-sm font-medium">
-            {currentIndex + 1} / {totalCount}
-          </span>
+          <div className="flex items-center gap-3">
+            {remainingMs !== null && (
+              <span className="bg-muted text-foreground rounded-md px-3 py-1 text-sm font-semibold">
+                Time Left: {formatRemainingTime(remainingMs)}
+              </span>
+            )}
+            <span className="text-muted-foreground text-sm font-medium">
+              {currentIndex + 1} / {totalCount}
+            </span>
+          </div>
         </div>
 
         <Card className="shadow-lg">
