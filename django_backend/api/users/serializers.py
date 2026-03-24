@@ -2,7 +2,7 @@ from core.constants.roles import ROLE_USER
 from sql.models import User, Role, UserRole
 from rest_framework import serializers
 from rest_framework_mongoengine import serializers as me_serializers
-from mongo.models import Question, Submissions, Attempt
+from mongo.models import Question, Submissions, Attempt, Bookmark
 from core.validators.answer_validator import validate_attempt_answers
 from core.validators.obj_id_validator import validate_object_id
 
@@ -180,3 +180,14 @@ class RemoveRoleSerializer(serializers.Serializer):
             if not UserRole.objects.filter(user=user, role=role).exists():
                 raise serializers.ValidationError(f"Role '{role.name}' is not assigned to this user.")
         return value
+    
+class BookmarkSerializer(me_serializers.EmbeddedDocumentSerializer):
+    question_id = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Bookmark
+        # fields = ("question_id", "question_text", "created_at")
+        fields = ("question_id", "created_at")
+
+    def get_question_id(self, obj):
+        return str(obj.question.id)

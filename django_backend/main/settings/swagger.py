@@ -3,6 +3,21 @@ SPECTACULAR_SETTINGS = {
     "TITLE": "MCQ API",
     "DESCRIPTION": """
 
+## March 20, 2026
+- Added `status` to question and classifications
+- Added `status` query parameter to filter questions and classifications based on their status (approved, pending, rejected). Admin users can view all statuses, while non-admin users can only view approved items.
+- Updated `get_queryset` methods in `QuestionViewSet` and `QuestionClassificationViewSet` to utilize the new `status` filtering logic, ensuring that the appropriate items are returned based on the user's permissions and the specified status filter.
+- if no query param is sent, all questions and classifications are returned (including pending and rejected)
+- if `status` query param is sent with valid value, questions and classifications are filtered based on that status
+- For subcategories, to filter based on category status, `category_status` query parameter can be used. If sent with valid value, subcategories are filtered based on the status of their parent category.
+
+
+## March 14, 2026
+- Added `Bookmark` model and `Bookmarks` model to handle question bookmarking functionality. Users can now bookmark questions using the `/api/questions/{id}/bookmark/` endpoint, and the bookmarks are stored in the database with a reference to the user and the question.
+- Updated the `QuestionViewSet` to include a new action for bookmarking questions. This action allows authenticated users to bookmark a question by sending a POST request to the specified endpoint.
+- Added a DELETE method to the bookmark action to allow users to remove bookmarks from questions.
+
+
 ## March 9, 2026
 - Restructured the UserManager to another file called `managers/user_manager.py` to improve code organization and maintainability. Updated the User model to use the new UserManager for user creation and management operations.
     
@@ -120,6 +135,8 @@ SPECTACULAR_SETTINGS = {
 
 ## Information
 
+- GET /questions/ returns all (approved, rejected,pending)
+- GET /questions/?status= filters between approved, pending and rejected questions
 - When creating a category or subcategory, provide their `ObjectId`.
 - To select questions based on topics, include a list of `ObjectId`s for the relevant category/subcategory.
 - When submitting attempts, send the question `ObjectId`s in the `question` field.

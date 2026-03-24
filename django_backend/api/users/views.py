@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from .serializers import *
 from core.pagination import StandardResultsSetPagination
-from mongo.models import Attempt, Submissions
+from mongo.models import Attempt, Submissions, Bookmark, Bookmarks
 from drf_spectacular.utils import extend_schema 
 from rest_framework.exceptions import MethodNotAllowed, NotFound
 from rest_framework.decorators import action
@@ -34,7 +34,17 @@ class UserViewSet(ModelViewSet):
             return NotFound("User not found")
         serializer = self.get_serializer(user)
         return Response(serializer.data, status=status.HTTP_200_OK)
-
+    
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated], url_path='bookmarks')
+    def bookmarks(self, request):
+        user_guid = getattr(request.user, "user_guid")
+        paginator = StandardResultsSetPagination()
+        bookmarks_collection = Bookmarks.objects(user_guid=user_guid).first()
+        bookmarks_list = bookmarks_collection.bookmark if bookmarks_collection else []
+        paginated_bookmarks = paginator.paginate_queryset(bookmarks_list, request)
+        serializer = BookmarkSerializer(paginated_bookmarks, many=True)
+        return paginator.get_paginated_response(serializer.data)
+        
     # /api/users/<>/roles/
     @action(detail=True, methods=['get'], permission_classes=[IsAdminUser], url_path='roles')
     def roles(self, request, *args, **kwargs):
