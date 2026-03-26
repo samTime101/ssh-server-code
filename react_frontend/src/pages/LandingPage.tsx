@@ -144,7 +144,7 @@ const LandingPage = () => {
 
             
             <div className="flex items-center gap-5 mt-10">
-              <Link to="/auth/signup">
+              <Link to="/auth/login">
                 <button
                   className="px-8 py-4 rounded-2xl text-base font-semibold transition-all duration-200 cursor-pointer"
                   style={{
