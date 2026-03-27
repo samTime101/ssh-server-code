@@ -1,3 +1,5 @@
+export type QuestionStatus = "approved" | "pending" | "rejected";
+
 export interface Question {
   id: string;
   question_text: string;
@@ -14,6 +16,7 @@ export interface Question {
   description_image_url?: string;
   contributor: string;
   contributor_specialization: string;
+  status?: QuestionStatus;
 }
 
 export interface PaginatedQuestionsResponse {

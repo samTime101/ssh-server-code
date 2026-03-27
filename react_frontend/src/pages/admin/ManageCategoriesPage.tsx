@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { PenIcon, TrashIcon } from "lucide-react";
 import Modal from "@/components/Modal";
 import TableSkeletonLoader from "@/components/TableSkeletonLoader";
+import StatusBadge from "@/components/StatusBadge";
 import { useManageCategories } from "@/hooks/admin/useManageCategories";
 
 const ManageCategoriesPage = () => {
@@ -39,17 +40,16 @@ const ManageCategoriesPage = () => {
           <TableHeader>
             <TableRow>
               <TableHead>Name</TableHead>
-              <TableHead>Subcategories</TableHead>
-              <TableHead>Questions</TableHead>
+              <TableHead>Status</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              <TableSkeletonLoader rows={4} columns={4} />
+              <TableSkeletonLoader rows={4} columns={3} />
             ) : categories.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={4} className="text-center">
+                <TableCell colSpan={3} className="text-center">
                   No categories found
                 </TableCell>
               </TableRow>
@@ -57,8 +57,9 @@ const ManageCategoriesPage = () => {
               categories.map((cat) => (
                 <TableRow key={cat.id} className="text-muted-foreground">
                   <TableCell className="font-semibold">{cat.name}</TableCell>
-                  <TableCell>{cat.sub_categories?.length ?? 0}</TableCell>
-                  <TableCell>{cat.question_count ?? 0}</TableCell>
+                  <TableCell>
+                    <StatusBadge status={cat.status} />
+                  </TableCell>
                   <TableCell className="flex gap-2">
                     <Button
                       className="bg-primary text-primary-foreground cursor-pointer rounded"
