@@ -16,6 +16,7 @@ import { ImageIcon, Upload, X } from "lucide-react";
 import { useQuestionForm } from "@/hooks/admin/useQuestionForm";
 import { useEffect } from "react";
 import { getImageUrl } from "@/config/apiConfig";
+import type { QuestionStatus } from "@/types/question";
 
 // uta questionbank bata aako data
 interface EditQuestionFormProps {
@@ -69,6 +70,7 @@ const EditQuestionForm = ({ selectedQuestion, handleEditSuccess }: EditQuestionF
       description: selectedQuestion.description,
       optionType: selectedQuestion.option_type,
       difficulty: selectedQuestion.difficulty,
+      status: selectedQuestion.status ?? "pending",
       categoryIds: categoryIds,
       subCategories: selectedQuestion.sub_categories_ids || [],
       options:
@@ -281,26 +283,49 @@ const EditQuestionForm = ({ selectedQuestion, handleEditSuccess }: EditQuestionF
       </div>
 
       {/* Difficulty */}
-      <div className="space-y-2">
-        <Label>Difficulty</Label>
-        <Select
-          value={questionFormData.difficulty}
-          onValueChange={(value) =>
-            setQuestionFormData((prev) => ({
-              ...prev!,
-              difficulty: value as "easy" | "medium" | "hard",
-            }))
-          }
-        >
-          <SelectTrigger className="w-full">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="easy">Easy</SelectItem>
-            <SelectItem value="medium">Medium</SelectItem>
-            <SelectItem value="hard">Hard</SelectItem>
-          </SelectContent>
-        </Select>
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <div className="space-y-2">
+          <Label>Difficulty</Label>
+          <Select
+            value={questionFormData.difficulty}
+            onValueChange={(value) =>
+              setQuestionFormData((prev) => ({
+                ...prev!,
+                difficulty: value as "easy" | "medium" | "hard",
+              }))
+            }
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="easy">Easy</SelectItem>
+              <SelectItem value="medium">Medium</SelectItem>
+              <SelectItem value="hard">Hard</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-2">
+          <Label>Status</Label>
+          <Select
+            value={questionFormData.status}
+            onValueChange={(value) =>
+              setQuestionFormData((prev) => ({
+                ...prev!,
+                status: value as QuestionStatus,
+              }))
+            }
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="approved">Approved</SelectItem>
+              <SelectItem value="pending">Pending</SelectItem>
+              <SelectItem value="rejected">Rejected</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       {/* Answer Type */}

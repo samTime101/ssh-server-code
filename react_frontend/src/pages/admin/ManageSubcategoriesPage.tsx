@@ -13,7 +13,15 @@ import { PenIcon, TrashIcon } from "lucide-react";
 import Modal from "@/components/Modal";
 import TableSkeletonLoader from "@/components/TableSkeletonLoader";
 import StatusBadge from "@/components/StatusBadge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useManageSubcategories } from "@/hooks/admin/useManageSubcategories";
+import type { CategoryStatus } from "@/types/category";
 
 const ManageSubcategoriesPage = () => {
   const {
@@ -22,6 +30,8 @@ const ManageSubcategoriesPage = () => {
     editTarget,
     editName,
     setEditName,
+    editStatus,
+    setEditStatus,
     isSubmitting,
     openEditModal,
     closeEditModal,
@@ -103,6 +113,19 @@ const ManageSubcategoriesPage = () => {
             required
             autoFocus
           />
+          <Select
+            value={editStatus}
+            onValueChange={(value) => setEditStatus(value as CategoryStatus)}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="approved">Approved</SelectItem>
+              <SelectItem value="pending">Pending</SelectItem>
+              <SelectItem value="rejected">Rejected</SelectItem>
+            </SelectContent>
+          </Select>
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={closeEditModal}>
               Cancel

@@ -26,6 +26,7 @@ export const useQuestionForm = ({ mode, questionId, onSuccess, onError }: UseQue
     subCategories: [],
     optionType: "single",
     difficulty: "easy",
+    status: "pending",
     options: [
       { label: "A", text: "", isCorrect: false },
       { label: "B", text: "", isCorrect: false },
@@ -273,6 +274,7 @@ export const useQuestionForm = ({ mode, questionId, onSuccess, onError }: UseQue
         question_text: questionFormData.questionText,
         description: questionFormData.description,
         option_type: questionFormData?.optionType,
+        status: questionFormData.status,
         options: questionFormData?.options.map((answer) => ({
           label: answer.label,
           text: answer.text,

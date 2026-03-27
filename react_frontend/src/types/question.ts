@@ -65,6 +65,7 @@ export interface CreateQuestionPayload {
   description?: string;
   contributor?: string;
   contributor_specialization?: string;
+  status?: QuestionStatus;
 }
 
 import type { Category } from "@/types/category";
@@ -80,6 +81,7 @@ export interface QuestionFormData {
   subCategories: string[];
   optionType: "single" | "multiple";
   difficulty: "easy" | "medium" | "hard";
+  status: QuestionStatus;
   options: Array<{
     label: string;
     text: string;

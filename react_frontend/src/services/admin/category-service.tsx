@@ -50,10 +50,15 @@ export const fetchCategoriesWithHierarchy = async (): Promise<GetCategoriesRespo
 
 export const updateCategory = async (
   id: string,
-  name: string
-): Promise<{ id: string; name: string }> => {
+  name: string,
+  status?: "approved" | "pending" | "rejected"
+): Promise<{ id: string; name: string; status?: "approved" | "pending" | "rejected" }> => {
   try {
-    const response = await axiosInstance.put(`${API_ENDPOINTS.createCategory}${id}/`, { name });
+    const payload: { name: string; status?: "approved" | "pending" | "rejected" } = { name };
+    if (status) {
+      payload.status = status;
+    }
+    const response = await axiosInstance.put(`${API_ENDPOINTS.createCategory}${id}/`, payload);
     return response.data;
   } catch (error) {
     console.error(error);

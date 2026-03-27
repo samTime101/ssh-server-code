@@ -63,14 +63,24 @@ export async function fetchSubcategories(): Promise<SubCategoryDetail[]> {
       ? categoriesResponse.data
       : (categoriesResponse.data?.categories ?? []);
     const categoryNameById = new Map(categoryList.map((cat) => [cat.id, cat.name]));
+    const categoryIdByName = new Map(
+      categoryList.map((cat) => [cat.name.trim().toLowerCase(), cat.id])
+    );
 
     const rawSubcategories: RawSubcategory[] = Array.isArray(subcategoriesResponse.data)
       ? subcategoriesResponse.data
       : (subcategoriesResponse.data?.results ?? subcategoriesResponse.data?.subcategories ?? []);
 
     return rawSubcategories.map((sub) => {
+      const normalizedCategoryName =
+        sub.category_name?.trim().toLowerCase() ||
+        (typeof sub.category === "object" ? sub.category?.name?.trim().toLowerCase() : undefined);
+
       const categoryId =
-        typeof sub.category === "string" ? sub.category : sub.category?.id || sub.category_id || "";
+        (typeof sub.category === "string" ? sub.category : sub.category?.id) ||
+        sub.category_id ||
+        (normalizedCategoryName ? categoryIdByName.get(normalizedCategoryName) : undefined) ||
+        "";
 
       const categoryName =
         sub.category_name ||
@@ -96,13 +106,22 @@ export async function fetchSubcategories(): Promise<SubCategoryDetail[]> {
 export async function updateSubCategory(
   id: string,
   name: string,
-  categoryId: string
+  categoryId: string,
+  status?: "approved" | "pending" | "rejected"
 ): Promise<any> {
   try {
-    const response = await axiosInstance.put(`${API_ENDPOINTS.createSubCategory}${id}/`, {
+    const payload: {
+      name: string;
+      category: string;
+      status?: "approved" | "pending" | "rejected";
+    } = {
       name,
       category: categoryId,
-    });
+    };
+    if (status) {
+      payload.status = status;
+    }
+    const response = await axiosInstance.put(`${API_ENDPOINTS.createSubCategory}${id}/`, payload);
     return response.data;
   } catch (error) {
     console.error(error);
