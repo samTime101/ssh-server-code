@@ -20,6 +20,7 @@ import EditUserPage from "@/pages/admin/EditUserPage";
 import QuestionBankPage from "@/pages/admin/QuestionBankPage";
 import AddRolePage from "@/pages/admin/AddRolePage";
 import AddCollegePage from "@/pages/admin/AddCollegePage";
+import ManageQuestionSetsPage from "@/pages/admin/ManageQuestionSetsPage";
 import ProfilePage from "@/pages/user/ProfilePage";
 import HistoryPage from "@/pages/user/HistoryPage";
 import SettingsPage from "@/pages/user/SettingsPage";
@@ -114,6 +115,10 @@ const App = () => {
 
           <Route element={<RoleRoute allowedPermissions={["question-bank"]} />}>
             <Route path="question-bank" element={<QuestionBankPage />} />
+          </Route>
+
+          <Route element={<RoleRoute allowedPermissions={["manage-question-sets"]} />}>
+            <Route path="manage-question-sets" element={<ManageQuestionSetsPage />} />
           </Route>
 
           <Route element={<RoleRoute allowedPermissions={["create-category"]} />}>

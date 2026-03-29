@@ -59,6 +59,12 @@ export const QUESTION_SUB_ITEMS: NavItem[] = [
     path: "/admin/question-bank",
     allowedPermissions: ["question-bank"],
   },
+  {
+    icon: List,
+    text: "Question Sets",
+    path: "/admin/manage-question-sets",
+    allowedPermissions: ["manage-question-sets"],
+  },
 ];
 
 export const CATEGORY_SUB_ITEMS: NavItem[] = [
