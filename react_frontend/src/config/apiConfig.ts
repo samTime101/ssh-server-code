@@ -20,6 +20,7 @@ export const API_ENDPOINTS = {
 
   createCategory: "/categories/",
   getCategories: "/categories/",
+  getSubcategories: "/subcategories/",
   getCategoriesWithHierarchy: "/questions/hierarchy/",
   createSubCategory: "/subcategories/",
   createSubSubCategory: "/create/subsubcategory/",

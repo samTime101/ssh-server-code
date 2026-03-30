@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { fetchCategories, updateCategory, deleteCategory } from "@/services/admin/category-service";
-import type { Category } from "@/types/category";
+import type { Category, CategoryStatus } from "@/types/category";
 
 export const useManageCategories = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [editTarget, setEditTarget] = useState<Category | null>(null);
   const [editName, setEditName] = useState("");
+  const [editStatus, setEditStatus] = useState<CategoryStatus>("pending");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -29,11 +30,13 @@ export const useManageCategories = () => {
   const openEditModal = (category: Category) => {
     setEditTarget(category);
     setEditName(category.name);
+    setEditStatus(category.status ?? "pending");
   };
 
   const closeEditModal = () => {
     setEditTarget(null);
     setEditName("");
+    setEditStatus("pending");
   };
 
   const handleEditSubmit = async (e: React.FormEvent) => {
@@ -41,7 +44,7 @@ export const useManageCategories = () => {
     if (!editTarget || !editName.trim()) return;
     setIsSubmitting(true);
     try {
-      await updateCategory(editTarget.id, editName.trim());
+      await updateCategory(editTarget.id, editName.trim(), editStatus);
       toast.success("Category updated successfully");
       closeEditModal();
       await loadCategories();
@@ -74,6 +77,8 @@ export const useManageCategories = () => {
     editTarget,
     editName,
     setEditName,
+    editStatus,
+    setEditStatus,
     isSubmitting,
     openEditModal,
     closeEditModal,

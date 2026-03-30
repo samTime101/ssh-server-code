@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { fetchQuestions, deleteQuestion } from "@/services/admin/addquestion-service";
-import { fetchCategories } from "@/services/admin/category-service";
+import { fetchCategoriesWithHierarchy } from "@/services/admin/category-service";
 import type { Category, SubCategory } from "@/types/category";
 
 export const useQuestionBank = () => {
@@ -34,7 +34,7 @@ export const useQuestionBank = () => {
   useEffect(() => {
     const loadCategories = async () => {
       try {
-        const data = await fetchCategories();
+        const data = await fetchCategoriesWithHierarchy();
         setCategories(data.categories);
       } catch {
         toast.error("Failed to load categories");

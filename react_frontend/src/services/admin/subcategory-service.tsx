@@ -2,6 +2,16 @@ import { API_ENDPOINTS } from "@/config/apiConfig";
 import type { Category, CreateSubCategoryResponse, SubCategoryDetail } from "@/types/category";
 import axiosInstance from "../axios";
 
+type RawSubcategory = {
+  id: string;
+  name: string;
+  status?: "approved" | "pending" | "rejected";
+  question_count?: number;
+  category?: string | { id?: string; name?: string };
+  category_id?: string;
+  category_name?: string;
+};
+
 export async function createSubCategory(
   categoryId: string,
   subCategoryName: string
@@ -44,21 +54,49 @@ export async function getCategories(): Promise<{
 
 export async function fetchSubcategories(): Promise<SubCategoryDetail[]> {
   try {
-    const response = await axiosInstance.get(API_ENDPOINTS.getCategoriesWithHierarchy);
-    const categories: Category[] = response.data?.categories ?? [];
-    const flat: SubCategoryDetail[] = [];
-    for (const cat of categories) {
-      for (const sub of cat.sub_categories ?? []) {
-        flat.push({
-          id: sub.id,
-          name: sub.name,
-          categoryId: cat.id,
-          categoryName: cat.name,
-          question_count: sub.question_count,
-        });
-      }
-    }
-    return flat;
+    const [subcategoriesResponse, categoriesResponse] = await Promise.all([
+      axiosInstance.get(API_ENDPOINTS.getSubcategories),
+      axiosInstance.get(API_ENDPOINTS.getCategories),
+    ]);
+
+    const categoryList: Category[] = Array.isArray(categoriesResponse.data)
+      ? categoriesResponse.data
+      : (categoriesResponse.data?.categories ?? []);
+    const categoryNameById = new Map(categoryList.map((cat) => [cat.id, cat.name]));
+    const categoryIdByName = new Map(
+      categoryList.map((cat) => [cat.name.trim().toLowerCase(), cat.id])
+    );
+
+    const rawSubcategories: RawSubcategory[] = Array.isArray(subcategoriesResponse.data)
+      ? subcategoriesResponse.data
+      : (subcategoriesResponse.data?.results ?? subcategoriesResponse.data?.subcategories ?? []);
+
+    return rawSubcategories.map((sub) => {
+      const normalizedCategoryName =
+        sub.category_name?.trim().toLowerCase() ||
+        (typeof sub.category === "object" ? sub.category?.name?.trim().toLowerCase() : undefined);
+
+      const categoryId =
+        (typeof sub.category === "string" ? sub.category : sub.category?.id) ||
+        sub.category_id ||
+        (normalizedCategoryName ? categoryIdByName.get(normalizedCategoryName) : undefined) ||
+        "";
+
+      const categoryName =
+        sub.category_name ||
+        (typeof sub.category === "object" ? sub.category?.name : undefined) ||
+        categoryNameById.get(categoryId) ||
+        "-";
+
+      return {
+        id: sub.id,
+        name: sub.name,
+        status: sub.status,
+        categoryId,
+        categoryName,
+        question_count: sub.question_count,
+      };
+    });
   } catch (error) {
     console.error(error);
     throw new Error("Failed to fetch subcategories");
@@ -68,13 +106,22 @@ export async function fetchSubcategories(): Promise<SubCategoryDetail[]> {
 export async function updateSubCategory(
   id: string,
   name: string,
-  categoryId: string
+  categoryId: string,
+  status?: "approved" | "pending" | "rejected"
 ): Promise<any> {
   try {
-    const response = await axiosInstance.put(`${API_ENDPOINTS.createSubCategory}${id}/`, {
+    const payload: {
+      name: string;
+      category: string;
+      status?: "approved" | "pending" | "rejected";
+    } = {
       name,
       category: categoryId,
-    });
+    };
+    if (status) {
+      payload.status = status;
+    }
+    const response = await axiosInstance.put(`${API_ENDPOINTS.createSubCategory}${id}/`, payload);
     return response.data;
   } catch (error) {
     console.error(error);

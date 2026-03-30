@@ -1,3 +1,5 @@
+export type QuestionStatus = "approved" | "pending" | "rejected";
+
 export interface Question {
   id: string;
   question_text: string;
@@ -14,6 +16,7 @@ export interface Question {
   description_image_url?: string;
   contributor: string;
   contributor_specialization: string;
+  status?: QuestionStatus;
 }
 
 export interface PaginatedQuestionsResponse {
@@ -62,6 +65,7 @@ export interface CreateQuestionPayload {
   description?: string;
   contributor?: string;
   contributor_specialization?: string;
+  status?: QuestionStatus;
 }
 
 import type { Category } from "@/types/category";
@@ -77,6 +81,7 @@ export interface QuestionFormData {
   subCategories: string[];
   optionType: "single" | "multiple";
   difficulty: "easy" | "medium" | "hard";
+  status: QuestionStatus;
   options: Array<{
     label: string;
     text: string;

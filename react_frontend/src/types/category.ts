@@ -1,6 +1,9 @@
+export type CategoryStatus = "approved" | "pending" | "rejected";
+
 export interface Category {
   id: string;
   name: string;
+  status?: CategoryStatus;
   sub_categories?: SubCategory[];
   question_count?: number;
   attempted_count?: number;
@@ -9,6 +12,7 @@ export interface Category {
 export interface SubCategory {
   id: string;
   name: string;
+  status?: CategoryStatus;
   subSubCategories: SubSubCategory[];
   question_count: number;
   attempted_count?: number;
@@ -17,6 +21,7 @@ export interface SubCategory {
 export interface SubSubCategory {
   id: string;
   name: string;
+  status?: CategoryStatus;
   question_count?: number;
 }
 
@@ -50,5 +55,6 @@ export interface SubCategoryDetail {
   name: string;
   categoryId: string;
   categoryName: string;
+  status?: CategoryStatus;
   question_count?: number;
 }
