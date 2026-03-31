@@ -124,6 +124,12 @@ const QuestionProvider = ({ children }: { children: React.ReactNode }) => {
     setSessionEndsAtMs(null);
   };
 
+  const resetQuestionSelection = () => {
+    setSelectedCategoriesId([]);
+    setSelectedSubCategoryId([]);
+    setSelectedSubSubCategoryId([]);
+  };
+
   const setSessionQuestions = (questions: Question[]) => {
     setQuestionData(questions);
     setQuestionPagination(null);
@@ -149,6 +155,7 @@ const QuestionProvider = ({ children }: { children: React.ReactNode }) => {
         configureSessionTimer,
         startSessionTimer,
         clearSessionTimer,
+        resetQuestionSelection,
       }}
     >
       {children}

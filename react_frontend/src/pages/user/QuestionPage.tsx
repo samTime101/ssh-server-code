@@ -23,6 +23,7 @@ const QuestionPage = () => {
     isFetchingNextPage,
     sessionEndsAtMs,
     clearSessionTimer,
+    resetQuestionSelection,
   } = useQuestions();
   const navigate = useNavigate();
 
@@ -79,6 +80,7 @@ const QuestionPage = () => {
 
       timeoutHandledRef.current = true;
       clearSessionTimer();
+      resetQuestionSelection();
       toast.error("Time is up. Session ended.");
       navigate("/userpanel");
     };
@@ -89,7 +91,7 @@ const QuestionPage = () => {
     return () => {
       window.clearInterval(intervalId);
     };
-  }, [sessionEndsAtMs, clearSessionTimer, navigate]);
+  }, [sessionEndsAtMs, clearSessionTimer, navigate, resetQuestionSelection]);
 
   // keep UI selections synchronized with saved attempt for the current question
   useEffect(() => {
@@ -126,6 +128,7 @@ const QuestionPage = () => {
       } else {
         toast.info("You've completed all questions!");
         clearSessionTimer();
+        resetQuestionSelection();
         navigate("/userpanel");
       }
       return;
@@ -193,6 +196,7 @@ const QuestionPage = () => {
 
   const handleBack = () => {
     clearSessionTimer();
+    resetQuestionSelection();
     navigate("/userpanel");
   };
 
@@ -273,7 +277,7 @@ const QuestionPage = () => {
                 <img
                   src={getImageUrl(currentQuestion.question_image_url)}
                   alt="Question illustration"
-                  className="max-h-72 w-auto max-w-full rounded-lg border shadow-md object-contain"
+                  className="max-h-72 w-auto max-w-full rounded-lg border object-contain shadow-md"
                 />
               </div>
             )}
@@ -325,7 +329,7 @@ const QuestionPage = () => {
                     <img
                       src={getImageUrl(currentQuestion.description_image_url)}
                       alt="Question illustration"
-                      className="max-h-72 w-auto max-w-full rounded-lg shadow-md object-contain"
+                      className="max-h-72 w-auto max-w-full rounded-lg object-contain shadow-md"
                     />
                   </div>
                 )}
