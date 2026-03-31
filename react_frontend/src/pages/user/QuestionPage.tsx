@@ -13,6 +13,7 @@ import SingleChoiceOption from "@/components/user/SingleChoiceOption";
 import EditorRenderer from "@/components/EditorRenderer";
 import { useNavigate } from "react-router-dom";
 import { getImageUrl } from "@/config/apiConfig";
+import { getEffectiveQuestionCount } from "@/utils/examModeUtils";
 
 const QuestionPage = () => {
   const { token } = useAuth();
@@ -21,6 +22,8 @@ const QuestionPage = () => {
     questionPagination,
     fetchNextPage,
     isFetchingNextPage,
+    isExamModeEnabled,
+    sessionQuestionLimit,
     sessionEndsAtMs,
     clearSessionTimer,
     resetQuestionSelection,
@@ -118,11 +121,23 @@ const QuestionPage = () => {
       return;
     }
 
+    const totalAvailable = questionPagination?.count ?? questionData.length;
+    const totalCount = isExamModeEnabled
+      ? getEffectiveQuestionCount(sessionQuestionLimit, totalAvailable)
+      : totalAvailable;
     const nextIndex = currentIndex + 1;
+
+    if (nextIndex >= totalCount) {
+      toast.info("You've completed all questions!");
+      clearSessionTimer();
+      resetQuestionSelection();
+      navigate("/userpanel");
+      return;
+    }
 
     if (!questionData || nextIndex >= questionData.length) {
       // try to load the next page if available
-      if (questionPagination?.next) {
+      if (questionPagination?.next && questionData.length < totalCount) {
         await fetchNextPage();
         setCurrentIndex(nextIndex);
       } else {
@@ -239,8 +254,11 @@ const QuestionPage = () => {
   const currentAttempt = currentQuestion ? attempts[currentQuestion.id] : undefined;
   const isAttempted = !!currentAttempt?.isAttempted;
 
-  // total question count — use total from pagination meta if available, otherwise length of loaded data
-  const totalCount = questionPagination?.count ?? questionData.length;
+  // total question count respects exam-mode question limit and backend availability
+  const totalAvailable = questionPagination?.count ?? questionData.length;
+  const totalCount = isExamModeEnabled
+    ? getEffectiveQuestionCount(sessionQuestionLimit, totalAvailable)
+    : totalAvailable;
 
   return (
     <div className="min-h-screen p-6">

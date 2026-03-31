@@ -2,11 +2,18 @@ import React, { createContext, useState } from "react"; //useContext,
 import { useAuth } from "@/hooks/useAuth.tsx";
 import { getQuestions, getNextPageQuestions } from "@/services/user/question-service";
 import type { Question, QuestionPaginationMeta, FetchQuestionsPayload } from "@/types/question";
+import {
+  clampExamMinutes,
+  clampQuestionCount,
+  MAX_EXAM_MINUTES,
+  MIN_EXAM_MINUTES,
+  shuffleQuestions,
+} from "@/utils/examModeUtils";
 
 export const QuestionContext = createContext<any>(null);
 
-const MIN_SESSION_SECONDS = 1;
-const MAX_SESSION_SECONDS = 180 * 60;
+const MIN_SESSION_SECONDS = MIN_EXAM_MINUTES * 60;
+const MAX_SESSION_SECONDS = MAX_EXAM_MINUTES * 60;
 
 const clampSessionSeconds = (seconds: number) =>
   Math.min(MAX_SESSION_SECONDS, Math.max(MIN_SESSION_SECONDS, Math.floor(seconds)));
@@ -22,7 +29,9 @@ const QuestionProvider = ({ children }: { children: React.ReactNode }) => {
   const [lastFetchPayload, setLastFetchPayload] = useState<FetchQuestionsPayload | null>(null);
   const [isFetchingNextPage, setIsFetchingNextPage] = useState(false);
   const [sessionTimerSeconds, setSessionTimerSeconds] = useState(30 * 60);
+  const [sessionQuestionLimit, setSessionQuestionLimit] = useState(20);
   const [sessionEndsAtMs, setSessionEndsAtMs] = useState<number | null>(null);
+  const [isExamModeEnabled, setIsExamModeEnabled] = useState(false);
 
   const handleCategorySelection = (categoryId: string) => {
     // Filters and removes duplicates and adds the selected category ID
@@ -67,7 +76,11 @@ const QuestionProvider = ({ children }: { children: React.ReactNode }) => {
       console.log("Questions fetched in context:", response);
 
       if (response) {
-        setQuestionData(response.results);
+        const sessionQuestions = isExamModeEnabled
+          ? shuffleQuestions(response.results)
+          : response.results;
+
+        setQuestionData(sessionQuestions);
         setQuestionPagination({
           count: response.count,
           next: response.next,
@@ -93,7 +106,11 @@ const QuestionProvider = ({ children }: { children: React.ReactNode }) => {
       console.log("Next page fetched in context:", response);
 
       if (response) {
-        setQuestionData((prev) => [...prev, ...response.results]);
+        const nextQuestions = isExamModeEnabled
+          ? shuffleQuestions(response.results)
+          : response.results;
+
+        setQuestionData((prev) => [...prev, ...nextQuestions]);
         setQuestionPagination({
           count: response.count,
           next: response.next,
@@ -111,11 +128,17 @@ const QuestionProvider = ({ children }: { children: React.ReactNode }) => {
     const safeMinutes = Number.isFinite(minutes) ? Math.max(0, Math.floor(minutes)) : 0;
     const safeSeconds = Number.isFinite(seconds) ? Math.max(0, Math.floor(seconds)) : 0;
     const totalSeconds = safeMinutes * 60 + safeSeconds;
-    setSessionTimerSeconds(clampSessionSeconds(totalSeconds));
+    const clampedMinutes = clampExamMinutes(Math.ceil(totalSeconds / 60));
+    setSessionTimerSeconds(clampedMinutes * 60);
+  };
+
+  const configureSessionQuestionLimit = (count: number) => {
+    setSessionQuestionLimit(clampQuestionCount(count));
   };
 
   const startSessionTimer = (totalSeconds: number) => {
-    const clampedSeconds = clampSessionSeconds(totalSeconds);
+    const clampedMinutes = clampExamMinutes(Math.ceil(totalSeconds / 60));
+    const clampedSeconds = clampSessionSeconds(clampedMinutes * 60);
     setSessionTimerSeconds(clampedSeconds);
     setSessionEndsAtMs(Date.now() + clampedSeconds * 1000);
   };
@@ -151,8 +174,12 @@ const QuestionProvider = ({ children }: { children: React.ReactNode }) => {
         questionPagination,
         isFetchingNextPage,
         sessionTimerSeconds,
+        sessionQuestionLimit,
         sessionEndsAtMs,
+        isExamModeEnabled,
+        setIsExamModeEnabled,
         configureSessionTimer,
+        configureSessionQuestionLimit,
         startSessionTimer,
         clearSessionTimer,
         resetQuestionSelection,
