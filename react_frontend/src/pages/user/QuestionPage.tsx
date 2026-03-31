@@ -3,7 +3,7 @@ import { useQuestions } from "@/hooks/useQuestions";
 import { useState, useEffect, useRef } from "react"; //React,
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 // import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, ArrowRight, Lightbulb, Loader2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Lightbulb, Loader2, Share2 } from "lucide-react";
 import { attemptQuestion } from "@/services/user/question-service";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -102,7 +102,7 @@ const QuestionPage = () => {
       setSelectedOption(savedAttempt?.selectedOption ?? "");
       setSelectedOptions([]);
     }
-  }, [currentIndex, attempts, questionData]);
+  }, [currentIndex, attempts, questionData, currentQuestion]);
 
   const handleNextQuestion = async () => {
     if (!currentQuestion) return;
@@ -148,7 +148,7 @@ const QuestionPage = () => {
       For multiple choice question: [option1, option2]
       For single choice question: [option1] or []
     */
-    let selected =
+    const selected =
       question.option_type === "multiple"
         ? selectedOptions
         : selectedOption
@@ -241,14 +241,28 @@ const QuestionPage = () => {
   return (
     <div className="min-h-screen p-6">
       <div className="mx-auto max-w-4xl space-y-6">
-        <Button
-          variant="outline"
-          onClick={handleBack}
-          className="hover:bg-muted text-muted-foreground bg-card px-4 py-2"
-        >
-          <ArrowLeft />
-          Back
-        </Button>
+        <div className="flex items-center justify-between">
+          <Button
+            variant="outline"
+            onClick={handleBack}
+            className="hover:bg-muted text-muted-foreground bg-card px-4 py-2"
+          >
+            <ArrowLeft />
+            Back
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => {
+              const url = `${window.location.origin}/shared/question/${currentQuestion.id}`;
+              navigator.clipboard.writeText(url);
+              toast.success("Link copied to clipboard!");
+            }}
+            className="hover:bg-muted text-muted-foreground bg-card px-4 py-2"
+          >
+            <Share2 className="mr-2 h-4 w-4" />
+            Share
+          </Button>
+        </div>
         <div className="flex items-center justify-between">
           <h1 className="text-foreground text-3xl font-bold">Entrance Preparation Test</h1>
           <div className="flex items-center gap-3">
@@ -273,7 +287,7 @@ const QuestionPage = () => {
                 <img
                   src={getImageUrl(currentQuestion.question_image_url)}
                   alt="Question illustration"
-                  className="max-h-72 w-auto max-w-full rounded-lg border shadow-md object-contain"
+                  className="max-h-72 w-auto max-w-full rounded-lg border object-contain shadow-md"
                 />
               </div>
             )}
@@ -325,7 +339,7 @@ const QuestionPage = () => {
                     <img
                       src={getImageUrl(currentQuestion.description_image_url)}
                       alt="Question illustration"
-                      className="max-h-72 w-auto max-w-full rounded-lg shadow-md object-contain"
+                      className="max-h-72 w-auto max-w-full rounded-lg object-contain shadow-md"
                     />
                   </div>
                 )}

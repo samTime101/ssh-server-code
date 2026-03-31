@@ -23,6 +23,7 @@ import AddCollegePage from "@/pages/admin/AddCollegePage";
 import ProfilePage from "@/pages/user/ProfilePage";
 import HistoryPage from "@/pages/user/HistoryPage";
 import SettingsPage from "@/pages/user/SettingsPage";
+import SharedQuestionPage from "@/pages/public/SharedQuestionPage";
 import RoleRoute from "@/components/RoleRoute";
 import Loader from "@/components/ui/Loader";
 import ROLE_CONFIG from "@/config/roleConfig";
@@ -86,6 +87,7 @@ const App = () => {
           }
         />
       </Route>
+      <Route path="/shared/question/:id" element={<SharedQuestionPage />} />
       <Route element={<PrivateRoute />}>
         {/* User Panel */}
         <Route
