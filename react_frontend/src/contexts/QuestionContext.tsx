@@ -124,6 +124,11 @@ const QuestionProvider = ({ children }: { children: React.ReactNode }) => {
     setSessionEndsAtMs(null);
   };
 
+  const setSessionQuestions = (questions: Question[]) => {
+    setQuestionData(questions);
+    setQuestionPagination(null);
+  };
+
   return (
     <QuestionContext.Provider
       value={{
@@ -135,6 +140,7 @@ const QuestionProvider = ({ children }: { children: React.ReactNode }) => {
         handleSubSubCategorySelection,
         fetchQuestions,
         fetchNextPage,
+        setSessionQuestions,
         questionData,
         questionPagination,
         isFetchingNextPage,

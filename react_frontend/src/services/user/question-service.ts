@@ -1,6 +1,6 @@
 import { API_ENDPOINTS } from "@/config/apiConfig";
 import axiosInstance from "@/services/axios";
-import type { PaginatedQuestionsResponse, FetchQuestionsPayload } from "@/types/question";
+import type { PaginatedQuestionsResponse, FetchQuestionsPayload, Question } from "@/types/question";
 
 export const getCategories = async () => {
   try {
@@ -77,6 +77,19 @@ export const attemptQuestion = async (questionId: string, selectedOptions: strin
     return response.data;
   } catch (error) {
     console.error("Error attempting question:", error);
+    return null;
+  }
+};
+
+export const getQuestionById = async (questionId: string): Promise<Question | null> => {
+  try {
+    const response = await axiosInstance.get(`${API_ENDPOINTS.adminQuestions}${questionId}/`);
+    if (!response) {
+      return null;
+    }
+    return response.data as Question;
+  } catch (error) {
+    console.error("Error fetching question by id:", error);
     return null;
   }
 };

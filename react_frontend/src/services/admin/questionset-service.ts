@@ -1,51 +1,68 @@
 import { API_ENDPOINTS } from "@/config/apiConfig";
 import axiosInstance from "@/services/axios";
-import {
-  normalizeQuestionSet,
-  normalizeQuestionSetList,
-  extractQuestionIds,
-} from "@/utils/questionSetUtils";
+import { extractQuestionIds } from "@/utils/questionSetUtils";
 import type {
+  PaginatedQuestionSetApiResponse,
+  PaginatedSelectableQuestionApiResponse,
   QuestionSet,
+  QuestionSetApi,
+  QuestionSetQuestionApi,
   QuestionSetListResponse,
   QuestionSetPayload,
   SelectableQuestion,
+  SelectableQuestionApi,
   SelectableQuestionListResponse,
 } from "@/types/questionset";
 
-const toSelectableQuestion = (raw: unknown): SelectableQuestion | null => {
-  if (!raw || typeof raw !== "object") return null;
-
-  const candidate = raw as Record<string, unknown>;
-  const id = typeof candidate.id === "string" ? candidate.id : "";
-  const questionText =
-    typeof candidate.question_text === "string"
-      ? candidate.question_text
-      : typeof candidate.description === "string"
-        ? candidate.description
-        : "";
-
-  if (!id || !questionText) return null;
-
-  const status =
-    candidate.status === "approved" ||
-    candidate.status === "pending" ||
-    candidate.status === "rejected"
-      ? candidate.status
-      : undefined;
+const toQuestionSetQuestion = (question: string | QuestionSetQuestionApi) => {
+  if (typeof question === "string") {
+    return {
+      id: question,
+      question_text: "",
+    };
+  }
 
   return {
-    id,
-    question_text: questionText,
-    status,
+    id: question.id,
+    question_text: question.question_text ?? "",
   };
 };
 
+const toQuestionSet = (set: QuestionSetApi): QuestionSet => {
+  const questions = Array.isArray(set.questions)
+    ? set.questions.filter(Boolean).map((question) => toQuestionSetQuestion(question))
+    : [];
+
+  return {
+    id: set.id,
+    name: set.name,
+    description: set.description ?? "",
+    questions,
+  };
+};
+
+const toSelectableQuestion = (question: SelectableQuestionApi): SelectableQuestion => ({
+  id: question.id,
+  question_text: question.question_text ?? question.description ?? "",
+  status: question.status,
+});
+
 export const fetchQuestionSets = async (): Promise<QuestionSetListResponse> => {
   try {
-    const response = await axiosInstance.get(API_ENDPOINTS.questionSets);
+    const allSets: QuestionSet[] = [];
+    let nextUrl: string | null = API_ENDPOINTS.questionSets;
+
+    while (nextUrl) {
+      const response = await axiosInstance.get<PaginatedQuestionSetApiResponse>(nextUrl);
+      const currentSets = response.data.results.map((set) => toQuestionSet(set));
+      allSets.push(...currentSets);
+      nextUrl = response.data.next;
+    }
+
+    const uniqueSets = Array.from(new Map(allSets.map((set) => [set.id, set])).values());
+
     return {
-      sets: normalizeQuestionSetList(response.data),
+      sets: uniqueSets,
     };
   } catch (error) {
     console.error("Failed to fetch question sets:", error);
@@ -55,12 +72,8 @@ export const fetchQuestionSets = async (): Promise<QuestionSetListResponse> => {
 
 export const createQuestionSet = async (payload: QuestionSetPayload): Promise<QuestionSet> => {
   try {
-    const response = await axiosInstance.post(API_ENDPOINTS.questionSets, payload);
-    const normalized = normalizeQuestionSet(response.data);
-    if (!normalized) {
-      throw new Error("Invalid question set response");
-    }
-    return normalized;
+    const response = await axiosInstance.post<QuestionSetApi>(API_ENDPOINTS.questionSets, payload);
+    return toQuestionSet(response.data);
   } catch (error) {
     console.error("Failed to create question set:", error);
     throw new Error("Failed to create question set");
@@ -72,12 +85,11 @@ export const updateQuestionSet = async (
   payload: QuestionSetPayload
 ): Promise<QuestionSet> => {
   try {
-    const response = await axiosInstance.put(`${API_ENDPOINTS.questionSets}${id}/`, payload);
-    const normalized = normalizeQuestionSet(response.data);
-    if (!normalized) {
-      throw new Error("Invalid question set response");
-    }
-    return normalized;
+    const response = await axiosInstance.put<QuestionSetApi>(
+      `${API_ENDPOINTS.questionSets}${id}/`,
+      payload
+    );
+    return toQuestionSet(response.data);
   } catch (error) {
     console.error("Failed to update question set:", error);
     throw new Error("Failed to update question set");
@@ -115,19 +127,19 @@ export const fetchSelectableQuestions = async (
       params.search = search.trim();
     }
 
-    const response = await axiosInstance.get(API_ENDPOINTS.adminQuestions, { params });
-    const data = response.data as Record<string, unknown>;
-
-    const rawResults = Array.isArray(data.results) ? data.results : [];
-    const results = rawResults
-      .map((item) => toSelectableQuestion(item))
-      .filter((item): item is SelectableQuestion => item !== null);
+    const response = await axiosInstance.get<PaginatedSelectableQuestionApiResponse>(
+      API_ENDPOINTS.adminQuestions,
+      { params }
+    );
+    const results = response.data.results
+      .map((question) => toSelectableQuestion(question))
+      .filter((question) => Boolean(question.id && question.question_text));
 
     return {
-      count: typeof data.count === "number" ? data.count : results.length,
-      total_pages: typeof data.total_pages === "number" ? data.total_pages : 1,
-      next: typeof data.next === "string" ? data.next : null,
-      previous: typeof data.previous === "string" ? data.previous : null,
+      count: response.data.count,
+      total_pages: response.data.total_pages,
+      next: response.data.next,
+      previous: response.data.previous,
       results,
     };
   } catch (error) {
