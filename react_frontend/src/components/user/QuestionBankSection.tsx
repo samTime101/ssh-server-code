@@ -1,8 +1,9 @@
-import { Search } from "lucide-react";
+import { Minus, Plus, Search, SlidersHorizontal } from "lucide-react";
 import { useContext, useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "../ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 //import { getCategories } from "@/services/user/questionService.ts";
@@ -13,6 +14,14 @@ import type { Category, GetCategoriesResponse } from "@/types/category";
 import { getCategories } from "@/services/user/question-service";
 import { AuthContext } from "@/contexts/AuthContext";
 import { getAttemptStats } from "@/utils/attemptUtils";
+import {
+  EXAM_MINUTES_STEP,
+  EXAM_QUESTION_STEP,
+  MAX_EXAM_MINUTES,
+  MAX_EXAM_QUESTIONS,
+  MIN_EXAM_MINUTES,
+  MIN_EXAM_QUESTIONS,
+} from "@/utils/examModeUtils";
 
 /*
     Please note that the implementation of sub-sub-categories is currently on hold
@@ -24,8 +33,17 @@ import { getAttemptStats } from "@/utils/attemptUtils";
 
 const QuestionBankSection = () => {
   const { token } = useAuth();
-  const { fetchQuestions, sessionTimerSeconds, configureSessionTimer, startSessionTimer } =
-    useQuestions(); //selectedCategoriesId, selectedSubSubCategoryId, selectedSubCategoryId,
+  const {
+    fetchQuestions,
+    sessionTimerSeconds,
+    sessionQuestionLimit,
+    isExamModeEnabled,
+    setIsExamModeEnabled,
+    configureSessionTimer,
+    configureSessionQuestionLimit,
+    startSessionTimer,
+    clearSessionTimer,
+  } = useQuestions(); //selectedCategoriesId, selectedSubSubCategoryId, selectedSubCategoryId,
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
 
@@ -34,7 +52,6 @@ const QuestionBankSection = () => {
   const [searchQuery, setSearchQuery] = useState("");
 
   const timerMinutes = Math.floor(sessionTimerSeconds / 60);
-  const timerSeconds = sessionTimerSeconds % 60;
 
   useEffect(() => {
     if (!token) return;
@@ -54,19 +71,24 @@ const QuestionBankSection = () => {
   }, [token]);
 
   const handleStartSession = async (reattemptWrongOnly: boolean) => {
-    startSessionTimer(sessionTimerSeconds);
+    if (isExamModeEnabled) {
+      startSessionTimer(sessionTimerSeconds);
+    } else {
+      clearSessionTimer();
+    }
+
     await fetchQuestions(reattemptWrongOnly);
     navigate("/userpanel/question");
   };
 
-  const handleTimerMinutesChange = (value: string) => {
-    const parsedMinutes = Number.parseInt(value, 10);
-    configureSessionTimer(Number.isNaN(parsedMinutes) ? 0 : parsedMinutes, timerSeconds);
+  const adjustQuestionCount = (direction: "inc" | "dec") => {
+    const delta = direction === "inc" ? EXAM_QUESTION_STEP : -EXAM_QUESTION_STEP;
+    configureSessionQuestionLimit(sessionQuestionLimit + delta);
   };
 
-  const handleTimerSecondsChange = (value: string) => {
-    const parsedSeconds = Number.parseInt(value, 10);
-    configureSessionTimer(timerMinutes, Number.isNaN(parsedSeconds) ? 0 : parsedSeconds);
+  const adjustDurationMinutes = (direction: "inc" | "dec") => {
+    const delta = direction === "inc" ? EXAM_MINUTES_STEP : -EXAM_MINUTES_STEP;
+    configureSessionTimer(timerMinutes + delta, 0);
   };
 
   const normalizeSearch = searchQuery.trim().toLowerCase();
@@ -164,35 +186,96 @@ const QuestionBankSection = () => {
         </div>
 
         <div className="border-border mt-8 flex flex-wrap items-center gap-3 border-t pt-6">
-          <div className="flex items-center gap-2">
-            <span className="text-muted-foreground text-xs font-medium">Timer</span>
-            <Input
-              type="number"
-              min={0}
-              className="h-8 w-16 px-2 text-center"
-              value={timerMinutes}
-              onChange={(e) => handleTimerMinutesChange(e.target.value)}
-              aria-label="Timer minutes"
-            />
-            <span className="text-muted-foreground text-xs">m</span>
-            <Input
-              type="number"
-              min={0}
-              max={59}
-              className="h-8 w-16 px-2 text-center"
-              value={timerSeconds}
-              onChange={(e) => handleTimerSecondsChange(e.target.value)}
-              aria-label="Timer seconds"
-            />
-            <span className="text-muted-foreground text-xs">s</span>
-          </div>
-
           <Button
             className="cursor-pointer rounded-lg px-8 py-6 font-medium shadow-sm transition-all duration-200 hover:shadow-md"
             onClick={() => handleStartSession(reattemptWrongOnly)}
           >
             Start Session
           </Button>
+
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant={isExamModeEnabled ? "default" : "outline"}
+                size="sm"
+                className="h-12 px-4"
+              >
+                <SlidersHorizontal className="h-4 w-4" />
+                Exam Mode
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent align="start" className="w-80 space-y-4">
+              <div>
+                <p className="text-sm font-semibold">Exam Settings</p>
+              </div>
+
+              <div className="flex items-center justify-between rounded-md border p-3">
+                <p className="text-sm font-medium">Enable Exam Mode</p>
+                <Checkbox
+                  checked={isExamModeEnabled}
+                  onCheckedChange={(checked) => setIsExamModeEnabled(checked === true)}
+                />
+              </div>
+
+              <div className="space-y-3">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-medium">Question Count</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      size="icon"
+                      variant="outline"
+                      onClick={() => adjustQuestionCount("dec")}
+                      disabled={!isExamModeEnabled || sessionQuestionLimit <= MIN_EXAM_QUESTIONS}
+                      aria-label="Decrease question count"
+                    >
+                      <Minus className="h-4 w-4" />
+                    </Button>
+                    <span className="w-12 text-center text-sm font-semibold">
+                      {sessionQuestionLimit}
+                    </span>
+                    <Button
+                      size="icon"
+                      variant="outline"
+                      onClick={() => adjustQuestionCount("inc")}
+                      disabled={!isExamModeEnabled || sessionQuestionLimit >= MAX_EXAM_QUESTIONS}
+                      aria-label="Increase question count"
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-medium">Time Limit</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      size="icon"
+                      variant="outline"
+                      onClick={() => adjustDurationMinutes("dec")}
+                      disabled={!isExamModeEnabled || timerMinutes <= MIN_EXAM_MINUTES}
+                      aria-label="Decrease time limit"
+                    >
+                      <Minus className="h-4 w-4" />
+                    </Button>
+                    <span className="w-14 text-center text-sm font-semibold">{timerMinutes}m</span>
+                    <Button
+                      size="icon"
+                      variant="outline"
+                      onClick={() => adjustDurationMinutes("inc")}
+                      disabled={!isExamModeEnabled || timerMinutes >= MAX_EXAM_MINUTES}
+                      aria-label="Increase time limit"
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </PopoverContent>
+          </Popover>
         </div>
       </div>
     </section>

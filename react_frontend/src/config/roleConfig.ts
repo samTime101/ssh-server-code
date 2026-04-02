@@ -10,6 +10,7 @@ const ROLE_CONFIG = {
     "add-role",
     "add-college",
     "question-bank",
+    "manage-question-sets",
     "analytics",
   ],
   CONTRIBUTOR: ["add-question"],

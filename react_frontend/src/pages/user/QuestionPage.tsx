@@ -13,6 +13,7 @@ import SingleChoiceOption from "@/components/user/SingleChoiceOption";
 import EditorRenderer from "@/components/EditorRenderer";
 import { useNavigate } from "react-router-dom";
 import { getImageUrl } from "@/config/apiConfig";
+import { getEffectiveQuestionCount } from "@/utils/examModeUtils";
 
 const QuestionPage = () => {
   const { token } = useAuth();
@@ -21,8 +22,11 @@ const QuestionPage = () => {
     questionPagination,
     fetchNextPage,
     isFetchingNextPage,
+    isExamModeEnabled,
+    sessionQuestionLimit,
     sessionEndsAtMs,
     clearSessionTimer,
+    resetQuestionSelection,
   } = useQuestions();
   const navigate = useNavigate();
 
@@ -79,6 +83,7 @@ const QuestionPage = () => {
 
       timeoutHandledRef.current = true;
       clearSessionTimer();
+      resetQuestionSelection();
       toast.error("Time is up. Session ended.");
       navigate("/userpanel");
     };
@@ -89,7 +94,7 @@ const QuestionPage = () => {
     return () => {
       window.clearInterval(intervalId);
     };
-  }, [sessionEndsAtMs, clearSessionTimer, navigate]);
+  }, [sessionEndsAtMs, clearSessionTimer, navigate, resetQuestionSelection]);
 
   // keep UI selections synchronized with saved attempt for the current question
   useEffect(() => {
@@ -116,16 +121,29 @@ const QuestionPage = () => {
       return;
     }
 
+    const totalAvailable = questionPagination?.count ?? questionData.length;
+    const totalCount = isExamModeEnabled
+      ? getEffectiveQuestionCount(sessionQuestionLimit, totalAvailable)
+      : totalAvailable;
     const nextIndex = currentIndex + 1;
+
+    if (nextIndex >= totalCount) {
+      toast.info("You've completed all questions!");
+      clearSessionTimer();
+      resetQuestionSelection();
+      navigate("/userpanel");
+      return;
+    }
 
     if (!questionData || nextIndex >= questionData.length) {
       // try to load the next page if available
-      if (questionPagination?.next) {
+      if (questionPagination?.next && questionData.length < totalCount) {
         await fetchNextPage();
         setCurrentIndex(nextIndex);
       } else {
         toast.info("You've completed all questions!");
         clearSessionTimer();
+        resetQuestionSelection();
         navigate("/userpanel");
       }
       return;
@@ -193,6 +211,7 @@ const QuestionPage = () => {
 
   const handleBack = () => {
     clearSessionTimer();
+    resetQuestionSelection();
     navigate("/userpanel");
   };
 
@@ -235,8 +254,11 @@ const QuestionPage = () => {
   const currentAttempt = currentQuestion ? attempts[currentQuestion.id] : undefined;
   const isAttempted = !!currentAttempt?.isAttempted;
 
-  // total question count — use total from pagination meta if available, otherwise length of loaded data
-  const totalCount = questionPagination?.count ?? questionData.length;
+  // total question count respects exam-mode question limit and backend availability
+  const totalAvailable = questionPagination?.count ?? questionData.length;
+  const totalCount = isExamModeEnabled
+    ? getEffectiveQuestionCount(sessionQuestionLimit, totalAvailable)
+    : totalAvailable;
 
   return (
     <div className="min-h-screen p-6">
@@ -273,7 +295,7 @@ const QuestionPage = () => {
                 <img
                   src={getImageUrl(currentQuestion.question_image_url)}
                   alt="Question illustration"
-                  className="max-h-72 w-auto max-w-full rounded-lg border shadow-md object-contain"
+                  className="max-h-72 w-auto max-w-full rounded-lg border object-contain shadow-md"
                 />
               </div>
             )}
@@ -325,7 +347,7 @@ const QuestionPage = () => {
                     <img
                       src={getImageUrl(currentQuestion.description_image_url)}
                       alt="Question illustration"
-                      className="max-h-72 w-auto max-w-full rounded-lg shadow-md object-contain"
+                      className="max-h-72 w-auto max-w-full rounded-lg object-contain shadow-md"
                     />
                   </div>
                 )}

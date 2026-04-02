@@ -62,7 +62,7 @@ const CEEQuestionPage = () => {
     const nextIndex = currentIndex + 1;
     if (!questionData || nextIndex >= questionData.length) {
       toast.info("You've completed all questions!");
-      navigate("/userpanel/question-bank");
+      navigate("/userpanel/cee-practice");
       return;
     }
     setCurrentIndex(nextIndex);
@@ -123,7 +123,7 @@ const CEEQuestionPage = () => {
   };
 
   const handleBack = () => {
-    navigate("/userpanel/question-bank");
+    navigate("/userpanel/cee-practice");
   };
 
   if (!currentQuestion) {
