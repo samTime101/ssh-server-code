@@ -14,6 +14,8 @@ const SharedQuestionPage = () => {
   const navigate = useNavigate();
   const [question, setQuestion] = useState<Question | null>(null);
   const [loading, setLoading] = useState(true);
+  const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
+  const [selectedOption, setSelectedOption] = useState<string>("");
 
   useEffect(() => {
     const fetchQuestion = async () => {
@@ -32,6 +34,16 @@ const SharedQuestionPage = () => {
 
   const promptSignup = () => {
     navigate("/auth/signup");
+  };
+
+  const handleOptionSelect = (label: string) => {
+    if (question?.option_type === "multiple") {
+      setSelectedOptions((prev) =>
+        prev.includes(label) ? prev.filter((id) => id !== label) : [...prev, label]
+      );
+    } else {
+      setSelectedOption(label);
+    }
   };
 
   if (loading) {
@@ -86,22 +98,22 @@ const SharedQuestionPage = () => {
         <CardContent>
           <div className="space-y-4">
             {question.options.map((opt, index) => (
-              <div key={opt.label || index} onClick={promptSignup} className="cursor-pointer">
+              <div key={opt.label || index} className="cursor-pointer">
                 {question.option_type === "multiple" ? (
                   <MultipleChoiceOption
                     option={opt}
-                    selectedOptions={[]}
+                    selectedOptions={selectedOptions}
                     disabled={false}
                     correctOptions={[]}
-                    handleOptionSelect={() => {}}
+                    handleOptionSelect={handleOptionSelect}
                   />
                 ) : (
                   <SingleChoiceOption
                     option={opt}
-                    selectedOption=""
+                    selectedOption={selectedOption}
                     disabled={false}
                     correctOptions={[]}
-                    handleOptionSelect={() => {}}
+                    handleOptionSelect={handleOptionSelect}
                   />
                 )}
               </div>
