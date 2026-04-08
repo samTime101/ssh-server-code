@@ -92,3 +92,9 @@ class Bookmarks(TimeStampedDocument):
     bookmark = ListField(EmbeddedDocumentField(Bookmark))
     
     meta = {'collection': 'bookmarks','indexes': ['user_guid', 'bookmark.question']}
+
+class QuestionSet(TimeStampedDocument):
+    name = StringField(required=True, unique=True)
+    description = StringField()
+    questions = ListField(ReferenceField(Question))
+    meta = {'collection': 'question_sets','indexes': ['questions']}

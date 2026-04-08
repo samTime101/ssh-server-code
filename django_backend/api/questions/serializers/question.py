@@ -2,7 +2,7 @@ from rest_framework import serializers
 from rest_framework_mongoengine import serializers as me_serializers
 from core.mixins.option_mixin import OptionValidationMixin
 from core.validators.obj_ids_validator import validate_object_ids
-from mongo.models import Question, Option, SubCategory, Bookmark
+from mongo.models import Question, Option, SubCategory, QuestionSet
 from core.cloudinary import upload_question_image, delete_question_image
 
 class OptionSerializer(me_serializers.EmbeddedDocumentSerializer):
