@@ -3,6 +3,11 @@ SPECTACULAR_SETTINGS = {
     "TITLE": "MCQ API",
     "DESCRIPTION": """
 
+## March 28, 2026
+- Added `QuestionSet` model to allow grouping of questions into sets. Each set can have a name, description, and a list of questions.
+- Created serializers and viewsets for `QuestionSet` to handle CRUD operations. Admin users can create, update, and delete question sets, while non-admin users can only view them.
+    
+
 ## March 20, 2026
 - Added `status` to question and classifications
 - Added `status` query parameter to filter questions and classifications based on their status (approved, pending, rejected). Admin users can view all statuses, while non-admin users can only view approved items.
