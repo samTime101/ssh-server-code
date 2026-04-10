@@ -174,17 +174,19 @@ const QuestionBankSection = () => {
 
         <div className="space-y-4">
           <h3 className="text-foreground mb-4 text-lg font-medium">Select Categories</h3>
-          {filteredCategories.length === 0 ? (
-            <p className="text-muted-foreground text-sm">
-              No matching topics found for your search.
-            </p>
-          ) : (
-            <ul className="space-y-3">
-              {filteredCategories.map((category) => (
-                <CategoryList key={category.id} category={category} />
-              ))}
-            </ul>
-          )}
+          <div className="scrollbar-thin max-h-[250px] overflow-y-auto rounded-md border p-1 pr-2 md:max-h-[350px]">
+            {filteredCategories.length === 0 ? (
+              <p className="text-muted-foreground text-sm">
+                No matching topics found for your search.
+              </p>
+            ) : (
+              <ul className="space-y-3">
+                {filteredCategories.map((category) => (
+                  <CategoryList key={category.id} category={category} />
+                ))}
+              </ul>
+            )}
+          </div>
         </div>
 
         <div className="border-border mt-8 flex flex-wrap items-center justify-between gap-4 border-t pt-6">
@@ -289,9 +291,7 @@ const QuestionBankSection = () => {
               {(() => {
                 let totalSelectedQuestions = 0;
                 if (selectedCategoriesId.length === 0 && selectedSubCategoryId.length === 0) {
-                  totalSelectedQuestions =
-                    categories.total_questions ||
-                    categories.categories.reduce((acc, cat) => acc + (cat.question_count || 0), 0);
+                  totalSelectedQuestions = 0;
                 } else {
                   categories.categories.forEach((cat) => {
                     if (selectedCategoriesId.includes(cat.id)) {
