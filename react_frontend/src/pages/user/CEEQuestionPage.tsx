@@ -4,17 +4,16 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { ArrowLeft, ArrowRight, Lightbulb } from "lucide-react";
 import { attemptQuestion } from "@/services/user/question-service";
-import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import type { Question, QuestionAttemptState } from "@/types/question";
 import MultipleChoiceOption from "@/components/user/MultipleChoiceOption";
 import SingleChoiceOption from "@/components/user/SingleChoiceOption";
 import EditorRenderer from "@/components/EditorRenderer";
 import { useNavigate } from "react-router-dom";
+import { getImageUrl } from "@/config/apiConfig";
 
 const CEEQuestionPage = () => {
-  const { token } = useAuth();
-  const { questionData } = useQuestions();
+  const { questionData, currentSubmissionId, resetQuestionSelection } = useQuestions();
   const navigate = useNavigate();
 
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -62,6 +61,7 @@ const CEEQuestionPage = () => {
     const nextIndex = currentIndex + 1;
     if (!questionData || nextIndex >= questionData.length) {
       toast.info("You've completed all questions!");
+      resetQuestionSelection();
       navigate("/userpanel/cee-practice");
       return;
     }
@@ -74,9 +74,14 @@ const CEEQuestionPage = () => {
     setCurrentIndex(prevIndex);
   };
 
+  const handleBack = () => {
+    resetQuestionSelection();
+    navigate("/userpanel/cee-practice");
+  };
+
   const handleAttemptQuestion = async (question: Question) => {
-    if (!token) {
-      console.error("No token available");
+    if (!currentSubmissionId) {
+      toast.error("No active submission found. Please start a new session.");
       return;
     }
 
@@ -93,7 +98,7 @@ const CEEQuestionPage = () => {
     }
 
     try {
-      const result = await attemptQuestion(question.id, selected);
+      const result = await attemptQuestion(currentSubmissionId, question.id, selected);
 
       if (!result) {
         toast.error("Something wrong occurred. Try again.");
@@ -107,7 +112,7 @@ const CEEQuestionPage = () => {
           selectedOptions: selected,
           selectedOption: question.option_type === "multiple" ? undefined : selected[0],
           isAttempted: true,
-          feedback: result?.feedback ?? "",
+          feedback: result?.detail ?? "",
           correctOptions: result?.correct_answers,
         },
       }));
@@ -120,10 +125,6 @@ const CEEQuestionPage = () => {
     } catch (error) {
       console.error("Error attempting question:", error);
     }
-  };
-
-  const handleBack = () => {
-    navigate("/userpanel/cee-practice");
   };
 
   if (!currentQuestion) {
@@ -170,9 +171,9 @@ const CEEQuestionPage = () => {
             {currentQuestion.question_image_url && (
               <div className="flex justify-center">
                 <img
-                  src={currentQuestion.question_image_url}
+                  src={getImageUrl(currentQuestion.question_image_url)}
                   alt="Question illustration"
-                  className="h-auto max-w-full rounded-lg border shadow-md"
+                  className="max-h-72 w-auto max-w-full rounded-lg border object-contain shadow-md"
                 />
               </div>
             )}
@@ -222,9 +223,9 @@ const CEEQuestionPage = () => {
                     {currentQuestion.description_image_url && (
                       <div className="flex justify-center">
                         <img
-                          src={currentQuestion.description_image_url}
+                          src={getImageUrl(currentQuestion.description_image_url)}
                           alt="Question illustration"
-                          className="h-auto max-w-full rounded-lg shadow-md"
+                          className="max-h-72 w-auto max-w-full rounded-lg object-contain shadow-md"
                         />
                       </div>
                     )}

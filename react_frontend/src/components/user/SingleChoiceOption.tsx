@@ -5,6 +5,8 @@ const SingleChoiceOption = ({
   selectedOption,
   disabled = false,
   correctOptions,
+  radioName = "single-choice",
+  showResultStyles = true,
 }: {
   option: any;
   handleOptionSelect: (id: string) => void;
@@ -12,13 +14,16 @@ const SingleChoiceOption = ({
   disabled?: boolean;
   isCorrectAttempt?: boolean;
   correctOptions: string[];
+  radioName?: string;
+  showResultStyles?: boolean;
 }) => {
   const isSelected = selectedOption === option.label;
   const isCorrect = correctOptions.includes(option.label);
+  const isChecked = disabled ? isSelected || isCorrect : isSelected;
 
   // statusClass for "disabled/correct/incorrect" decorations
   let statusClass = "";
-  if (disabled) {
+  if (disabled && showResultStyles) {
     if (isCorrect) {
       statusClass = "border-green-500 bg-green-50";
     } else if (isSelected) {
@@ -41,9 +46,9 @@ const SingleChoiceOption = ({
     >
       <input
         type="radio"
-        checked={isSelected}
+        checked={isChecked}
         id={`option-${option.label}`}
-        name="single-choice"
+        name={radioName}
         className="h-5 w-5"
         readOnly
         disabled={disabled}

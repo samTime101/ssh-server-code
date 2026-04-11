@@ -4,8 +4,7 @@ import { toast } from "sonner";
 import { BookOpenText, Files, Layers3 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuestions } from "@/hooks/useQuestions.tsx";
-import { fetchQuestionSets } from "@/services/admin/questionset-service";
-import { getQuestionById } from "@/services/user/question-service";
+import { fetchQuestionSetSession, fetchQuestionSets } from "@/services/admin/questionset-service";
 import type { QuestionSet } from "@/types/questionset";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -60,19 +59,15 @@ const CEEPracticeSection = () => {
 
     setIsStarting(true);
     try {
-      const questions = await Promise.all(
-        selectedSet.questions.map((question) => getQuestionById(question.id))
-      );
-      const validQuestions = questions.filter(
-        (question): question is NonNullable<typeof question> => Boolean(question)
-      );
+      const session = await fetchQuestionSetSession(selectedSet.id);
+      const validQuestions = session.results ?? [];
 
       if (validQuestions.length === 0) {
         toast.error("No questions available for this set");
         return;
       }
 
-      setSessionQuestions(validQuestions);
+      setSessionQuestions(validQuestions, session.submission_id ?? null);
       navigate("/userpanel/cee-question");
     } catch {
       toast.error("Failed to start CEE practice");

@@ -20,7 +20,7 @@ const HistoryPage = () => {
     async function fetchSubmissionHistory() {
       try {
         const data = await getSubmissionHistory();
-        setSubmissionHistory(data.attempts);
+        setSubmissionHistory(data);
       } catch (error) {
         console.error("Error fetching submission history:", error);
       } finally {
@@ -83,25 +83,27 @@ const HistoryPage = () => {
             <TableBody>
               {submissionHistory.map((attempt, idx) => (
                 <TableRow key={idx}>
-                  <TableCell className="max-w-md whitespace-normal">{attempt.question_text}</TableCell>
+                  <TableCell className="max-w-md whitespace-normal">
+                    {attempt.question_text}
+                  </TableCell>
                   <TableCell>
-                    {attempt.categories.map((cat) => (
+                    {(attempt.categories ?? []).map((cat) => (
                       <Badge key={cat} className="mr-1">
                         {cat}
                       </Badge>
                     ))}
                   </TableCell>
                   <TableCell>
-                    {attempt.subcategories.map((subcat) => (
+                    {(attempt.subcategories ?? []).map((subcat) => (
                       <Badge key={subcat} className="mr-1">
                         {subcat}
                       </Badge>
                     ))}
                   </TableCell>
                   <TableCell>
-                    {attempt.selected_answers.map((ans, i) => (
+                    {(attempt.selected_answers ?? []).map((ans, i) => (
                       <Badge key={i} className="mr-1">
-                        {ans}: {attempt.selected_options_labels[i]}
+                        {ans}: {attempt.selected_options_labels?.[i] ?? ""}
                       </Badge>
                     ))}
                   </TableCell>
