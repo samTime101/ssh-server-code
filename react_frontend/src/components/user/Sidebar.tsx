@@ -52,7 +52,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
       <aside
         className={`border-sidebar-border bg-sidebar fixed top-[64px] left-0 z-40 flex h-[calc(100vh-64px)] w-64 flex-col border-r transition-transform duration-300 ease-in-out ${isOpen ? "translate-x-0" : "-translate-x-full"} md:z-10 md:translate-x-0`}
       >
-        <div className="border-sidebar-border flex-shrink-0 border-b px-4 py-6">
+        <div >
           <div className="mb-4 flex justify-end md:hidden">
             <button
               onClick={onClose}
@@ -61,46 +61,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
             >
               <X size={20} className="text-muted-foreground" />
             </button>
-          </div>
-
-          <Link
-            to="/userpanel"
-            onClick={onClose}
-            className="flex items-center justify-center gap-3"
-          >
-            <div
-              className="flex shrink-0 items-center justify-center rounded-xl"
-              style={{
-                width: 44,
-                height: 44,
-                background: "linear-gradient(135deg, #0d9488 0%, #14b8a6 100%)",
-              }}
-            >
-              <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
-                <polyline
-                  points="2,15 6,15 9,8 13,20 17,6 20,15 24,15"
-                  stroke="white"
-                  strokeWidth="2.2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </div>
-            <div>
-              <span
-                className="text-sidebar-primary text-xl font-bold tracking-tight"
-                style={{ fontFamily: "'DM Sans', sans-serif" }}
-              >
-                Vaidix
-              </span>
-              <span
-                className="text-muted-foreground block text-[10px] font-semibold tracking-[0.18em] uppercase"
-                style={{ marginTop: -2 }}
-              >
-                Medical MCQ Platform
-              </span>
-            </div>
-          </Link>
+          </div>         
         </div>
 
         <nav className="flex-1 overflow-y-auto py-6">

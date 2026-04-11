@@ -174,7 +174,7 @@ const QuestionBankSection = () => {
 
         <div className="space-y-4">
           <h3 className="text-foreground mb-4 text-lg font-medium">Select Categories</h3>
-          <div className="scrollbar-thin max-h-[250px] overflow-y-auto rounded-md border p-1 pr-2 md:max-h-[350px]">
+          <div className="scrollbar-thin max-h-[250px] overflow-y-auto  p-1 pr-2 md:max-h-[350px]">
             {filteredCategories.length === 0 ? (
               <p className="text-muted-foreground text-sm">
                 No matching topics found for your search.
