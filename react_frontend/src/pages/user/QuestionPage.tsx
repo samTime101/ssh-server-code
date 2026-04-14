@@ -1,28 +1,39 @@
 import { Button } from "@/components/ui/button";
-import { useQuestions } from "@/hooks/useQuestions";
-import { useState, useEffect, useRef } from "react"; //React,
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-// import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, ArrowRight, Lightbulb, Loader2, Share2, Bookmark } from "lucide-react";
-import { attemptQuestion } from "@/services/user/question-service";
+import { useQuestionPageController } from "@/hooks/user/useQuestionPage";
 import { bookmarkQuestion, removeBookmark } from "@/services/user/bookmark-service";
-import { useAuth } from "@/hooks/useAuth";
-import { toast } from "sonner";
-import type { Question, QuestionAttemptState } from "@/types/question";
+
 import MultipleChoiceOption from "@/components/user/MultipleChoiceOption";
 import SingleChoiceOption from "@/components/user/SingleChoiceOption";
-import EditorRenderer from "@/components/EditorRenderer";
-import { useNavigate } from "react-router-dom";
 import { getImageUrl } from "@/config/apiConfig";
-import { getEffectiveQuestionCount } from "@/utils/examModeUtils";
+import QuestionReview from "@/components/user/QuestionReview";
+import { toast } from "sonner";
+import EditorRenderer from "@/components/EditorRenderer";
 
 const QuestionPage = () => {
-  const { token } = useAuth();
   const {
-    questionData,
-    questionPagination,
-    fetchNextPage,
+    currentQuestion,
+    currentIndex,
+    totalCount,
+    attempts,
+    currentAttempt,
+    isAttempted,
+    selectedOptions,
+    selectedOption,
+    remainingMs,
+    isSavingAnswer,
+    isSubmittingSession,
+    showReview,
+    reviewQuestions,
+    isExamModeEnabled,
     isFetchingNextPage,
+    handleOptionSelect,
+    handleBack,
+    handleReviewDone,
+    handlePreviousQuestion,
+    handleNextQuestion,
+    handleAttemptQuestion,  
     isExamModeEnabled,
     sessionQuestionLimit,
     sessionEndsAtMs,
@@ -249,6 +260,12 @@ const QuestionPage = () => {
     return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
   };
 
+  if (showReview && isExamModeEnabled) {
+    return (
+      <QuestionReview questions={reviewQuestions} attempts={attempts} onDone={handleReviewDone} />
+    );
+  }
+
   if (!currentQuestion) {
     if (isFetchingNextPage) {
       return (
@@ -258,6 +275,7 @@ const QuestionPage = () => {
         </div>
       );
     }
+
     return (
       <div className="flex min-h-screen items-center justify-center">
         <p className="text-muted-foreground text-lg">
@@ -266,26 +284,6 @@ const QuestionPage = () => {
       </div>
     );
   }
-
-  const handleOptionSelect = (label: string) => {
-    if (currentQuestion.option_type === "multiple") {
-      setSelectedOptions((prev) =>
-        prev.includes(label) ? prev.filter((id) => id !== label) : [...prev, label]
-      );
-    } else {
-      setSelectedOption(label);
-    }
-  };
-
-  // Derived UI flags from the attempts map
-  const currentAttempt = currentQuestion ? attempts[currentQuestion.id] : undefined;
-  const isAttempted = !!currentAttempt?.isAttempted;
-
-  // total question count respects exam-mode question limit and backend availability
-  const totalAvailable = questionPagination?.count ?? questionData.length;
-  const totalCount = isExamModeEnabled
-    ? getEffectiveQuestionCount(sessionQuestionLimit, totalAvailable)
-    : totalAvailable;
 
   return (
     <div className="min-h-screen p-6">
@@ -299,28 +297,18 @@ const QuestionPage = () => {
             <ArrowLeft />
             Back
           </Button>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              onClick={handleBookmarkToggle}
-              className="hover:bg-muted text-muted-foreground bg-card px-4 py-2"
-            >
-              <Bookmark className={`mr-2 h-4 w-4 ${isBookmarked ? 'fill-current text-primary' : ''}`} />
-              {isBookmarked ? 'Bookmarked' : 'Bookmark'}
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => {
-                const url = `${window.location.origin}/shared/question/${currentQuestion.id}`;
-                navigator.clipboard.writeText(url);
-                toast.success("Link copied to clipboard!");
-              }}
-              className="hover:bg-muted text-muted-foreground bg-card px-4 py-2"
-            >
-              <Share2 className="mr-2 h-4 w-4" />
-              Share
-            </Button>
-          </div>
+          <Button
+            variant="outline"
+            onClick={() => {
+              const url = `${window.location.origin}/shared/question/${currentQuestion.id}`;
+              navigator.clipboard.writeText(url);
+              toast.success("Link copied to clipboard!");
+            }}
+            className="hover:bg-muted text-muted-foreground bg-card px-4 py-2"
+          >
+            <Share2 className="mr-2 h-4 w-4" />
+            Share
+          </Button>
         </div>
         <div className="flex items-center justify-between">
           <h1 className="text-foreground text-3xl font-bold">Entrance Preparation Test</h1>
@@ -361,8 +349,13 @@ const QuestionPage = () => {
                       option={option}
                       handleOptionSelect={handleOptionSelect}
                       selectedOptions={selectedOptions}
-                      disabled={isAttempted}
-                      correctOptions={currentAttempt?.correctOptions ?? []}
+                      disabled={
+                        isExamModeEnabled ? isSavingAnswer || isSubmittingSession : isAttempted
+                      }
+                      correctOptions={
+                        isExamModeEnabled ? [] : (currentAttempt?.correctOptions ?? [])
+                      }
+                      showResultStyles={!isExamModeEnabled}
                     />
                   ))
                 : currentQuestion.options.map((option) => (
@@ -371,51 +364,49 @@ const QuestionPage = () => {
                       option={option}
                       handleOptionSelect={handleOptionSelect}
                       selectedOption={selectedOption}
-                      disabled={isAttempted}
-                      correctOptions={currentAttempt?.correctOptions ?? []}
+                      disabled={
+                        isExamModeEnabled ? isSavingAnswer || isSubmittingSession : isAttempted
+                      }
+                      correctOptions={
+                        isExamModeEnabled ? [] : (currentAttempt?.correctOptions ?? [])
+                      }
+                      radioName={`question-${currentQuestion.id}`}
+                      showResultStyles={!isExamModeEnabled}
                     />
                   ))}
             </div>
-          </CardContent>
-        </Card>
 
-        {/* Explanation */}
-        {isAttempted && (
-          <div className="border-primary bg-primary/5 rounded-lg border-l-4 p-5">
-            <div className="flex items-start gap-3">
-              <div className="mt-1 flex-shrink-0">
-                <div className="bg-primary flex h-8 w-8 items-center justify-center rounded-full">
-                  <Lightbulb size={18} className="text-primary-foreground" />
+            {!isExamModeEnabled && isAttempted && (
+              <div className="border-primary bg-primary/5 rounded-lg border-l-4 p-5">
+                <div className="flex items-start gap-3">
+                  <div className="mt-1 flex-shrink-0">
+                    <div className="bg-primary flex h-8 w-8 items-center justify-center rounded-full">
+                      <Lightbulb size={18} className="text-primary-foreground" />
+                    </div>
+                  </div>
+                  <div className="flex-1 space-y-2">
+                    <h3 className="text-primary flex items-center text-sm font-semibold">
+                      Explanation
+                    </h3>
+                    <EditorRenderer
+                      data={currentQuestion.description}
+                      className="text-foreground"
+                    />
+                    {currentQuestion.description_image_url && (
+                      <div className="flex justify-center">
+                        <img
+                          src={getImageUrl(currentQuestion.description_image_url)}
+                          alt="Question explanation"
+                          className="max-h-72 w-auto max-w-full rounded-lg object-contain shadow-md"
+                        />
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
-              <div className="flex-1 space-y-2">
-                <h3 className="text-primary flex items-center text-sm font-semibold">
-                  Explanation
-                </h3>
-                <EditorRenderer data={currentQuestion.description} className="text-foreground" />
-                {currentQuestion.description_image_url && (
-                  <div className="flex justify-center">
-                    <img
-                      src={getImageUrl(currentQuestion.description_image_url)}
-                      alt="Question illustration"
-                      className="max-h-72 w-auto max-w-full rounded-lg object-contain shadow-md"
-                    />
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Contributor */}
-        {currentQuestion?.contributor && (
-          <div className="text-muted-foreground text-right text-sm">
-            <div>{currentQuestion.contributor}</div>
-            {currentQuestion.contributor_specialization && (
-              <div className="text-xs">{currentQuestion.contributor_specialization}</div>
             )}
-          </div>
-        )}
+          </CardContent>
+        </Card>
 
         <div className="flex items-center justify-between">
           <Button
@@ -428,7 +419,27 @@ const QuestionPage = () => {
           </Button>
 
           <div className="flex items-center gap-4">
-            {!isAttempted ? (
+            {isExamModeEnabled ? (
+              <Button
+                onClick={handleNextQuestion}
+                disabled={isFetchingNextPage || isSavingAnswer || isSubmittingSession}
+                className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2"
+              >
+                {isSavingAnswer || isSubmittingSession || isFetchingNextPage ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <p>Processing...</p>
+                  </>
+                ) : currentIndex + 1 >= totalCount ? (
+                  <p>Submit</p>
+                ) : (
+                  <>
+                    <p>Next</p>
+                    <ArrowRight />
+                  </>
+                )}
+              </Button>
+            ) : !isAttempted ? (
               <Button
                 className="bg-primary hover:bg-primary/90 text-primary-foreground mt-6"
                 onClick={() => handleAttemptQuestion(currentQuestion)}

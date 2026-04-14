@@ -16,17 +16,21 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id','user_guid','username', 'email', 'first_name', 'last_name', 'is_active','total_right_attempts','total_attempts', 'accuracy_percent', 'completion_percent', 'roles','is_email_verified','phonenumber', 'college')
+
+    # suruama sabai submission haru liney, tespachi sabai attempt haru liney, tespachi total right attempt, total attempt, accuracy percent calculate garne
+    def _all_attempts(self, obj):
+        submissions = Submissions.objects(user_guid=obj.user_guid)
+        attempts = []
+        for submission in submissions:
+            attempts.extend(submission.attempts)
+        return attempts
+
     def get_total_right_attempts(self, obj):
-        submission = Submissions.objects(user_guid=obj.user_guid).first()
-        if not submission:
-            return 0
-        return sum(1 for attempt in submission.attempts if attempt.is_correct)
+        attempts = self._all_attempts(obj)
+        return sum(1 for attempt in attempts if attempt.is_correct)
 
     def get_total_attempts(self, obj):
-        submission = Submissions.objects(user_guid=obj.user_guid).first()
-        if not submission:
-            return 0
-        return len(submission.attempts)
+        return len(self._all_attempts(obj))
 
     def get_accuracy_percent(self, obj):
         total_attempts = self.get_total_attempts(obj)
@@ -39,8 +43,8 @@ class UserSerializer(serializers.ModelSerializer):
         total_questions = Question.objects.count()
         if total_questions == 0:
             return 0.0
-        total_attempts = self.get_total_attempts(obj)
-        return round((total_attempts / total_questions) * 100, 2)
+        attempted_question_ids = {str(attempt.question.id) for attempt in self._all_attempts(obj) if getattr(attempt, 'question', None)}
+        return round((len(attempted_question_ids) / total_questions) * 100, 2)
     
     def get_roles(self, obj):
         return obj.get_roles()
@@ -93,25 +97,19 @@ class AttemptSerializer(me_serializers.EmbeddedDocumentSerializer):
         return attrs
 
 class SubmissionsSerializer(me_serializers.DocumentSerializer):
+    submission_id = serializers.SerializerMethodField(read_only=True)
+    selected_question_ids = serializers.SerializerMethodField(read_only=True)
     attempts = AttemptSerializer(many=True)
-    # categories = serializers.SerializerMethodField(read_only=True)
-    # subcategories = serializers.SerializerMethodField(read_only=True)
+
     class Meta:
         model = Submissions
-        fields = ('user_guid', 'attempts', 'started_at')
+        fields = ('submission_id','user_guid','selected_question_ids','attempts','status','started_at','submitted_at',)
 
-    # def get_categories(self, obj):
-    #     categories = set()
-    #     for attempt in obj.attempts:
-    #         question = attempt.question
-    #         categories.update(question.get_category_names())
-    #     return list(categories)
-    # def get_subcategories(self, obj):
-    #     subcategories = set()
-    #     for attempt in obj.attempts:
-    #         question = attempt.question
-    #         subcategories.update(question.get_subcategory_names())
-    #     return list(subcategories)
+    def get_submission_id(self, obj):
+        return str(obj.id)
+
+    def get_selected_question_ids(self, obj):
+        return [str(question.id) for question in obj.selected_questions if question]
 
 class SubmissionResponseSerializer(me_serializers.EmbeddedDocumentSerializer):
     detail = serializers.CharField(default="Submission recorded successfully")
@@ -133,12 +131,17 @@ class SubmissionResponseSerializer(me_serializers.EmbeddedDocumentSerializer):
         correct_answers = question.correct_answers()
         selected_answers = set(obj.selected_answers)
         return list(selected_answers & correct_answers)
-    
-class RoleSerializer(serializers.ModelSerializer):
+
+class SubmissionSerializer(me_serializers.DocumentSerializer):
+    submission_id = serializers.SerializerMethodField()
+    detail = serializers.CharField(default="Submission recorded successfully")
+
     class Meta:
-        model = Role
-        fields = ('id', 'name', 'created_at', 'updated_at')
-        read_only_fields = ('id', 'created_at', 'updated_at')
+        model = Submissions
+        fields = ('submission_id', 'status', 'submitted_at', 'detail')
+
+    def get_submission_id(self, obj):
+        return str(obj.id)
 
 class UserRoleSerializer(serializers.ModelSerializer):
     class Meta:

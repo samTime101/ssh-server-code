@@ -6,6 +6,7 @@ const MultipleChoiceOption = ({
   selectedOptions,
   disabled = false,
   correctOptions,
+  showResultStyles = true,
 }: {
   option: any;
   handleOptionSelect: (id: string) => void;
@@ -13,13 +14,15 @@ const MultipleChoiceOption = ({
   disabled?: boolean;
   isCorrectAttempt?: boolean;
   correctOptions: string[];
+  showResultStyles?: boolean;
 }) => {
   const isSelected = selectedOptions.includes(option.label);
   const isCorrect = correctOptions.includes(option.label);
+  const isChecked = disabled ? isSelected || isCorrect : isSelected;
 
   // statusClass for "disabled/correct/incorrect" decorations
   let statusClass = "";
-  if (disabled) {
+  if (disabled && showResultStyles) {
     if (isCorrect) {
       statusClass = "border-green-500 bg-green-50";
     } else if (isSelected) {
@@ -41,7 +44,7 @@ const MultipleChoiceOption = ({
       <Checkbox
         id={`option-${option.label}`}
         className="h-5 w-5"
-        checked={isSelected}
+        checked={isChecked}
         disabled={disabled}
         onCheckedChange={() => !disabled && handleOptionSelect(option.label)}
       />

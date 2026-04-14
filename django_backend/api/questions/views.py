@@ -7,7 +7,8 @@ from rest_framework_mongoengine import viewsets
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import action
-from mongo.models import Question, Bookmark, Bookmarks
+from core.constants.status import APPROVED_STATUS, IN_PROGRESS_STATUS
+from mongo.models import Question, Bookmark, Bookmarks, Submissions
 from api.questions.serializers.question import *
 from api.questions.serializers.hierarchy import *
 from api.questions.serializers.selection import *
@@ -62,7 +63,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
     # for get/questions/<id>, allow from any authenticated user, not just admin
     # https://github.com/users/sisani9/projects/2/views/1?pane=issue&itemId=159302989&issue=sisani9%7Csisani-eps%7C147
     def retrieve(self, request, *args, **kwargs):
-        qs = Question.objects(status="approved")
+        qs = Question.objects(status=APPROVED_STATUS)
         instance = qs.filter(id=kwargs.get("id")).first()
         if not instance:
             raise NotFound("Question not found.")
@@ -82,7 +83,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'], url_path='bookmark', permission_classes=[IsAuthenticated], serializer_class=None)
     def bookmark(self, request, id=None):
         question = self.get_object()
-        if question.status != "approved":
+        if question.status != APPROVED_STATUS:
             raise NotFound("Question not found.")
         user_guid = getattr(request.user, "user_guid", None)
         existing_bookmark = Bookmarks.objects(user_guid=user_guid, bookmark__question=question.id).first()
@@ -111,15 +112,17 @@ class QuestionViewSet(viewsets.ModelViewSet):
     def select(self, request):
         query_serializer = WrongOnlyQuerySerializer(data=request.query_params)
         query_serializer.is_valid(raise_exception=True)
-        wrong_only = query_serializer.validated_data.get('wrong_only', False)
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        category_ids = request.data.get('category_ids', [])
-        sub_category_ids = request.data.get('sub_category_ids', [])
 
         # query param, wrong_only = true/false, default false
-        wrong_only = request.query_params.get('wrong_only', 'false').lower() == "true"
+        wrong_only = query_serializer.validated_data.get('wrong_only', False)
         not_attempted = request.query_params.get('non_attempted', 'true').lower() == "true"
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)      
+        
+        category_ids = serializer.validated_data.get('category_ids', [])
+        sub_category_ids = serializer.validated_data.get('sub_category_ids', [])
+
 
          # definition under core/selection/selection.py
         user_guid = getattr(request.user, "user_guid")
@@ -135,8 +138,12 @@ class QuestionViewSet(viewsets.ModelViewSet):
         queryset = get_questions_by_selection(category_ids, sub_category_ids, wrong_only=wrong_only, user_guid=user_guid, non_attempted=not_attempted)
         if not queryset:
             raise NotFound("No questions found for requested criteria.")
+        
         page = self.paginate_queryset(queryset)
-        serializer = QuestionPublicSerializer(page, many=True)
+        selected_questions = list(page) if page is not None else list(queryset)
+        
+        submission = Submissions(user_guid=user_guid,selected_questions=selected_questions,attempts=[],status=IN_PROGRESS_STATUS)
+        submission.save()
+        self.paginator.submission_id = str(submission.id)
+        serializer = QuestionPublicSerializer(selected_questions, many=True)
         return self.get_paginated_response(serializer.data)
-        # response_data = QuestionPublicSerializer(queryset, many=True)
-        # return Response(response_data.data, status=status.HTTP_200_OK)

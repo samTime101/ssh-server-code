@@ -28,12 +28,29 @@ export interface PaginatedQuestionsResponse {
   results: Question[];
   current_page: number;
   total_pages: number;
+  submission_id?: string;
 }
 
 export interface QuestionPaginationMeta {
   count: number;
   next: string | null;
   total_pages: number;
+}
+
+export interface AttemptQuestionResponse {
+  submission_id?: string;
+  is_correct: boolean;
+  detail?: string;
+  incorrect_answers?: string[];
+  correct_answers?: string[];
+  selected_answers?: string[];
+}
+
+export interface SubmitSubmissionResponse {
+  submission_id: string;
+  status: string;
+  submitted_at: string;
+  detail?: string;
 }
 
 export interface FetchQuestionsPayload {
