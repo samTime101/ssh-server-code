@@ -16,7 +16,9 @@ export interface Question {
   description_image_url?: string;
   contributor: string;
   contributor_specialization: string;
-  status?: QuestionStatus;
+  is_bookmarked?: boolean;
+  category_names?: string[];
+  subcategory_names?: string[];
 }
 
 export interface PaginatedQuestionsResponse {

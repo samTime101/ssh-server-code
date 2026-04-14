@@ -23,6 +23,7 @@ import AddCollegePage from "@/pages/admin/AddCollegePage";
 import ManageQuestionSetsPage from "@/pages/admin/ManageQuestionSetsPage";
 import ProfilePage from "@/pages/user/ProfilePage";
 import HistoryPage from "@/pages/user/HistoryPage";
+import BookmarksPage from "@/pages/user/BookmarksPage";
 import SettingsPage from "@/pages/user/SettingsPage";
 import SharedQuestionPage from "@/pages/public/SharedQuestionPage";
 import RoleRoute from "@/components/RoleRoute";
@@ -106,6 +107,7 @@ const App = () => {
           <Route path="cee-question" element={<CEEQuestionPage />} />
           <Route path="profile" element={<ProfilePage />} />
           <Route path="history" element={<HistoryPage />} />
+          <Route path="bookmarks" element={<BookmarksPage />} />
           <Route path="settings" element={<SettingsPage />} />
         </Route>
 

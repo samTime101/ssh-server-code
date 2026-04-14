@@ -3,8 +3,9 @@ import { useQuestions } from "@/hooks/useQuestions";
 import { useState, useEffect, useRef } from "react"; //React,
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 // import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, ArrowRight, Lightbulb, Loader2, Share2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Lightbulb, Loader2, Share2, Bookmark } from "lucide-react";
 import { attemptQuestion } from "@/services/user/question-service";
+import { bookmarkQuestion, removeBookmark } from "@/services/user/bookmark-service";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import type { Question, QuestionAttemptState } from "@/types/question";
@@ -38,6 +39,7 @@ const QuestionPage = () => {
 
   // single source for per-question state
   const [attempts, setAttempts] = useState<{ [id: string]: QuestionAttemptState }>({});
+  const [isBookmarked, setIsBookmarked] = useState<boolean>(false);
 
   // track the data length from the previous render to distinguish a fresh fetch from a page append
   const prevDataLengthRef = useRef(0);
@@ -66,6 +68,12 @@ const QuestionPage = () => {
     setSelectedOptions([]);
     setSelectedOption("");
   }, [questionData]);
+
+  useEffect(() => {
+    if (currentQuestion) {
+      setIsBookmarked(!!currentQuestion.is_bookmarked);
+    }
+  }, [currentQuestion]);
 
   useEffect(() => {
     timeoutHandledRef.current = false;
@@ -215,6 +223,25 @@ const QuestionPage = () => {
     navigate("/userpanel");
   };
 
+  const handleBookmarkToggle = async () => {
+    if (!currentQuestion) return;
+    const previousState = isBookmarked;
+    setIsBookmarked(!isBookmarked); // optimistic update
+    try {
+      if (previousState) {
+        await removeBookmark(currentQuestion.id);
+        toast.success("Bookmark removed");
+      } else {
+        await bookmarkQuestion(currentQuestion.id);
+        toast.success("Question bookmarked");
+      }
+      currentQuestion.is_bookmarked = !previousState;
+    } catch (e) {
+      setIsBookmarked(previousState);
+      toast.error("Failed to update bookmark");
+    }
+  };
+
   const formatRemainingTime = (milliseconds: number) => {
     const totalSeconds = Math.ceil(milliseconds / 1000);
     const minutes = Math.floor(totalSeconds / 60);
@@ -272,18 +299,28 @@ const QuestionPage = () => {
             <ArrowLeft />
             Back
           </Button>
-          <Button
-            variant="outline"
-            onClick={() => {
-              const url = `${window.location.origin}/shared/question/${currentQuestion.id}`;
-              navigator.clipboard.writeText(url);
-              toast.success("Link copied to clipboard!");
-            }}
-            className="hover:bg-muted text-muted-foreground bg-card px-4 py-2"
-          >
-            <Share2 className="mr-2 h-4 w-4" />
-            Share
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              onClick={handleBookmarkToggle}
+              className="hover:bg-muted text-muted-foreground bg-card px-4 py-2"
+            >
+              <Bookmark className={`mr-2 h-4 w-4 ${isBookmarked ? 'fill-current text-primary' : ''}`} />
+              {isBookmarked ? 'Bookmarked' : 'Bookmark'}
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => {
+                const url = `${window.location.origin}/shared/question/${currentQuestion.id}`;
+                navigator.clipboard.writeText(url);
+                toast.success("Link copied to clipboard!");
+              }}
+              className="hover:bg-muted text-muted-foreground bg-card px-4 py-2"
+            >
+              <Share2 className="mr-2 h-4 w-4" />
+              Share
+            </Button>
+          </div>
         </div>
         <div className="flex items-center justify-between">
           <h1 className="text-foreground text-3xl font-bold">Entrance Preparation Test</h1>

@@ -28,6 +28,7 @@ export const API_ENDPOINTS = {
   selectQuestions: "/questions/select/",
   attemptQuestion: "/submissions/",
   createQuestion: "/questions/",
+  bookmarks: "/users/bookmarks/",
 
   // Admin Routes
   usersList: "/users/",
