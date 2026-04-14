@@ -5,6 +5,7 @@ import { useQuestions } from "@/hooks/useQuestions";
 import { attemptQuestion, submitSubmission } from "@/services/user/question-service";
 import type { Question, QuestionAttemptState } from "@/types/question";
 import { getEffectiveQuestionCount } from "@/utils/examModeUtils";
+import { bookmarkQuestion, removeBookmark } from "@/services/user/bookmark-service";
 
 export const useQuestionPageController = () => {
   const {
@@ -35,6 +36,34 @@ export const useQuestionPageController = () => {
 
   const currentQuestion: Question | null =
     questionData && questionData.length > 0 ? questionData[currentIndex] || null : null;
+  
+  const [isBookmarked, setIsBookmarked] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (currentQuestion) {
+      setIsBookmarked(!!currentQuestion.is_bookmarked);
+    }
+  }, [currentQuestion]);
+
+  const handleBookmarkToggle = async () => {
+    if (!currentQuestion) return;
+    const previousState = isBookmarked;
+    setIsBookmarked(!isBookmarked); // optimistic update
+    try {
+      if (previousState) {
+        await removeBookmark(currentQuestion.id);
+        toast.success("Bookmark removed");
+      } else {
+        await bookmarkQuestion(currentQuestion.id);
+        toast.success("Question bookmarked");
+      }
+      currentQuestion.is_bookmarked = !previousState;
+    } catch (e) {
+      setIsBookmarked(previousState);
+      toast.error("Failed to update bookmark");
+    }
+  };
+
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -336,5 +365,7 @@ export const useQuestionPageController = () => {
       setCurrentIndex(currentIndex - 1);
     },
     handleNextQuestion,
+    handleBookmarkToggle,
+    isBookmarked,
   };
 };

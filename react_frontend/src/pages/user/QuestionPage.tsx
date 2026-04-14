@@ -1,13 +1,14 @@
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { ArrowLeft, ArrowRight, Lightbulb, Loader2, Share2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Bookmark, Lightbulb, Loader2, Share2 } from "lucide-react";
 import { useQuestionPageController } from "@/hooks/user/useQuestionPage";
 import MultipleChoiceOption from "@/components/user/MultipleChoiceOption";
 import SingleChoiceOption from "@/components/user/SingleChoiceOption";
 import { getImageUrl } from "@/config/apiConfig";
 import QuestionReview from "@/components/user/QuestionReview";
 import { toast } from "sonner";
-import EditorRenderer from "@/components/EditorRenderer";
+import EditorRenderer from "@/components/EditorRenderer";import type { Question } from "@/types/question";
 
 const QuestionPage = () => {
   const {
@@ -32,7 +33,10 @@ const QuestionPage = () => {
     handlePreviousQuestion,
     handleNextQuestion,
     handleAttemptQuestion,
+    handleBookmarkToggle,
+    isBookmarked,
   } = useQuestionPageController();
+
 
   const formatRemainingTime = (milliseconds: number) => {
     const totalSeconds = Math.ceil(milliseconds / 1000);
@@ -78,6 +82,17 @@ const QuestionPage = () => {
             <ArrowLeft />
             Back
           </Button>
+
+           <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              onClick={handleBookmarkToggle}
+              className="hover:bg-muted text-muted-foreground bg-card px-4 py-2"
+            >
+              <Bookmark className={`mr-2 h-4 w-4 ${isBookmarked ? 'fill-current text-primary' : ''}`} />
+              {isBookmarked ? 'Bookmarked' : 'Bookmark'}
+            </Button>
+
           <Button
             variant="outline"
             onClick={() => {
@@ -90,6 +105,7 @@ const QuestionPage = () => {
             <Share2 className="mr-2 h-4 w-4" />
             Share
           </Button>
+          </div>
         </div>
 
         <div className="flex items-center justify-between">

@@ -1,5 +1,5 @@
 import { useLocation, Link } from "react-router-dom";
-import { Book, Stethoscope, Folder, FileText, User, Settings, LogOut, X } from "lucide-react";
+import { Book, Stethoscope, Folder, FileText, User, Settings, LogOut, X, Bookmark } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 
 interface SidebarProps {
@@ -17,6 +17,7 @@ const menuItems = [
 const otherItems = [
   { icon: User, text: "Profile", path: "/userpanel/profile", type: "link" },
   { icon: User, text: "History", path: "/userpanel/history", type: "link" },
+  { icon: Bookmark, text: "Bookmarks", path: "/userpanel/bookmarks", type: "link" },
   { icon: Settings, text: "Settings", path: "/userpanel/settings", type: "link" },
   { icon: LogOut, text: "Logout", type: "button" },
 ];
