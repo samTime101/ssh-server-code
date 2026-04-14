@@ -3,6 +3,16 @@ SPECTACULAR_SETTINGS = {
     "TITLE": "MCQ API",
     "DESCRIPTION": """
 
+## April 10, 2026
+- Seperated and defined constants for statues in `core.constants.status` to ensure consistency and maintainability across the codebase. Updated all relevant models, serializers, and views to utilize these constants for status fields, improving code readability and reducing the likelihood of errors due to typos or inconsistent status values.
+- Unlinked Questions from set when question status is changed from approved to pending or rejected.
+
+
+## March 30, 2026
+- Refactored submissions now allows users to create multiple submissions and each submission can have its own set of selected questions and attempts. This allows for better tracking of user progress and performance across different sets of questions.
+- User will get `submission_id` when they select question `/api/questions/select/`, and their attempt will be stored under that submission. They can have multiple active submissions at a time, but each attempt will be linked to a specific submission.
+- User will also get `submission_id` when they retrieve a set ``/api/sets/<set_id>/``. This allows them to track their attempts and progress for that specific set of questions.
+    
 ## March 28, 2026
 - Added `QuestionSet` model to allow grouping of questions into sets. Each set can have a name, description, and a list of questions.
 - Created serializers and viewsets for `QuestionSet` to handle CRUD operations. Admin users can create, update, and delete question sets, while non-admin users can only view them.
@@ -133,7 +143,7 @@ SPECTACULAR_SETTINGS = {
 
 ## November 6, 2025
 - Images now supported for `question` endpoint. (1 image per question)
-- When requesting from API CLIENT (*Insomnia* recommended/ *Postman*) put `https://sisani-mcq-latest.onrender.com/api/<endpoint>`
+- When requesting from API CLIENT (*Insomnia* recommended/ *Postman*) put `https://sisani-mcq-latest.onrender.com/api/<endpoint>` (deprecated)
 
 ## November 4, 2025
 - Added `total_pages` and `current_page` fields in pagination responses.

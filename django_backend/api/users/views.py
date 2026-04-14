@@ -7,8 +7,9 @@ from rest_framework.response import Response
 from rest_framework import status
 from .serializers import *
 from core.pagination import StandardResultsSetPagination
-from mongo.models import Attempt, Submissions, Bookmark, Bookmarks
-from drf_spectacular.utils import extend_schema 
+from core.constants.status import IN_PROGRESS_STATUS, SUBMITTED_STATUS
+from mongo.models import Attempt, Submissions, Bookmarks
+from drf_spectacular.utils import extend_schema, extend_schema_view 
 from rest_framework.exceptions import MethodNotAllowed, NotFound
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
@@ -91,7 +92,7 @@ class UserViewSet(ModelViewSet):
         return Response(response_serializer.data, status=status.HTTP_201_CREATED)
     
     # api users/<>/remove-role/
-    @action(detail=True, methods=['post'], permission_classes=[IsAdminUser], url_path='remove-role', serializer_class=RemoveRoleSerializer)
+    @action(detail=True, methods=['delete'], permission_classes=[IsAdminUser], url_path='remove-role', serializer_class=RemoveRoleSerializer)
     def remove_role(self, request, *args, **kwargs):
         user_guid = kwargs.get('user_guid')
         try:
@@ -110,50 +111,77 @@ class UserViewSet(ModelViewSet):
             UserRole.objects.filter(user=user, role=role).delete()
         return Response({"detail": "Roles removed successfully"}, status=status.HTTP_200_OK)
 
+@extend_schema_view(create=extend_schema(exclude=True))
 class SubmissionCollectionViewSet(ModelViewSet):
     queryset = Submissions.objects.all()
     serializer_class = SubmissionsSerializer
     permission_classes = [IsAuthenticated]
     http_method_names = ["post","get"]
+    lookup_field = 'id'
+    lookup_value_regex = '[0-9a-f]{24}'
+
+    def get_object(self):
+        submission_id = self.kwargs.get('id')
+        user_guid = getattr(self.request.user, "user_guid", None)
+        submission = Submissions.objects.filter(id=submission_id, user_guid=user_guid).first()
+        if not submission:
+            raise NotFound("Submission not found.")
+        return submission
+
+    # DISABLE POST /api/submissions/ FOR CREATING SUBMISSIONS, AS THEY SHOULD BE CREATED VIA /api/sets/<set_id>/ RETRIEVE ENDPOINT
+    def create(self, request, *args, **kwargs):
+        raise MethodNotAllowed("Method 'create' not allowed")
 
     def get_queryset(self):
         user_guid = getattr(self.request.user, "user_guid", None)
         return Submissions.objects(user_guid=user_guid) if user_guid else Submissions.objects.none()
-
-    # submissions/<> not allowed for now
-    @extend_schema(exclude=True)
-    def retrieve(self, request, *args, **kwargs):
-        raise MethodNotAllowed("Method 'retrieve' not allowed.")
     
-    # submissions/<user_guid>
+    # submissions/
     def list(self, request, *args, **kwargs):
-        user_guid = getattr(request.user, "user_guid", None)
-        collection = Submissions.objects(user_guid=user_guid).first()
-        if not collection:
-            raise NotFound("No submission collection found for the user.")
-        serializer = self.get_serializer(collection)
+        queryset = self.get_queryset().order_by('-started_at')
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    @extend_schema(request=AttemptSerializer,responses=SubmissionResponseSerializer)
-    def create(self, request, *args, **kwargs):
-        user_guid = getattr(request.user, "user_guid", None)
+    # submissions/<submission_id>/
+    def retrieve(self, request, *args, **kwargs):
+        submission = self.get_object()
+        serializer = self.get_serializer(submission)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @extend_schema(request=AttemptSerializer, responses=SubmissionResponseSerializer)
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated], url_path='attempts')
+    def attempts(self, request, *args, **kwargs):
+        submission = self.get_object()
+        if submission.status != IN_PROGRESS_STATUS:
+            raise ValidationError("Submission is not active.")
+
         serializer = AttemptSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         validated_attempt = serializer.validated_data
         attempt_doc = Attempt(**validated_attempt)
 
-        # previous implementation for backup if the below one fails
-        # https://github.com/sisani9/sisani-eps/commit/8cde3f499ca223ff2e81a27d619645d619610936#diff-b1c10dba86a71748c7df2c1f941f80313fb6792e0e6ee92e31ba7da26e23142f
-        
+        allowed_question_ids = {str(question.id) for question in submission.selected_questions if question}
+        if str(attempt_doc.question.id) not in allowed_question_ids:
+            raise ValidationError("Question is not part of this submission.")
 
-        # In new implementation, one question can have only one attempt per user, if attempt exists, 
-        # remove any existing attempt for the question
-        Submissions.objects(user_guid=user_guid).update_one(pull__attempts__question=attempt_doc.question.id)
+        Submissions.objects(id=submission.id).update_one(pull__attempts__question=attempt_doc.question.id)
+        Submissions.objects(id=submission.id).update_one(add_to_set__attempts=attempt_doc)
 
-        # @see: https://github.com/samTime101/sisani-eps-samip/blob/e92a536bb1fd961b4fa0f6fa563ca1febd10077a/django_backend/api/users/views.py
-        # if submission exists for user with requested guid
-        # update the attempt
-        # else append to it
-        Submissions.objects(user_guid=user_guid).update_one(add_to_set__attempts=attempt_doc,set__started_at=datetime.utcnow(),upsert=True)
-        response_data = SubmissionResponseSerializer(attempt_doc)
-        return Response(response_data.data, status=status.HTTP_201_CREATED)
+        response_data = SubmissionResponseSerializer(attempt_doc).data
+        response_data['submission_id'] = str(submission.id)
+        return Response(response_data, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated], url_path='submit', serializer_class=None)
+    def submit(self, request, *args, **kwargs):
+        submission = self.get_object()
+        if submission.status != IN_PROGRESS_STATUS:
+            raise ValidationError("Submission is not in progress.")
+        submission.status = SUBMITTED_STATUS
+        submission.submitted_at = datetime.utcnow()
+        submission.save()
+        serializer = SubmissionSerializer(submission)
+        return Response(serializer.data, status=status.HTTP_200_OK)

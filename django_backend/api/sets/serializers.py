@@ -1,9 +1,9 @@
 
 
-from mongoengine.errors import NotUniqueError
 from rest_framework import serializers
 from rest_framework_mongoengine import serializers as me_serializers
 from rest_framework_mongoengine.validators import UniqueValidator
+from core.constants.status import APPROVED_STATUS
 from mongo.models import QuestionSet, Question
 from core.validators.obj_ids_validator import validate_object_ids
 
@@ -17,7 +17,7 @@ class QuestionSetSerializer(me_serializers.DocumentSerializer):
     class Meta:
         model = QuestionSet
         fields = ['id', 'name', 'description', 'question_ids', 'question_count', 'questions', 'created_at', 'updated_at']
-        extra_kwargs = {'created_at': {'read_only': True}, 'updated_at': {'read_only': True}}
+        extra_kwargs = {'created_at': {'read_only': True},'updated_at': {'read_only': True},}
 
     def get_question_count(self, obj):
         return len(obj.questions) if obj.questions else 0
@@ -34,7 +34,7 @@ class QuestionSetSerializer(me_serializers.DocumentSerializer):
 
     def create(self, validated_data):
         question_ids = validated_data.pop("question_ids")
-        questions = Question.objects(id__in=question_ids, status="approved")       
+        questions = Question.objects(id__in=question_ids, status=APPROVED_STATUS)       
         if len(questions) != len(set(question_ids)):
             raise serializers.ValidationError({"question_ids": "Some questions are invalid or not approved."})
         # try:
@@ -46,7 +46,7 @@ class QuestionSetSerializer(me_serializers.DocumentSerializer):
     def update(self, instance, validated_data):
         question_ids = validated_data.pop("question_ids", None)
         if question_ids is not None:
-            questions = Question.objects(id__in=question_ids, status="approved")
+            questions = Question.objects(id__in=question_ids, status=APPROVED_STATUS)
             if len(questions) != len(set(question_ids)):
                 raise serializers.ValidationError({"question_ids": "Some questions are invalid or not approved."})
             instance.questions = list(questions)
