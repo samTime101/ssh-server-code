@@ -1,6 +1,7 @@
 import { API_ENDPOINTS } from "@/config/apiConfig";
 import axiosInstance from "@/services/axios";
 import { extractQuestionIds } from "@/utils/questionSetUtils";
+import type { PaginatedQuestionsResponse } from "@/types/question";
 import type {
   PaginatedQuestionSetApiResponse,
   PaginatedSelectableQuestionApiResponse,
@@ -53,8 +54,9 @@ export const fetchQuestionSets = async (): Promise<QuestionSetListResponse> => {
     let nextUrl: string | null = API_ENDPOINTS.questionSets;
 
     while (nextUrl) {
-      const response = await axiosInstance.get<PaginatedQuestionSetApiResponse>(nextUrl);
-      const currentSets = response.data.results.map((set) => toQuestionSet(set));
+      const response: { data: PaginatedQuestionSetApiResponse } =
+        await axiosInstance.get<PaginatedQuestionSetApiResponse>(nextUrl);
+      const currentSets = response.data.results.map((set: QuestionSetApi) => toQuestionSet(set));
       allSets.push(...currentSets);
       nextUrl = response.data.next;
     }
@@ -145,5 +147,26 @@ export const fetchSelectableQuestions = async (
   } catch (error) {
     console.error("Failed to fetch selectable questions:", error);
     throw new Error("Failed to fetch questions");
+  }
+};
+
+export const fetchQuestionSetSession = async (
+  setId: string,
+  pageSize = 500
+): Promise<PaginatedQuestionsResponse> => {
+  try {
+    const response = await axiosInstance.get<PaginatedQuestionsResponse>(
+      `${API_ENDPOINTS.questionSets}${setId}/`,
+      {
+        params: {
+          page_size: pageSize,
+        },
+      }
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error("Failed to fetch question set session:", error);
+    throw new Error("Failed to fetch question set session");
   }
 };

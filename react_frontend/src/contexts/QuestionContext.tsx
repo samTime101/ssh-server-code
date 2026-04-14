@@ -26,6 +26,7 @@ const QuestionProvider = ({ children }: { children: React.ReactNode }) => {
   const [selectedSubSubCategoryId, setSelectedSubSubCategoryId] = useState<string[]>([]);
   const [questionData, setQuestionData] = useState<Question[]>([]);
   const [questionPagination, setQuestionPagination] = useState<QuestionPaginationMeta | null>(null);
+  const [currentSubmissionId, setCurrentSubmissionId] = useState<string | null>(null);
   const [lastFetchPayload, setLastFetchPayload] = useState<FetchQuestionsPayload | null>(null);
   const [isFetchingNextPage, setIsFetchingNextPage] = useState(false);
   const [sessionTimerSeconds, setSessionTimerSeconds] = useState(30 * 60);
@@ -86,14 +87,17 @@ const QuestionProvider = ({ children }: { children: React.ReactNode }) => {
           next: response.next,
           total_pages: response.total_pages,
         });
+        setCurrentSubmissionId(response.submission_id ?? null);
       } else {
         setQuestionData([]);
         setQuestionPagination(null);
+        setCurrentSubmissionId(null);
       }
     } catch (e) {
       console.error(e);
       setQuestionData([]);
       setQuestionPagination(null);
+      setCurrentSubmissionId(null);
     }
   };
 
@@ -116,6 +120,9 @@ const QuestionProvider = ({ children }: { children: React.ReactNode }) => {
           next: response.next,
           total_pages: response.total_pages,
         });
+        if (response.submission_id) {
+          setCurrentSubmissionId(response.submission_id);
+        }
       }
     } catch (e) {
       console.error("Error fetching next page:", e);
@@ -151,11 +158,13 @@ const QuestionProvider = ({ children }: { children: React.ReactNode }) => {
     setSelectedCategoriesId([]);
     setSelectedSubCategoryId([]);
     setSelectedSubSubCategoryId([]);
+    setCurrentSubmissionId(null);
   };
 
-  const setSessionQuestions = (questions: Question[]) => {
+  const setSessionQuestions = (questions: Question[], submissionId?: string | null) => {
     setQuestionData(questions);
     setQuestionPagination(null);
+    setCurrentSubmissionId(submissionId ?? null);
   };
 
   return (
@@ -172,6 +181,8 @@ const QuestionProvider = ({ children }: { children: React.ReactNode }) => {
         setSessionQuestions,
         questionData,
         questionPagination,
+        currentSubmissionId,
+        setCurrentSubmissionId,
         isFetchingNextPage,
         sessionTimerSeconds,
         sessionQuestionLimit,
