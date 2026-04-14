@@ -1,15 +1,14 @@
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { ArrowLeft, ArrowRight, Lightbulb, Loader2, Share2, Bookmark } from "lucide-react";
+import { ArrowLeft, ArrowRight, Bookmark, Lightbulb, Loader2, Share2 } from "lucide-react";
 import { useQuestionPageController } from "@/hooks/user/useQuestionPage";
-import { bookmarkQuestion, removeBookmark } from "@/services/user/bookmark-service";
-
 import MultipleChoiceOption from "@/components/user/MultipleChoiceOption";
 import SingleChoiceOption from "@/components/user/SingleChoiceOption";
 import { getImageUrl } from "@/config/apiConfig";
 import QuestionReview from "@/components/user/QuestionReview";
 import { toast } from "sonner";
-import EditorRenderer from "@/components/EditorRenderer";
+import EditorRenderer from "@/components/EditorRenderer";import type { Question } from "@/types/question";
 
 const QuestionPage = () => {
   const {
@@ -33,225 +32,11 @@ const QuestionPage = () => {
     handleReviewDone,
     handlePreviousQuestion,
     handleNextQuestion,
-    handleAttemptQuestion,  
-    isExamModeEnabled,
-    sessionQuestionLimit,
-    sessionEndsAtMs,
-    clearSessionTimer,
-    resetQuestionSelection,
-  } = useQuestions();
-  const navigate = useNavigate();
+    handleAttemptQuestion,
+    handleBookmarkToggle,
+    isBookmarked,
+  } = useQuestionPageController();
 
-  // use an index instead of storing whole object
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
-  const [selectedOption, setSelectedOption] = useState<string>("");
-  const [remainingMs, setRemainingMs] = useState<number | null>(null);
-
-  // single source for per-question state
-  const [attempts, setAttempts] = useState<{ [id: string]: QuestionAttemptState }>({});
-  const [isBookmarked, setIsBookmarked] = useState<boolean>(false);
-
-  // track the data length from the previous render to distinguish a fresh fetch from a page append
-  const prevDataLengthRef = useRef(0);
-  const timeoutHandledRef = useRef(false);
-
-  // derive currentQuestion from index and questionData
-  const currentQuestion: Question | null =
-    questionData && questionData.length > 0 ? questionData[currentIndex] || null : null;
-
-  useEffect(() => {
-    window.scrollTo(0, 0);
-
-    const prevLength = prevDataLengthRef.current;
-    prevDataLengthRef.current = questionData?.length ?? 0;
-
-    if (!questionData || questionData.length === 0) {
-      setCurrentIndex(0);
-      return;
-    }
-
-    // If the new length is greater than before, this is a page append — keep the current index.
-    // Otherwise it's a fresh session fetch — reset everything.
-    if (questionData.length > prevLength) return;
-
-    setCurrentIndex(0);
-    setSelectedOptions([]);
-    setSelectedOption("");
-  }, [questionData]);
-
-  useEffect(() => {
-    if (currentQuestion) {
-      setIsBookmarked(!!currentQuestion.is_bookmarked);
-    }
-  }, [currentQuestion]);
-
-  useEffect(() => {
-    timeoutHandledRef.current = false;
-
-    if (!sessionEndsAtMs) {
-      setRemainingMs(null);
-      return;
-    }
-
-    const updateRemaining = () => {
-      const timeLeft = Math.max(0, sessionEndsAtMs - Date.now());
-      setRemainingMs(timeLeft);
-
-      if (timeLeft > 0 || timeoutHandledRef.current) return;
-
-      timeoutHandledRef.current = true;
-      clearSessionTimer();
-      resetQuestionSelection();
-      toast.error("Time is up. Session ended.");
-      navigate("/userpanel");
-    };
-
-    updateRemaining();
-    const intervalId = window.setInterval(updateRemaining, 1000);
-
-    return () => {
-      window.clearInterval(intervalId);
-    };
-  }, [sessionEndsAtMs, clearSessionTimer, navigate, resetQuestionSelection]);
-
-  // keep UI selections synchronized with saved attempt for the current question
-  useEffect(() => {
-    if (!currentQuestion) return;
-    const savedAttempt = attempts[currentQuestion.id];
-    if (currentQuestion.option_type === "multiple") {
-      setSelectedOptions(savedAttempt?.selectedOptions ?? []);
-      setSelectedOption("");
-    } else {
-      setSelectedOption(savedAttempt?.selectedOption ?? "");
-      setSelectedOptions([]);
-    }
-  }, [currentIndex, attempts, questionData, currentQuestion]);
-
-  const handleNextQuestion = async () => {
-    if (!currentQuestion) return;
-
-    // validate selection before going next
-    if (
-      (currentQuestion.option_type === "multiple" && selectedOptions.length === 0) ||
-      (currentQuestion.option_type === "single" && selectedOption === "")
-    ) {
-      toast.error("Please select an option before proceeding.");
-      return;
-    }
-
-    const totalAvailable = questionPagination?.count ?? questionData.length;
-    const totalCount = isExamModeEnabled
-      ? getEffectiveQuestionCount(sessionQuestionLimit, totalAvailable)
-      : totalAvailable;
-    const nextIndex = currentIndex + 1;
-
-    if (nextIndex >= totalCount) {
-      toast.info("You've completed all questions!");
-      clearSessionTimer();
-      resetQuestionSelection();
-      navigate("/userpanel");
-      return;
-    }
-
-    if (!questionData || nextIndex >= questionData.length) {
-      // try to load the next page if available
-      if (questionPagination?.next && questionData.length < totalCount) {
-        await fetchNextPage();
-        setCurrentIndex(nextIndex);
-      } else {
-        toast.info("You've completed all questions!");
-        clearSessionTimer();
-        resetQuestionSelection();
-        navigate("/userpanel");
-      }
-      return;
-    }
-    setCurrentIndex(nextIndex);
-  };
-
-  const handlePreviousQuestion = () => {
-    if (!questionData || questionData.length === 0 || currentIndex === 0) return;
-    setCurrentIndex(currentIndex - 1);
-  };
-
-  const handleAttemptQuestion = async (question: Question) => {
-    if (!token) {
-      console.error("No token available");
-      return;
-    }
-
-    /*
-      For multiple choice question: [option1, option2]
-      For single choice question: [option1] or []
-    */
-    const selected =
-      question.option_type === "multiple"
-        ? selectedOptions
-        : selectedOption
-          ? [selectedOption]
-          : [];
-
-    if (!selected || selected.length === 0) {
-      toast.error("Please select an option before attempting the question.");
-      return;
-    }
-
-    try {
-      const result = await attemptQuestion(question.id, selected);
-
-      if (!result) {
-        toast.error("Something wrong occurred. Try again.");
-        navigate("/");
-        return;
-      }
-
-      // save the attempt (selected choices, attempt flag, correctness)
-      setAttempts((prev) => ({
-        ...prev,
-        [question.id]: {
-          selectedOptions: selected,
-          selectedOption: question.option_type === "multiple" ? undefined : selected[0],
-          isAttempted: true,
-          feedback: result?.feedback ?? "",
-          correctOptions: result?.correct_answers,
-        },
-      }));
-
-      if (result.is_correct) {
-        toast.success("Correct answer!");
-      } else {
-        toast.error("Incorrect answer. Try again!");
-      }
-    } catch (error) {
-      console.error("Error attempting question:", error);
-    }
-  };
-
-  const handleBack = () => {
-    clearSessionTimer();
-    resetQuestionSelection();
-    navigate("/userpanel");
-  };
-
-  const handleBookmarkToggle = async () => {
-    if (!currentQuestion) return;
-    const previousState = isBookmarked;
-    setIsBookmarked(!isBookmarked); // optimistic update
-    try {
-      if (previousState) {
-        await removeBookmark(currentQuestion.id);
-        toast.success("Bookmark removed");
-      } else {
-        await bookmarkQuestion(currentQuestion.id);
-        toast.success("Question bookmarked");
-      }
-      currentQuestion.is_bookmarked = !previousState;
-    } catch (e) {
-      setIsBookmarked(previousState);
-      toast.error("Failed to update bookmark");
-    }
-  };
 
   const formatRemainingTime = (milliseconds: number) => {
     const totalSeconds = Math.ceil(milliseconds / 1000);
@@ -297,6 +82,17 @@ const QuestionPage = () => {
             <ArrowLeft />
             Back
           </Button>
+
+           <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              onClick={handleBookmarkToggle}
+              className="hover:bg-muted text-muted-foreground bg-card px-4 py-2"
+            >
+              <Bookmark className={`mr-2 h-4 w-4 ${isBookmarked ? 'fill-current text-primary' : ''}`} />
+              {isBookmarked ? 'Bookmarked' : 'Bookmark'}
+            </Button>
+
           <Button
             variant="outline"
             onClick={() => {
@@ -309,7 +105,9 @@ const QuestionPage = () => {
             <Share2 className="mr-2 h-4 w-4" />
             Share
           </Button>
+          </div>
         </div>
+
         <div className="flex items-center justify-between">
           <h1 className="text-foreground text-3xl font-bold">Entrance Preparation Test</h1>
           <div className="flex items-center gap-3">
