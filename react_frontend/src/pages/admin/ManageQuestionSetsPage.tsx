@@ -2,6 +2,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -48,7 +56,13 @@ const ManageQuestionSetsPage = () => {
     pickerTotalPages,
     pickerTotalCount,
     isPickerLoading,
+    categories,
+    subCategories,
+    selectedCategoryId,
+    selectedSubCategoryId,
     isCurrentPageFullySelected,
+    handlePickerCategoryChange,
+    handlePickerSubCategoryChange,
     toggleQuestionSelection,
     toggleCurrentPageQuestions,
     removeSelectedQuestion,
@@ -170,11 +184,46 @@ const ManageQuestionSetsPage = () => {
             )}
 
             <div className="mt-4 space-y-3">
-              <Input
-                value={pickerSearch}
-                onChange={(e) => setPickerSearch(e.target.value)}
-                placeholder="Search questions to add"
-              />
+              <div className="flex flex-col gap-3 md:flex-row">
+                <Input
+                  value={pickerSearch}
+                  onChange={(e) => setPickerSearch(e.target.value)}
+                  placeholder="Search questions to add"
+                />
+
+                <Select value={selectedCategoryId} onValueChange={handlePickerCategoryChange}>
+                  <SelectTrigger className="w-full md:w-52">
+                    <SelectValue placeholder="Filter by category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Categories</SelectItem>
+                    {categories.map((category) => (
+                      <SelectItem key={category.id} value={category.id}>
+                        {category.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                {selectedCategoryId !== "all" && (
+                  <Select
+                    value={selectedSubCategoryId}
+                    onValueChange={handlePickerSubCategoryChange}
+                  >
+                    <SelectTrigger className="w-full md:w-52">
+                      <SelectValue placeholder="Filter by subcategory" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Subcategories</SelectItem>
+                      {subCategories.map((subCategory) => (
+                        <SelectItem key={subCategory.id} value={subCategory.id}>
+                          {subCategory.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              </div>
 
               <div className="border-border bg-card rounded-md border">
                 <Table>
@@ -190,15 +239,17 @@ const ManageQuestionSetsPage = () => {
                         />
                       </TableHead>
                       <TableHead>Question</TableHead>
+                      <TableHead>Category</TableHead>
+                      <TableHead>Subcategory</TableHead>
                       <TableHead>Status</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {isPickerLoading ? (
-                      <TableSkeletonLoader rows={4} columns={3} />
+                      <TableSkeletonLoader rows={4} columns={5} />
                     ) : pickerQuestions.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={3} className="text-center">
+                        <TableCell colSpan={5} className="text-center">
                           No questions found
                         </TableCell>
                       </TableRow>
@@ -213,6 +264,38 @@ const ManageQuestionSetsPage = () => {
                           </TableCell>
                           <TableCell className="max-w-xl break-words whitespace-normal">
                             {question.question_text}
+                          </TableCell>
+                          <TableCell>
+                            {question.category_names && question.category_names.length > 0 ? (
+                              <div className="flex flex-wrap gap-2">
+                                {question.category_names.map((categoryName) => (
+                                  <Badge
+                                    key={`${question.id}-category-${categoryName}`}
+                                    className="bg-primary text-primary-foreground rounded-md px-3 py-1 text-xs"
+                                  >
+                                    {categoryName}
+                                  </Badge>
+                                ))}
+                              </div>
+                            ) : (
+                              "-"
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            {question.subcategory_names && question.subcategory_names.length > 0 ? (
+                              <div className="flex flex-wrap gap-2">
+                                {question.subcategory_names.map((subCategoryName) => (
+                                  <Badge
+                                    key={`${question.id}-subcategory-${subCategoryName}`}
+                                    className="bg-secondary text-secondary-foreground rounded-md px-3 py-1 text-xs"
+                                  >
+                                    {subCategoryName}
+                                  </Badge>
+                                ))}
+                              </div>
+                            ) : (
+                              "-"
+                            )}
                           </TableCell>
                           <TableCell>
                             {question.status ? <StatusBadge status={question.status} /> : "-"}
