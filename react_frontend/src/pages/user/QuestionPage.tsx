@@ -8,7 +8,7 @@ import SingleChoiceOption from "@/components/user/SingleChoiceOption";
 import { getImageUrl } from "@/config/apiConfig";
 import QuestionReview from "@/components/user/QuestionReview";
 import { toast } from "sonner";
-import EditorRenderer from "@/components/EditorRenderer";import type { Question } from "@/types/question";
+import EditorRenderer from "@/components/EditorRenderer";
 
 const QuestionPage = () => {
   const {
