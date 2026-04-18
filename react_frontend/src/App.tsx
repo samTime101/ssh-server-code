@@ -22,6 +22,7 @@ import AddRolePage from "@/pages/admin/AddRolePage";
 import AddCollegePage from "@/pages/admin/AddCollegePage";
 import ManageQuestionSetsPage from "@/pages/admin/ManageQuestionSetsPage";
 import ProfilePage from "@/pages/user/ProfilePage";
+import MockExamPage from "@/pages/user/MockExamPage";
 import HistoryPage from "@/pages/user/HistoryPage";
 import BookmarksPage from "@/pages/user/BookmarksPage";
 import SettingsPage from "@/pages/user/SettingsPage";
@@ -91,6 +92,14 @@ const App = () => {
       </Route>
       <Route path="/shared/question/:id" element={<SharedQuestionPage />} />
       <Route element={<PrivateRoute />}>
+        <Route
+          path="/userpanel/mock-exams"
+          element={
+            <QuestionProvider>
+              <MockExamPage />
+            </QuestionProvider>
+          }
+        />
         {/* User Panel */}
         <Route
           path="/userpanel"
