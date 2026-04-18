@@ -179,3 +179,146 @@
     letter-spacing: var(--tracking-normal);
   }
 }
+
+/* ====== GLOBAL ====== */
+.landing-root {
+  min-height: 100vh;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  font-family: 'DM Sans', sans-serif;
+  color: #e2e8f0;
+  background: linear-gradient(180deg, #0c1428 0%, #0f1a30 40%, #111d35 100%);
+}
+
+/* ====== ANIMATIONS ====== */
+@keyframes gridMove {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(60px, 60px); }
+}
+
+@keyframes gridPulse {
+  0%, 100% { opacity: 0.18; }
+  50% { opacity: 0.3; }
+}
+
+@keyframes glowMove {
+  0%, 100% { opacity: 0.04; transform: translate(-20%, -10%); }
+  50% { opacity: 0.08; transform: translate(10%, 5%); }
+}
+
+/* ====== BACKGROUND LAYERS ====== */
+.bg-grid-main {
+  position: absolute;
+  inset: -60px;
+  background-image:
+    linear-gradient(rgba(2, 44, 253, 0.15) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(6, 45, 241, 0.15) 1px, transparent 1px);
+  background-size: 60px 60px;
+  animation: gridMove 8s linear infinite;
+}
+
+.bg-grid-secondary {
+  position: absolute;
+  inset: -60px;
+  background-image:
+    linear-gradient(rgba(45, 212, 191, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(45, 212, 191, 0.05) 1px, transparent 1px);
+  background-size: 60px 60px;
+  animation: gridPulse 6s ease-in-out infinite;
+}
+
+.bg-glow {
+  position: absolute;
+  width: 120%;
+  height: 120%;
+  top: -10%;
+  left: -10%;
+  background: radial-gradient(
+    ellipse 50% 40% at 50% 30%,
+    rgba(59, 91, 253, 0.07) 0%,
+    transparent 70%
+  );
+  animation: glowMove 12s ease-in-out infinite;
+}
+
+.bg-fade-bottom {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 40%;
+  background: linear-gradient(to top, #0c1428 0%, transparent 100%);
+}
+
+/* ====== HERO TEXT ====== */
+.hero-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(2.5rem, 5vw, 3.8rem);
+  color: #f1f5f9;
+  font-weight: 400;
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+}
+
+.hero-highlight {
+  font-style: italic;
+  color: #2dd4bf;
+}
+
+.hero-bold {
+  font-weight: 700;
+}
+
+/* ====== BUTTON ====== */
+.primary-btn {
+  padding: 16px 32px;
+  border-radius: 16px;
+  font-size: 16px;
+  font-weight: 600;
+  background: linear-gradient(135deg, #3b5bfd 0%, #4f6bff 100%);
+  color: #fff;
+  border: none;
+  transition: all 0.2s ease;
+}
+
+.primary-btn:hover {
+  background: linear-gradient(135deg, #4f6bff 0%, #6b82ff 100%);
+}
+
+/* ====== CARD ====== */
+.qbank-card {
+  max-width: 480px;
+  background: linear-gradient(180deg, #111827 0%, #0f172a 100%);
+  border: 1px solid rgba(59, 91, 253, 0.15);
+  box-shadow:
+    0 0 60px rgba(59, 91, 253, 0.08),
+    0 0 120px rgba(59, 91, 253, 0.04);
+  padding: 28px 28px 20px;
+  border-radius: 16px;
+}
+
+/* ====== OPTION ITEM ====== */
+.option-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  border-radius: 12px;
+  background: rgba(30, 41, 59, 0.5);
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.option-item:hover {
+  border: 1px solid rgba(59, 91, 253, 0.4);
+  background: rgba(59, 91, 253, 0.08);
+}
+
+/* ====== FOOTER ====== */
+.footer-root {
+  border-top: 1px solid rgba(148, 163, 184, 0.1);
+  background: rgba(8, 14, 30, 0.6);
+  backdrop-filter: blur(12px);
+}
