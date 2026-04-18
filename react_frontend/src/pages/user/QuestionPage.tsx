@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { ArrowLeft, ArrowRight, Bookmark, Lightbulb, Loader2, Share2 } from "lucide-react";
@@ -13,6 +12,7 @@ import EditorRenderer from "@/components/EditorRenderer";
 const QuestionPage = () => {
   const {
     currentQuestion,
+    questionData,
     currentIndex,
     totalCount,
     attempts,
@@ -37,12 +37,21 @@ const QuestionPage = () => {
     isBookmarked,
   } = useQuestionPageController();
 
-
   const formatRemainingTime = (milliseconds: number) => {
     const totalSeconds = Math.ceil(milliseconds / 1000);
     const minutes = Math.floor(totalSeconds / 60);
     const seconds = totalSeconds % 60;
     return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+  };
+
+  const getQuestionProgressStatus = (index: number) => {
+    const question = questionData?.[index];
+    if (!question) return "pending";
+
+    const attempt = attempts[question.id];
+    if (!attempt?.isAttempted) return "pending";
+
+    return attempt.isCorrect ? "correct" : "incorrect";
   };
 
   if (showReview && isExamModeEnabled) {
@@ -83,28 +92,30 @@ const QuestionPage = () => {
             Back
           </Button>
 
-           <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2">
             <Button
               variant="outline"
               onClick={handleBookmarkToggle}
               className="hover:bg-muted text-muted-foreground bg-card px-4 py-2"
             >
-              <Bookmark className={`mr-2 h-4 w-4 ${isBookmarked ? 'fill-current text-primary' : ''}`} />
-              {isBookmarked ? 'Bookmarked' : 'Bookmark'}
+              <Bookmark
+                className={`mr-2 h-4 w-4 ${isBookmarked ? "text-primary fill-current" : ""}`}
+              />
+              {isBookmarked ? "Bookmarked" : "Bookmark"}
             </Button>
 
-          <Button
-            variant="outline"
-            onClick={() => {
-              const url = `${window.location.origin}/shared/question/${currentQuestion.id}`;
-              navigator.clipboard.writeText(url);
-              toast.success("Link copied to clipboard!");
-            }}
-            className="hover:bg-muted text-muted-foreground bg-card px-4 py-2"
-          >
-            <Share2 className="mr-2 h-4 w-4" />
-            Share
-          </Button>
+            <Button
+              variant="outline"
+              onClick={() => {
+                const url = `${window.location.origin}/shared/question/${currentQuestion.id}`;
+                navigator.clipboard.writeText(url);
+                toast.success("Link copied to clipboard!");
+              }}
+              className="hover:bg-muted text-muted-foreground bg-card px-4 py-2"
+            >
+              <Share2 className="mr-2 h-4 w-4" />
+              Share
+            </Button>
           </div>
         </div>
 
@@ -121,6 +132,54 @@ const QuestionPage = () => {
             </span>
           </div>
         </div>
+
+        {!isExamModeEnabled && totalCount > 0 && (
+          <div className="bg-card rounded-lg border p-4 shadow-sm">
+            <div className="mb-3 flex items-center justify-between gap-2">
+              <p className="text-sm font-semibold">Session Progress</p>
+              <p className="text-muted-foreground text-xs">Green = correct, Red = incorrect</p>
+            </div>
+
+            <div className="overflow-x-auto overflow-y-visible px-1 py-2">
+              <div className="flex min-w-max items-center pr-1">
+                {Array.from({ length: totalCount }).map((_, index) => {
+                  const status = getQuestionProgressStatus(index);
+                  const isCurrent = index === currentIndex;
+
+                  const bubbleClasses =
+                    status === "correct"
+                      ? "border-green-600 bg-green-500 text-white"
+                      : status === "incorrect"
+                        ? "border-red-600 bg-red-500 text-white"
+                        : "border-border bg-muted text-muted-foreground";
+
+                  const lineClasses =
+                    status === "correct"
+                      ? "bg-green-500/70"
+                      : status === "incorrect"
+                        ? "bg-red-500/70"
+                        : "bg-border";
+
+                  return (
+                    <div key={`progress-${index}`} className="flex items-center">
+                      <div
+                        className={`flex h-8 w-8 items-center justify-center rounded-full border text-xs font-semibold ${bubbleClasses} ${
+                          isCurrent
+                            ? "ring-primary ring-offset-background ring-2 ring-offset-1"
+                            : ""
+                        }`}
+                      >
+                        {index + 1}
+                      </div>
+
+                      {index < totalCount - 1 && <div className={`h-0.5 w-7 ${lineClasses}`} />}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
 
         <Card className="shadow-lg">
           <CardHeader className="pb-4">

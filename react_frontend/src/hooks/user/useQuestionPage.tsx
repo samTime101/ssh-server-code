@@ -36,7 +36,7 @@ export const useQuestionPageController = () => {
 
   const currentQuestion: Question | null =
     questionData && questionData.length > 0 ? questionData[currentIndex] || null : null;
-  
+
   const [isBookmarked, setIsBookmarked] = useState<boolean>(false);
 
   useEffect(() => {
@@ -63,7 +63,6 @@ export const useQuestionPageController = () => {
       toast.error("Failed to update bookmark");
     }
   };
-
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -195,6 +194,7 @@ export const useQuestionPageController = () => {
           isAttempted: true,
           feedback: result?.detail ?? "",
           correctOptions: result?.correct_answers ?? [],
+          isCorrect: result.is_correct,
         },
       }));
 
@@ -251,6 +251,7 @@ export const useQuestionPageController = () => {
           isAttempted: true,
           feedback: result?.detail ?? "",
           correctOptions: result?.correct_answers ?? [],
+          isCorrect: result.is_correct,
         },
       }));
     } catch (error) {
@@ -342,6 +343,7 @@ export const useQuestionPageController = () => {
 
   return {
     currentQuestion,
+    questionData,
     currentIndex,
     totalCount,
     attempts,
