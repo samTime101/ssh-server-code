@@ -82,19 +82,6 @@ const ProfilePage = () => {
             </div>
           </div>
 
-          {user.roles && user.roles.length > 0 && (
-            <div>
-              <h3 className="mb-4 text-lg font-semibold">Roles</h3>
-              <div className="flex flex-wrap gap-2">
-                {user.roles.map((role, index) => (
-                  <Badge key={index} variant="secondary">
-                    {role}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-          )}
-
           <div>
             <h3 className="mb-4 text-lg font-semibold">Performance Statistics</h3>
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
