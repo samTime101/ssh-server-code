@@ -100,10 +100,11 @@ class SubmissionsSerializer(me_serializers.DocumentSerializer):
     submission_id = serializers.SerializerMethodField(read_only=True)
     selected_question_ids = serializers.SerializerMethodField(read_only=True)
     attempts = AttemptSerializer(many=True)
+    type = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Submissions
-        fields = ('submission_id','user_guid','selected_question_ids','attempts','status','started_at','submitted_at',)
+        fields = ('submission_id','user_guid','selected_question_ids','attempts','status','started_at','submitted_at','type')
 
     def get_submission_id(self, obj):
         return str(obj.id)

@@ -30,9 +30,10 @@ class QuestionSetViewSet(viewsets.ModelViewSet):
                 raise NotFound("No questions found in this set.")
             page = self.paginate_queryset(queryset)
             selected_questions = list(page) if page is not None else list(queryset)
+            question_set_name = instance.name
             # shuffle the questions
             random.shuffle(selected_questions)
-            submission = Submissions(user_guid=user_guid,selected_questions=selected_questions,attempts=[],status=IN_PROGRESS_STATUS)
+            submission = Submissions(user_guid=user_guid,selected_questions=selected_questions,attempts=[],status=IN_PROGRESS_STATUS,type=f"set_{question_set_name}")
             submission.save()
             serializer = QuestionPublicSerializer(selected_questions, many=True)
             self.paginator.submission_id = str(submission.id)
