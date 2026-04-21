@@ -75,6 +75,7 @@ class Submissions(Document):
     attempts = ListField(EmbeddedDocumentField(Attempt))
     status = StringField(required=True, choices=SUBMISSION_STATUSES, default=IN_PROGRESS_STATUS)
     started_at = DateTimeField(default=datetime.utcnow)
+    type = StringField(required=True,default="question_bank")
     submitted_at = DateTimeField(required=False, null=True)
 
     meta = {'collection': 'user_submissions','indexes': ['user_guid', 'status', '-started_at']}
