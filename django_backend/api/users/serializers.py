@@ -100,7 +100,7 @@ class SubmissionsSerializer(me_serializers.DocumentSerializer):
     submission_id = serializers.SerializerMethodField(read_only=True)
     selected_question_ids = serializers.SerializerMethodField(read_only=True)
     attempts = AttemptSerializer(many=True)
-    type = serializers.SerializerMethodField(read_only=True)
+    # type = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Submissions
@@ -111,6 +111,10 @@ class SubmissionsSerializer(me_serializers.DocumentSerializer):
 
     def get_selected_question_ids(self, obj):
         return [str(question.id) for question in obj.selected_questions if question]
+    
+    # method bata garda
+    # def get_type(self, obj):
+    #     return obj.type
 
 class SubmissionResponseSerializer(me_serializers.EmbeddedDocumentSerializer):
     detail = serializers.CharField(default="Submission recorded successfully")
