@@ -46,6 +46,8 @@ const toSelectableQuestion = (question: SelectableQuestionApi): SelectableQuesti
   id: question.id,
   question_text: question.question_text ?? question.description ?? "",
   status: question.status,
+  category_names: question.category_names ?? [],
+  subcategory_names: question.subcategory_names ?? [],
 });
 
 export const fetchQuestionSets = async (): Promise<QuestionSetListResponse> => {
@@ -118,7 +120,9 @@ export const toQuestionSetPayload = (set: QuestionSet): QuestionSetPayload => {
 export const fetchSelectableQuestions = async (
   page: number,
   pageSize: number,
-  search?: string
+  search?: string,
+  categoryId?: string,
+  subCategoryId?: string
 ): Promise<SelectableQuestionListResponse> => {
   try {
     const params: Record<string, string | number> = {
@@ -127,6 +131,12 @@ export const fetchSelectableQuestions = async (
     };
     if (search?.trim()) {
       params.search = search.trim();
+    }
+    if (categoryId) {
+      params.category_id = categoryId;
+    }
+    if (subCategoryId) {
+      params.sub_category_id = subCategoryId;
     }
 
     const response = await axiosInstance.get<PaginatedSelectableQuestionApiResponse>(

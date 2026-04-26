@@ -48,6 +48,8 @@ export interface SelectableQuestion {
   id: string;
   question_text: string;
   status?: "approved" | "pending" | "rejected";
+  category_names?: string[];
+  subcategory_names?: string[];
 }
 
 export interface SelectableQuestionApi {
@@ -55,6 +57,8 @@ export interface SelectableQuestionApi {
   question_text?: string;
   description?: string;
   status?: "approved" | "pending" | "rejected";
+  category_names?: string[];
+  subcategory_names?: string[];
 }
 
 export interface SelectableQuestionListResponse {

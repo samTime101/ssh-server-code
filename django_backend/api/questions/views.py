@@ -142,7 +142,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
         page = self.paginate_queryset(queryset)
         selected_questions = list(page) if page is not None else list(queryset)
         
-        submission = Submissions(user_guid=user_guid,selected_questions=selected_questions,attempts=[],status=IN_PROGRESS_STATUS)
+        submission = Submissions(user_guid=user_guid,selected_questions=selected_questions,attempts=[],status=IN_PROGRESS_STATUS,type="question_bank")
         submission.save()
         self.paginator.submission_id = str(submission.id)
         serializer = QuestionPublicSerializer(selected_questions, many=True)

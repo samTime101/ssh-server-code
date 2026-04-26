@@ -8,7 +8,7 @@ const CategoryList: React.FC<{ category: Category }> = ({ category }) => {
   const {
     selectedCategoriesId,
     handleCategorySelection,
-    // selectedSubCategoryId,
+    selectedSubCategoryId,
     handleSubCategorySelection,
     // selectedSubSubCategoryId,
     // handleSubSubCategorySelection,
@@ -110,6 +110,7 @@ const CategoryList: React.FC<{ category: Category }> = ({ category }) => {
                           <Checkbox
                             id={`subcategory-${subCategory.id}`}
                             className="border-input"
+                            checked={selectedSubCategoryId.includes(subCategory.id)}
                             onCheckedChange={() => handleSubCategorySelection(subCategory.id)}
                           />
                           <label

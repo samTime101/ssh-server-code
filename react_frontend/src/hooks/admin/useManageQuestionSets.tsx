@@ -7,6 +7,8 @@ import {
   fetchSelectableQuestions,
   updateQuestionSet,
 } from "@/services/admin/questionset-service";
+import { fetchCategoriesWithHierarchy } from "@/services/admin/category-service";
+import type { Category, SubCategory } from "@/types/category";
 import type { QuestionSet, QuestionSetPayload, SelectableQuestion } from "@/types/questionset";
 import { extractQuestionIds } from "@/utils/questionSetUtils";
 
@@ -35,8 +37,28 @@ export const useManageQuestionSets = () => {
   const [pickerTotalCount, setPickerTotalCount] = useState(0);
   const [isPickerLoading, setIsPickerLoading] = useState(false);
 
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [selectedCategoryId, setSelectedCategoryId] = useState("all");
+  const [selectedSubCategoryId, setSelectedSubCategoryId] = useState("all");
+
+  const subCategories: SubCategory[] =
+    categories.find((category) => category.id === selectedCategoryId)?.sub_categories ?? [];
+
   useEffect(() => {
     loadSets();
+  }, []);
+
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const data = await fetchCategoriesWithHierarchy();
+        setCategories(data.categories);
+      } catch {
+        toast.error("Failed to load categories");
+      }
+    };
+
+    loadCategories();
   }, []);
 
   useEffect(() => {
@@ -57,7 +79,9 @@ export const useManageQuestionSets = () => {
         const data = await fetchSelectableQuestions(
           pickerPage,
           pickerPageSize,
-          debouncedPickerSearch
+          debouncedPickerSearch,
+          selectedCategoryId === "all" ? undefined : selectedCategoryId,
+          selectedSubCategoryId === "all" ? undefined : selectedSubCategoryId
         );
         setPickerQuestions(data.results);
         setPickerTotalPages(Math.max(1, data.total_pages || 1));
@@ -70,7 +94,14 @@ export const useManageQuestionSets = () => {
     };
 
     loadPickerQuestions();
-  }, [isFormOpen, pickerPage, pickerPageSize, debouncedPickerSearch]);
+  }, [
+    isFormOpen,
+    pickerPage,
+    pickerPageSize,
+    debouncedPickerSearch,
+    selectedCategoryId,
+    selectedSubCategoryId,
+  ]);
 
   const selectedCount = selectedQuestionIds.length;
 
@@ -112,6 +143,8 @@ export const useManageQuestionSets = () => {
     setPickerSearch("");
     setDebouncedPickerSearch("");
     setPickerPage(1);
+    setSelectedCategoryId("all");
+    setSelectedSubCategoryId("all");
   };
 
   const openCreateForm = () => {
@@ -203,6 +236,17 @@ export const useManageQuestionSets = () => {
     setSelectedQuestionIds((prev) => prev.filter((id) => id !== questionId));
   };
 
+  const handlePickerCategoryChange = (value: string) => {
+    setSelectedCategoryId(value);
+    setSelectedSubCategoryId("all");
+    setPickerPage(1);
+  };
+
+  const handlePickerSubCategoryChange = (value: string) => {
+    setSelectedSubCategoryId(value);
+    setPickerPage(1);
+  };
+
   const isCurrentPageFullySelected =
     pickerQuestions.length > 0 &&
     pickerQuestions.every((question) => selectedQuestionIds.includes(question.id));
@@ -237,7 +281,13 @@ export const useManageQuestionSets = () => {
     pickerTotalPages,
     pickerTotalCount,
     isPickerLoading,
+    categories,
+    subCategories,
+    selectedCategoryId,
+    selectedSubCategoryId,
     isCurrentPageFullySelected,
+    handlePickerCategoryChange,
+    handlePickerSubCategoryChange,
     toggleQuestionSelection,
     toggleCurrentPageQuestions,
     removeSelectedQuestion,
