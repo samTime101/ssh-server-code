@@ -135,7 +135,10 @@ const MockExamPage = () => {
 
     try {
       const result = await attemptQuestion(currentSubmissionId, question.id, selected);
-      if (!result) return;
+      if (!result) {
+        toast.error("Failed to submit your answer. Please try again.");
+        return;
+      }
 
       setAttempts((prev) => ({
         ...prev,
