@@ -66,6 +66,7 @@ export interface QuestionAttemptState {
   isAttempted: boolean;
   feedback?: string;
   correctOptions?: string[];
+  isCorrect?: boolean;
 }
 
 interface Option {
