@@ -1,5 +1,4 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import type { Attempt } from "@/types/history";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import MultipleChoiceOption from "@/components/user/MultipleChoiceOption";
@@ -69,13 +68,6 @@ const AttemptDetailModal = ({ attempt, isOpen, onClose }: AttemptDetailModalProp
               </div>
             </CardContent>
           </Card>
-
-          {/* Close Button */}
-          <div className="flex justify-end">
-            <Button onClick={onClose} variant="outline">
-              Close
-            </Button>
-          </div>
         </div>
       </DialogContent>
     </Dialog>
