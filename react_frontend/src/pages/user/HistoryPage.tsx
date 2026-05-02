@@ -88,6 +88,7 @@ const HistoryPage = () => {
             <TableHeader>
               <TableRow>
                 <TableHead>Submission ID</TableHead>
+                <TableHead>Type</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Started At</TableHead>
                 <TableHead>Submitted At</TableHead>
@@ -106,6 +107,9 @@ const HistoryPage = () => {
                     onClick={() => setSelectedSubmission(submission)}
                   >
                     <TableCell className="font-medium">{submission.submission_id}</TableCell>
+                    <TableCell>
+                      <Badge variant="outline">{submission.type || "question_bank"}</Badge>
+                    </TableCell>
                     <TableCell>
                       <Badge
                         variant={submission.status === "submitted" ? "default" : "secondary"}
