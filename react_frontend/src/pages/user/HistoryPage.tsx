@@ -29,7 +29,9 @@ const HistoryPage = () => {
     async function fetchSubmissionHistory() {
       try {
         const data = await getSubmissionHistory();
-        setSubmissionHistory(data);
+        // Filter submissions with at least one attempt
+        const filtered = data.filter((s) => (s.attempts?.length ?? 0) > 0);
+        setSubmissionHistory(filtered);
       } catch (error) {
         console.error("Error fetching submission history:", error);
       } finally {
