@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useLocation, Link } from "react-router-dom";
 import { Book, Stethoscope, Folder, FileText, User, Settings, LogOut, X, Bookmark } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
@@ -33,6 +34,7 @@ const iconInactiveClass = "text-muted-foreground group-hover:text-sidebar-primar
 const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
   const { logout } = useAuth();
   const location = useLocation();
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   const isActive = (path: string) => {
     if (path === "/userpanel/cee-practice") {
@@ -112,10 +114,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
             return (
               <button
                 key={idx}
-                onClick={() => {
-                  onClose();
-                  logout();
-                }}
+                onClick={() => setShowLogoutModal(true)}
                 className="text-destructive hover:border-destructive/20 hover:bg-destructive/10 mt-2 flex w-full items-center gap-4 rounded-lg border border-transparent px-6 py-3 transition-all duration-200 hover:shadow-sm"
               >
                 <IconComponent size={20} className="text-destructive" />
@@ -125,6 +124,125 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
           })}
         </div>
       </aside>
+      {/* Logout Confirmation Modal */}
+      {showLogoutModal && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 9999,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            backdropFilter: "blur(4px)",
+            animation: "fadeIn 0.15s ease",
+          }}
+          onClick={() => setShowLogoutModal(false)}
+        >
+          <div
+            style={{
+              background: "var(--background, #fff)",
+              borderRadius: "16px",
+              padding: "36px 32px 28px",
+              width: "100%",
+              maxWidth: "400px",
+              boxShadow: "0 25px 60px rgba(0,0,0,0.25)",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: "12px",
+              animation: "slideUp 0.2s ease",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Icon */}
+            <div
+              style={{
+                width: 56,
+                height: 56,
+                borderRadius: "50%",
+                background: "rgba(239,68,68,0.1)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                marginBottom: 4,
+              }}
+            >
+              <LogOut size={24} color="#ef4444" />
+            </div>
+
+            {/* Title */}
+            <h2 style={{ margin: 0, fontSize: "1.2rem", fontWeight: 700, color: "var(--foreground, #111)" }}>
+              Log Out
+            </h2>
+
+            {/* Message */}
+            <p
+              style={{
+                margin: "4px 0 16px",
+                fontSize: "0.925rem",
+                color: "var(--muted-foreground, #666)",
+                textAlign: "center",
+                lineHeight: 1.5,
+              }}
+            >
+              Are you sure you want to log out?
+            </p>
+
+            {/* Buttons */}
+            <div style={{ display: "flex", gap: 12, width: "100%" }}>
+              <button
+                onClick={() => setShowLogoutModal(false)}
+                style={{
+                  flex: 1,
+                  padding: "10px 0",
+                  borderRadius: 10,
+                  border: "1.5px solid var(--border, #e5e7eb)",
+                  background: "transparent",
+                  color: "var(--foreground, #111)",
+                  fontSize: "0.9rem",
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  transition: "background 0.15s",
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = "var(--muted, #f3f4f6)")}
+                onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  setShowLogoutModal(false);
+                  onClose();
+                  logout();
+                }}
+                style={{
+                  flex: 1,
+                  padding: "10px 0",
+                  borderRadius: 10,
+                  border: "none",
+                  background: "#ef4444",
+                  color: "#fff",
+                  fontSize: "0.9rem",
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  transition: "background 0.15s",
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = "#dc2626")}
+                onMouseLeave={(e) => (e.currentTarget.style.background = "#ef4444")}
+              >
+                Log Out
+              </button>
+            </div>
+          </div>
+
+          <style>{`
+            @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+            @keyframes slideUp { from { transform: translateY(16px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+          `}</style>
+        </div>
+      )}
     </>
   );
 };
