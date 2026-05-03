@@ -88,6 +88,7 @@ const HistoryPage = () => {
             <TableHeader>
               <TableRow>
                 <TableHead>Submission ID</TableHead>
+                <TableHead>Type</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Started At</TableHead>
                 <TableHead>Submitted At</TableHead>
@@ -97,7 +98,7 @@ const HistoryPage = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {submissionHistory.map((submission) => {
+              {submissionHistory.map((submission, index) => {
                 const metrics = getSubmissionMetrics(submission);
                 return (
                   <TableRow
@@ -105,7 +106,9 @@ const HistoryPage = () => {
                     className="cursor-pointer"
                     onClick={() => setSelectedSubmission(submission)}
                   >
-                    <TableCell className="font-medium">{submission.submission_id}</TableCell>
+                    {/* <TableCell className="font-medium">{submission.submission_id}</TableCell> */}
+                    <TableCell className="font-medium">{index+1}</TableCell>
+                    <TableCell>{submission.type}</TableCell>
                     <TableCell>
                       <Badge
                         variant={submission.status === "submitted" ? "default" : "secondary"}
