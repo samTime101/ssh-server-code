@@ -55,7 +55,13 @@ const CategoryList: React.FC<{ category: Category }> = ({ category }) => {
               id={`category-${category.id}`}
               className="border-input"
               checked={selectedCategoriesId.includes(category.id)}
-              onCheckedChange={() => handleCategorySelection(category.id)}
+              onCheckedChange={() => {
+                handleCategorySelection(category.id);
+                // Auto-expand the category when it is being selected
+                if (!selectedCategoriesId.includes(category.id) && !expandedCategories.includes(category.id)) {
+                  toggleCategoryExpansion(category.id);
+                }
+              }}
             />
             <label
               htmlFor={`category-${category.id}`}
@@ -110,7 +116,10 @@ const CategoryList: React.FC<{ category: Category }> = ({ category }) => {
                           <Checkbox
                             id={`subcategory-${subCategory.id}`}
                             className="border-input"
-                            checked={selectedSubCategoryId.includes(subCategory.id)}
+                            checked={
+                              selectedCategoriesId.includes(category.id) ||
+                              selectedSubCategoryId.includes(subCategory.id)
+                            }
                             onCheckedChange={() => handleSubCategorySelection(subCategory.id)}
                           />
                           <label
