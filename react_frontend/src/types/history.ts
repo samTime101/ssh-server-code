@@ -12,6 +12,7 @@ export interface SubmissionHistoryItem {
   type: string;
   submission_id: string;
   status: string;
+  type?: string;
   attempts: Attempt[];
   started_at?: string | null;
   submitted_at?: string | null;

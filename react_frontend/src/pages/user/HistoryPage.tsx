@@ -11,23 +11,27 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import type { SubmissionHistoryItem } from "@/types/history";
+import type { SubmissionHistoryItem, Attempt } from "@/types/history";
 import {
   formatHistoryDateTime,
   getSubmissionMetrics,
   getSubmissionOverview,
 } from "@/utils/historyUtils";
+import AttemptDetailModal from "@/components/user/AttemptDetailModal";
 
 const HistoryPage = () => {
   const [submissionHistory, setSubmissionHistory] = useState<SubmissionHistoryItem[]>([]);
   const [isLoading, setLoading] = useState(true);
   const [selectedSubmission, setSelectedSubmission] = useState<SubmissionHistoryItem | null>(null);
+  const [selectedAttempt, setSelectedAttempt] = useState<Attempt | null>(null);
 
   useEffect(() => {
     async function fetchSubmissionHistory() {
       try {
         const data = await getSubmissionHistory();
-        setSubmissionHistory(data);
+        // Filter submissions with at least one attempt
+        const filtered = data.filter((s) => (s.attempts?.length ?? 0) > 0);
+        setSubmissionHistory(filtered);
       } catch (error) {
         console.error("Error fetching submission history:", error);
       } finally {
@@ -110,6 +114,9 @@ const HistoryPage = () => {
                     <TableCell className="font-medium">{index+1}</TableCell>
                     <TableCell>{submission.type}</TableCell>
                     <TableCell>
+                      <Badge variant="outline">{submission.type || "question_bank"}</Badge>
+                    </TableCell>
+                    <TableCell>
                       <Badge
                         variant={submission.status === "submitted" ? "default" : "secondary"}
                         className={
@@ -164,7 +171,11 @@ const HistoryPage = () => {
             </TableHeader>
             <TableBody>
               {(selectedSubmission?.attempts ?? []).map((attempt, idx) => (
-                <TableRow key={`${selectedSubmission?.submission_id}-${idx}`}>
+                <TableRow
+                  key={`${selectedSubmission?.submission_id}-${idx}`}
+                  className="hover:bg-muted cursor-pointer transition-colors"
+                  onClick={() => setSelectedAttempt(attempt)}
+                >
                   <TableCell className="w-[38%] break-words whitespace-normal">
                     {attempt.question_text}
                   </TableCell>
@@ -211,6 +222,12 @@ const HistoryPage = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      <AttemptDetailModal
+        attempt={selectedAttempt}
+        isOpen={Boolean(selectedAttempt)}
+        onClose={() => setSelectedAttempt(null)}
+      />
     </div>
   );
 };
