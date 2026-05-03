@@ -1,6 +1,5 @@
-import { Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
-
+import { Link } from "react-router-dom";
 
 const LandingPage = () => {
   return (
@@ -13,9 +12,7 @@ const LandingPage = () => {
         <div className="bg-glow" />
         <div className="bg-fade-bottom" />
       </div>
-
       <Navbar />
-
       {/* HERO */}
       <section className="mx-auto px-6 pt-12 pb-20 relative z-10 max-w-[1200px]">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
@@ -43,7 +40,7 @@ const LandingPage = () => {
                 </button>
               </Link>
 
-              <a
+              {/* <a
                 href="#demo"
                 className="flex items-center gap-2 text-sm font-medium text-slate-400 hover:text-slate-200 transition"
               >
@@ -57,7 +54,7 @@ const LandingPage = () => {
                   />
                 </svg>
                 <span>demo</span>
-              </a>
+              </a> */}
             </div>
           </div>
 
@@ -150,21 +147,30 @@ const LandingPage = () => {
             {/* Brand */}
             <div className="col-span-2 md:col-span-1">
               <div className="flex items-center gap-2 mb-4">
-                <div className="w-[34px] h-[34px] flex items-center justify-center rounded-lg bg-gradient-to-br from-teal-600 to-teal-400">
-                  <span className="text-white font-bold">V</span>
-                </div>
-                <span className="text-base font-bold text-slate-100">
+                <div className="logo-icon">
+                    <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+                      <polyline
+                        points="2,15 6,15 9,8 13,20 17,6 20,15 24,15"
+                        stroke="white"
+                        strokeWidth="2.2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        fill="none"
+                      />
+                    </svg>
+                  </div>
+                <span className="text-base font-bold ">
                   Vaidix
                 </span>
               </div>
 
-              <p className="text-sm text-slate-500 max-w-[220px]">
+              <p className="text-sm ">
                 Building clinical confidence through smarter practice.
               </p>
             </div>
 
             {/* Columns */}
-            {["Product", "Resources", "Company"].map((section) => (
+            {/* {["Product", "Resources", "Company"].map((section) => (
               <div key={section}>
                 <h4 className="text-xs font-semibold uppercase tracking-widest mb-4 text-slate-400">
                   {section}
@@ -175,7 +181,7 @@ const LandingPage = () => {
                     <li key={item}>
                       <a
                         href="#"
-                        className="text-sm text-slate-500 hover:text-slate-200 transition"
+                        className="text-sm  hover:text-slate-200 transition"
                       >
                         {item}
                       </a>
@@ -183,20 +189,20 @@ const LandingPage = () => {
                   ))}
                 </ul>
               </div>
-            ))}
+            ))} */}
 
           </div>
 
           {/* Bottom */}
           <div className="flex flex-col sm:flex-row items-center justify-between mt-12 pt-6 gap-4 border-t border-slate-700/30">
-            <p className="text-xs text-slate-600">
+            <p className="text-xs ">
               © 2026 Vaidix. All rights reserved.
             </p>
 
-            <div className="flex gap-5 text-slate-500">
-              <a href="#" className="hover:text-white">X</a>
-              <a href="#" className="hover:text-white">LinkedIn</a>
-              <a href="#" className="hover:text-white">Instagram</a>
+            <div className="flex gap-5 ">
+              <a href="#" className="hover:text-white">Powered by:</a>
+              <a href="https://sisanitech.com.np" >SisaniTech</a>
+        
             </div>
           </div>
 

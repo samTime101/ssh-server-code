@@ -9,7 +9,7 @@
   --card-foreground: oklch(0.2077 0.0398 265.7549);
   --popover: oklch(1.0000 0 0);
   --popover-foreground: oklch(0.2077 0.0398 265.7549);
-  --primary: oklch(0.5854 0.2041 277.1173);
+  --primary:  #4f6bff;
   --primary-foreground: oklch(1.0000 0 0);
   --secondary: oklch(0.9288 0.0126 255.5078);
   --secondary-foreground: oklch(0.2795 0.0368 260.0310);
@@ -21,20 +21,20 @@
   --destructive-foreground: oklch(1.0000 0 0);
   --border: oklch(0.9288 0.0126 255.5078);
   --input: oklch(0.9288 0.0126 255.5078);
-  --ring: oklch(0.5854 0.2041 277.1173);
-  --chart-1: oklch(0.5854 0.2041 277.1173);
+  --ring: #4f6bff; 
+  --chart-1: #4f6bff; 
   --chart-2: oklch(0.6056 0.2189 292.7172);
   --chart-3: oklch(0.6559 0.2118 354.3084);
   --chart-4: oklch(0.8606 0.1731 91.9357);
   --chart-5: oklch(0.7971 0.1339 211.5302);
   --sidebar: oklch(0.9800 0.0300 260);
   --sidebar-foreground: oklch(0.2077 0.0398 265.7549);
-  --sidebar-primary: oklch(0.5854 0.2041 277.1173);
+  --sidebar-primary: #4f6bff;
   --sidebar-primary-foreground: oklch(1.0000 0 0);
   --sidebar-accent: oklch(0.9299 0.0334 272.7879);
   --sidebar-accent-foreground: oklch(0.3984 0.1773 277.3662);
   --sidebar-border: oklch(0.9288 0.0126 255.5078);
-  --sidebar-ring: oklch(0.5854 0.2041 277.1173);
+  --sidebar-ring: #4f6bff; 
   --font-sans: Afacad, ui-sans-serif, sans-serif, system-ui;
   --font-serif: Adamina, ui-serif, serif;
   --font-mono: Fira Code, ui-monospace, monospace;
@@ -188,7 +188,7 @@
   overflow: hidden;
   font-family: 'DM Sans', sans-serif;
   color: #e2e8f0;
-  background: linear-gradient(180deg, #0c1428 0%, #0f1a30 40%, #111d35 100%);
+  background: linear-gradient(180deg, #edf9ff 0%, #edf9ff 40%, #edf9ff 100%); 
 }
 
 /* ====== ANIMATIONS ====== */
@@ -208,7 +208,7 @@
 }
 
 /* ====== BACKGROUND LAYERS ====== */
-.bg-grid-main {
+/* .bg-grid-main {
   position: absolute;
   inset: -60px;
   background-image:
@@ -249,13 +249,13 @@
   right: 0;
   height: 40%;
   background: linear-gradient(to top, #0c1428 0%, transparent 100%);
-}
+} */
 
 /* ====== HERO TEXT ====== */
 .hero-title {
   font-family: 'DM Serif Display', serif;
   font-size: clamp(2.5rem, 5vw, 3.8rem);
-  color: #f1f5f9;
+  color: #000000;
   font-weight: 400;
   line-height: 1.08;
   letter-spacing: -0.02em;
@@ -319,6 +319,110 @@
 /* ====== FOOTER ====== */
 .footer-root {
   border-top: 1px solid rgba(148, 163, 184, 0.1);
-  background: rgba(8, 14, 30, 0.6);
+  background: #3970ba ;
   backdrop-filter: blur(12px);
+  font-size: 1rem; /* or use px, em, rem */
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+  color: #fff;
+
 }
+/* ====== End FOOTER ====== */
+
+/* ====== Navbar Container ====== */
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  margin-left: auto;
+  margin-right: auto;
+  position: relative;
+  z-index: 10;
+  max-width: 1200px;
+}
+
+/* Logo Section */
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.logo-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 0.75rem;
+  background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%);
+}
+
+.logo-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.logo-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: #3b5bfd;
+  font-family: 'DM Sans', sans-serif;
+  line-height: 1.2;
+}
+
+.logo-subtitle {
+  display: block;
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #64748b;
+  margin-top: -2px;
+}
+
+/* Navigation Links */
+.nav-links {
+  display: none;
+  align-items: center;
+  gap: 2rem;
+}
+
+@media (min-width: 768px) {
+  .nav-links {
+    display: flex;
+  }
+}
+
+.nav-link {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #94a3b8;
+  text-decoration: none;
+  transition: color 0.2s ease;
+  cursor: pointer;
+}
+
+.nav-link:hover {
+  color: #e2e8f0;
+}
+
+/* CTA Button */
+.cta-button {
+  padding: 0.625rem 1.5rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(135deg, #3b5bfd 0%, #4f6bff 100%);
+  border: none;
+  transition: background 0.2s ease;
+  cursor: pointer;
+}
+
+.cta-button:hover {
+  background: linear-gradient(135deg, #4f6bff 0%, #6b82ff 100%);
+}
+
+/* ====== End Navbar Container ====== */
