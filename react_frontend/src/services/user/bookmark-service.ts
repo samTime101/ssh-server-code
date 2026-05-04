@@ -13,7 +13,6 @@ export const getBookmarks = async (page = 1, pageSize = 5) => {
     return null;
   }
 };
-
 export const getAllBookmarkIds = async (): Promise<string[]> => {
   try {
     const response = await axiosInstance.get(API_ENDPOINTS.bookmarks, {
