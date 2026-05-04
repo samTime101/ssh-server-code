@@ -14,6 +14,21 @@ export const getBookmarks = async (page = 1, pageSize = 5) => {
   }
 };
 
+export const getAllBookmarkIds = async (): Promise<string[]> => {
+  try {
+    const response = await axiosInstance.get(API_ENDPOINTS.bookmarks, {
+      params: { page: 1, page_size: 1000 },
+    });
+    if (!response?.data?.results) return [];
+    return response.data.results.map(
+      (item: { question_id: string }) => item.question_id
+    );
+  } catch (error) {
+    console.error("Error fetching bookmark IDs:", error);
+    return [];
+  }
+};
+
 export const getQuestionById = async (questionId: string) => {
   try {
     const response = await axiosInstance.get(`/questions/${questionId}/`);
