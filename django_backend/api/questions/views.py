@@ -7,6 +7,7 @@ from rest_framework_mongoengine import viewsets
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import action
+from api.questions.serializers.csv_upload import CSVUploadSerializer, QuestionCSVParser
 from core.constants.status import APPROVED_STATUS, IN_PROGRESS_STATUS
 from mongo.models import Question, Bookmark, Bookmarks, Submissions
 from api.questions.serializers.question import *
@@ -17,7 +18,7 @@ from core.selection.selection import get_questions_by_selection
 from core.pagination import StandardResultsSetPagination,QuestionResultsSetPagination
 # from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from core.permissions.permissions import IsAdminUser, IsAuthenticated,AllowAny
-from rest_framework.parsers import JSONParser
+from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
 from core.parser import QuestionMultipartJsonParser
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework.exceptions import NotFound
@@ -98,6 +99,51 @@ class QuestionViewSet(viewsets.ModelViewSet):
     def remove_bookmark(self, request, id=None):
         question = self.get_object()
         user_guid = getattr(request.user, "user_guid", None)
+
+    # For CSV bulk upload
+    # /api/questions/upload_csv/
+    @action(
+        detail=False, 
+        methods=['post'], 
+        url_path='upload_csv',
+        serializer_class=CSVUploadSerializer,
+        permission_classes=[IsAdminUser],
+        parser_classes=[MultiPartParser, FormParser]
+    )
+    def upload_csv(self, request):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        csv_file = request.FILES.get('csv_file')
+        if not csv_file:
+            return Response(
+                {"error": "csv_file is required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        parser = QuestionCSVParser()
+        result = parser.parse_csv(csv_file)
+        
+        if result['errors'] and not result['created']:
+            return Response(
+                {
+                    "success": False,
+                    "message": "Failed to upload questions",
+                    "created": 0,
+                    "errors": result['errors']
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        return Response(
+            {
+                "success": True,
+                "message": f"Successfully created {result['created']} question(s)",
+                "created": result['created'],
+                "errors": result['errors'],
+            },
+            status=status.HTTP_201_CREATED if result['created'] > 0 else status.HTTP_200_OK
+        )
         # check if bookmark exists before trying to remove
         existing_bookmark = Bookmarks.objects(user_guid=user_guid, bookmark__question=question.id).first()
         if not existing_bookmark:
