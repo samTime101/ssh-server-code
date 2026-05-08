@@ -7,7 +7,8 @@ from rest_framework_mongoengine import viewsets
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import action
-from api.questions.serializers.csv_upload import CSVUploadSerializer, QuestionCSVParser
+from api.questions.serializers.csv_upload import CSVUploadSerializer
+from core.parser import QuestionCSVParser
 from core.constants.status import APPROVED_STATUS, IN_PROGRESS_STATUS
 from mongo.models import Question, Bookmark, Bookmarks, Submissions
 from api.questions.serializers.question import *
@@ -99,6 +100,12 @@ class QuestionViewSet(viewsets.ModelViewSet):
     def remove_bookmark(self, request, id=None):
         question = self.get_object()
         user_guid = getattr(request.user, "user_guid", None)
+        # check if bookmark exists before trying to remove
+        existing_bookmark = Bookmarks.objects(user_guid=user_guid, bookmark__question=question.id).first()
+        if not existing_bookmark:
+            raise NotFound("Bookmark not found.")
+        Bookmarks.objects(user_guid=user_guid).update_one(pull__bookmark__question=question.id)
+        return Response({"detail": "Bookmark removed successfully"}, status=status.HTTP_200_OK)
 
     # For CSV bulk upload
     # /api/questions/upload_csv/
@@ -144,12 +151,6 @@ class QuestionViewSet(viewsets.ModelViewSet):
             },
             status=status.HTTP_201_CREATED if result['created'] > 0 else status.HTTP_200_OK
         )
-        # check if bookmark exists before trying to remove
-        existing_bookmark = Bookmarks.objects(user_guid=user_guid, bookmark__question=question.id).first()
-        if not existing_bookmark:
-            raise NotFound("Bookmark not found.")
-        Bookmarks.objects(user_guid=user_guid).update_one(pull__bookmark__question=question.id)
-        return Response({"detail": "Bookmark removed successfully"}, status=status.HTTP_200_OK)
 
     # For question selection
     # /api/questions/select/
