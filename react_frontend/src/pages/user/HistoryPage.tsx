@@ -147,7 +147,6 @@ const HistoryPage = () => {
                   >
                     {/* <TableCell className="font-medium">{submission.submission_id}</TableCell> */}
                     <TableCell className="font-medium">{index + 1}</TableCell>
-                    <TableCell>{submission.type}</TableCell>
                     <TableCell>
                       <Badge variant="outline">{submission.type || "question_bank"}</Badge>
                     </TableCell>
