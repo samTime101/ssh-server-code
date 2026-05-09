@@ -6,7 +6,7 @@ from rest_framework.exceptions import ParseError
 from mongo.models import Question, SubCategory, Option
 from core.constants.status import APPROVED_STATUS, QUESTION_STATUSES
 from bson import ObjectId
-from core.constants import CSV_REQUIRED_FIELDS, CSV_VALID_OPTION_TYPES, CSV_VALID_DIFFICULTIES
+from core.constants.csv import CSV_REQUIRED_FIELDS, CSV_VALID_OPTION_TYPES, CSV_VALID_DIFFICULTIES
 
 # data vanne field ma question ko JSON data aauxa, this will just extract that
 #  and return as dict along with files
