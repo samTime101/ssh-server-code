@@ -38,6 +38,7 @@ export interface QuestionSetPayload {
   name: string;
   description: string;
   question_ids: string[];
+  constraint?: string | null;
 }
 
 export interface QuestionSetListResponse {

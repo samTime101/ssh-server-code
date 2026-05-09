@@ -15,6 +15,7 @@ import AddQuestionPage from "@/pages/admin/AddQuestionPage";
 import CreateCategoryPage from "@/pages/admin/CreateCategoryPage";
 import ManageCategoriesPage from "@/pages/admin/ManageCategoriesPage";
 import ManageSubcategoriesPage from "@/pages/admin/ManageSubcategoriesPage";
+import ManageConstraintsPage from "@/pages/admin/ManageConstraintsPage";
 import ManageUsersPage from "@/pages/admin/ManageUsersPage";
 import EditUserPage from "@/pages/admin/EditUserPage";
 import QuestionBankPage from "@/pages/admin/QuestionBankPage";
@@ -144,6 +145,10 @@ const App = () => {
 
           <Route element={<RoleRoute allowedPermissions={["manage-subcategories"]} />}>
             <Route path="manage-subcategories" element={<ManageSubcategoriesPage />} />
+          </Route>
+
+          <Route element={<RoleRoute allowedPermissions={["manage-constraints"]} />}>
+            <Route path="manage-constraints" element={<ManageConstraintsPage />} />
           </Route>
 
           <Route element={<RoleRoute allowedPermissions={["manage-users"]} />}>

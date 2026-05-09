@@ -7,6 +7,7 @@ import {
   FileText,
   Settings,
   List,
+  SlidersHorizontal,
 } from "lucide-react";
 import type { NavItem } from "@/types/sidebar";
 
@@ -85,5 +86,11 @@ export const CATEGORY_SUB_ITEMS: NavItem[] = [
     text: "Manage Subcategories",
     path: "/admin/manage-subcategories",
     allowedPermissions: ["manage-subcategories"],
+  },
+  {
+    icon: SlidersHorizontal,
+    text: "Constraints",
+    path: "/admin/manage-constraints",
+    allowedPermissions: ["manage-constraints"],
   },
 ];
