@@ -124,7 +124,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
         csv_file = request.FILES.get('csv_file')
         if not csv_file:
             return Response(
-                {"error": "csv_file is required"},
+                {"detail": "csv_file is required."},
                 status=status.HTTP_400_BAD_REQUEST
             )
         
@@ -134,8 +134,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
         if result['errors'] and not result['created']:
             return Response(
                 {
-                    "success": False,
-                    "message": "Failed to upload questions",
+                    "detail": "Failed to upload questions",
                     "created": 0,
                     "errors": result['errors']
                 },
@@ -144,8 +143,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
         
         return Response(
             {
-                "success": True,
-                "message": f"Successfully created {result['created']} question(s)",
+                "detail": f"Successfully created {result['created']} question(s)",
                 "created": result['created'],
                 "errors": result['errors'],
             },
