@@ -34,6 +34,7 @@ export const API_ENDPOINTS = {
   usersList: "/users/",
   adminQuestions: "/questions/",
   questionSets: "/sets/",
+  constraints: "/constraints/",
   // Roles (backend endpoint should expose /roles/)
   roles: "/roles/",
   userRoles: "/user-roles/",

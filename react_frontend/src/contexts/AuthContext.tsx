@@ -73,8 +73,8 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  const handleAuthSuccess = (accessToken: string) => {
-    setUser(user);
+  const handleAuthSuccess = (accessToken: string, fetchedUser: User | null) => {
+    setUser(fetchedUser);
     setToken(accessToken);
     navigate("/");
     // localStorage.setItem("user", JSON.stringify(user));
@@ -95,7 +95,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
 
         toast.success("Login successful! Welcome back.");
-        handleAuthSuccess(response.data.access);
+        handleAuthSuccess(response.data.access, userInfo);
       }
     } catch (error) {
       console.error("Login failed:", error);
@@ -138,7 +138,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (response) {
         toast.success("Registration successful! Check your email to verify your account.");
         // navigate("/auth/login");
-        if(!token){
+        if (!token) {
           navigate("/auth/login");
         }
       }

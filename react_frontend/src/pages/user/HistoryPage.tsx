@@ -1,5 +1,7 @@
 import { getSubmissionHistory } from "@/services/user/history-service";
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -11,19 +13,22 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import type { SubmissionHistoryItem, Attempt } from "@/types/history";
+import type { SubmissionHistoryItem } from "@/types/history";
 import {
   formatHistoryDateTime,
   getSubmissionMetrics,
   getSubmissionOverview,
 } from "@/utils/historyUtils";
-import AttemptDetailModal from "@/components/user/AttemptDetailModal";
+import { getQuestionById } from "@/services/user/question-service";
+import { useQuestions } from "@/hooks/useQuestions";
 
 const HistoryPage = () => {
+  const navigate = useNavigate();
+  const { setSessionQuestions, clearSessionTimer, setIsExamModeEnabled } = useQuestions();
   const [submissionHistory, setSubmissionHistory] = useState<SubmissionHistoryItem[]>([]);
   const [isLoading, setLoading] = useState(true);
   const [selectedSubmission, setSelectedSubmission] = useState<SubmissionHistoryItem | null>(null);
-  const [selectedAttempt, setSelectedAttempt] = useState<Attempt | null>(null);
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
   useEffect(() => {
     async function fetchSubmissionHistory() {
@@ -43,6 +48,36 @@ const HistoryPage = () => {
 
   const { totalSubmissions, totalAttempts, correctAttempts, incorrectAttempts } =
     getSubmissionOverview(submissionHistory);
+
+  const handleAttemptStart = async (submission: SubmissionHistoryItem, attemptIndex: number) => {
+    const questionId = submission.selected_question_ids?.[attemptIndex];
+
+    if (!questionId) {
+      toast.error("Question not available for this attempt.");
+      return;
+    }
+
+    try {
+      setIsRedirecting(true);
+      const question = await getQuestionById(questionId);
+
+      if (!question) {
+        toast.error("Failed to load the question.");
+        return;
+      }
+
+      clearSessionTimer();
+      setIsExamModeEnabled(false);
+      setSessionQuestions([question], submission.submission_id);
+      setSelectedSubmission(null);
+      navigate("/userpanel/question");
+    } catch (error) {
+      console.error("Error starting single-question session:", error);
+      toast.error("Unable to start the question session.");
+    } finally {
+      setIsRedirecting(false);
+    }
+  };
 
   return (
     <div className="space-y-8 p-6">
@@ -111,8 +146,7 @@ const HistoryPage = () => {
                     onClick={() => setSelectedSubmission(submission)}
                   >
                     {/* <TableCell className="font-medium">{submission.submission_id}</TableCell> */}
-                    <TableCell className="font-medium">{index+1}</TableCell>
-                    <TableCell>{submission.type}</TableCell>
+                    <TableCell className="font-medium">{index + 1}</TableCell>
                     <TableCell>
                       <Badge variant="outline">{submission.type || "question_bank"}</Badge>
                     </TableCell>
@@ -154,9 +188,7 @@ const HistoryPage = () => {
       <Dialog open={Boolean(selectedSubmission)} onOpenChange={() => setSelectedSubmission(null)}>
         <DialogContent className="bg-card max-h-[90vh] w-[96vw] sm:max-w-[96vw] lg:max-w-[1200px]">
           <DialogHeader>
-            <DialogTitle>
-              Submission Details {selectedSubmission ? `- ${selectedSubmission.submission_id}` : ""}
-            </DialogTitle>
+            <DialogTitle>Submission Details</DialogTitle>
           </DialogHeader>
 
           <Table className="table-fixed">
@@ -173,8 +205,10 @@ const HistoryPage = () => {
               {(selectedSubmission?.attempts ?? []).map((attempt, idx) => (
                 <TableRow
                   key={`${selectedSubmission?.submission_id}-${idx}`}
-                  className="hover:bg-muted cursor-pointer transition-colors"
-                  onClick={() => setSelectedAttempt(attempt)}
+                  className={`hover:bg-muted cursor-pointer transition-colors ${
+                    isRedirecting ? "pointer-events-none opacity-60" : ""
+                  }`}
+                  onClick={() => selectedSubmission && handleAttemptStart(selectedSubmission, idx)}
                 >
                   <TableCell className="w-[38%] break-words whitespace-normal">
                     {attempt.question_text}
@@ -222,12 +256,6 @@ const HistoryPage = () => {
           )}
         </DialogContent>
       </Dialog>
-
-      <AttemptDetailModal
-        attempt={selectedAttempt}
-        isOpen={Boolean(selectedAttempt)}
-        onClose={() => setSelectedAttempt(null)}
-      />
     </div>
   );
 };

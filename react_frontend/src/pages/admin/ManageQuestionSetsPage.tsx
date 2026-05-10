@@ -66,7 +66,16 @@ const ManageQuestionSetsPage = () => {
     toggleQuestionSelection,
     toggleCurrentPageQuestions,
     removeSelectedQuestion,
+    constraints,
+    selectedConstraintId,
+    setSelectedConstraintId,
+    constraintTotalRequired,
   } = useManageQuestionSets();
+
+  const selectedConstraint =
+    selectedConstraintId === "none"
+      ? null
+      : (constraints.find((constraint) => constraint.id === selectedConstraintId) ?? null);
 
   return (
     <div>
@@ -153,6 +162,39 @@ const ManageQuestionSetsPage = () => {
             placeholder="Description"
             rows={3}
           />
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Constraint</label>
+            <Select value={selectedConstraintId} onValueChange={setSelectedConstraintId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select a constraint" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">No constraint</SelectItem>
+                {constraints.map((constraint) => (
+                  <SelectItem key={constraint.id} value={constraint.id}>
+                    {constraint.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            {selectedConstraint && (
+              <div className="border-border bg-muted/40 rounded-md border p-3">
+                <p className="text-muted-foreground text-sm">
+                  Total required questions:{" "}
+                  <span className="font-medium">{constraintTotalRequired}</span>
+                </p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {selectedConstraint.rules.map((rule) => (
+                    <Badge key={rule.categoryId} variant="secondary">
+                      {rule.categoryName || "Category"}: {rule.count}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
 
           <div className="border-border bg-muted/30 rounded-md border p-3">
             <p className="mb-2 text-sm font-medium">Selected Questions ({selectedCount})</p>

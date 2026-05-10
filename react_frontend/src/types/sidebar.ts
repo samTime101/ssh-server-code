@@ -20,5 +20,5 @@ export interface CollapsibleNavGroupProps {
   isOpen: boolean;
   onToggle: () => void;
   onNavClick: () => void;
-  currentPath: string;
+  isPathActive: (path: string) => boolean;
 }

@@ -31,14 +31,17 @@ export const useAdminSidebar = () => {
     hasPermission(item.allowedPermissions)
   );
 
-  const isQuestionGroupActive = QUESTION_SUB_ITEMS.some((item) => location.pathname === item.path);
-  const isCategoryGroupActive = CATEGORY_SUB_ITEMS.some((item) => location.pathname === item.path);
+  const isPathActive = (path: string) =>
+    location.pathname === path || location.pathname.startsWith(`${path}/`);
+
+  const isQuestionGroupActive = QUESTION_SUB_ITEMS.some((item) => isPathActive(item.path));
+  const isCategoryGroupActive = CATEGORY_SUB_ITEMS.some((item) => isPathActive(item.path));
 
   const [questionsOpen, setQuestionsOpen] = useState(isQuestionGroupActive);
   const [categoriesOpen, setCategoriesOpen] = useState(isCategoryGroupActive);
 
   return {
-    currentPath: location.pathname,
+    isPathActive,
     visibleTopItems,
     visibleBottomItems,
     visibleQuestionItems,
