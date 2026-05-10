@@ -13,7 +13,7 @@ const CollapsibleNavGroup = ({
   isOpen,
   onToggle,
   onNavClick,
-  currentPath,
+  isPathActive,
 }: CollapsibleNavGroupProps) => {
   const chevronClass = isGroupActive ? "text-sidebar-primary-foreground" : "text-muted-foreground";
 
@@ -43,7 +43,7 @@ const CollapsibleNavGroup = ({
         <ul className="mt-1 flex flex-col gap-1 pl-4">
           {items.map((item) => {
             const ItemIcon = item.icon;
-            const isActive = currentPath === item.path;
+            const isActive = isPathActive(item.path);
 
             return (
               <Link
@@ -74,7 +74,7 @@ const AdminSidebar = ({ isOpen, onClose }: AdminSidebarProps) => {
   const { logout } = useAuth();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const {
-    currentPath,
+    isPathActive,
     visibleTopItems,
     visibleBottomItems,
     visibleQuestionItems,
@@ -118,7 +118,7 @@ const AdminSidebar = ({ isOpen, onClose }: AdminSidebarProps) => {
           <ul className="flex flex-col gap-2 px-4">
             {visibleTopItems.map((item) => {
               const IconComponent = item.icon;
-              const isActive = currentPath === item.path;
+              const isActive = isPathActive(item.path);
 
               return (
                 <Link
@@ -151,7 +151,7 @@ const AdminSidebar = ({ isOpen, onClose }: AdminSidebarProps) => {
                 isOpen={questionsOpen}
                 onToggle={toggleQuestions}
                 onNavClick={onClose}
-                currentPath={currentPath}
+                isPathActive={isPathActive}
               />
             )}
 
@@ -164,13 +164,13 @@ const AdminSidebar = ({ isOpen, onClose }: AdminSidebarProps) => {
                 isOpen={categoriesOpen}
                 onToggle={toggleCategories}
                 onNavClick={onClose}
-                currentPath={currentPath}
+                isPathActive={isPathActive}
               />
             )}
 
             {visibleBottomItems.map((item) => {
               const IconComponent = item.icon;
-              const isActive = currentPath === item.path;
+              const isActive = isPathActive(item.path);
 
               return (
                 <Link
@@ -262,7 +262,14 @@ const AdminSidebar = ({ isOpen, onClose }: AdminSidebarProps) => {
             </div>
 
             {/* Title */}
-            <h2 style={{ margin: 0, fontSize: "1.2rem", fontWeight: 700, color: "var(--foreground, #111)" }}>
+            <h2
+              style={{
+                margin: 0,
+                fontSize: "1.2rem",
+                fontWeight: 700,
+                color: "var(--foreground, #111)",
+              }}
+            >
               Log Out
             </h2>
 

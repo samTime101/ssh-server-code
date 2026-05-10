@@ -7,8 +7,10 @@ import {
   fetchSelectableQuestions,
   updateQuestionSet,
 } from "@/services/admin/questionset-service";
+import { fetchConstraints } from "@/services/admin/constraint-service";
 import { fetchCategoriesWithHierarchy } from "@/services/admin/category-service";
 import type { Category, SubCategory } from "@/types/category";
+import type { Constraint } from "@/types/constraint";
 import type { QuestionSet, QuestionSetPayload, SelectableQuestion } from "@/types/questionset";
 import { extractQuestionIds } from "@/utils/questionSetUtils";
 
@@ -40,6 +42,8 @@ export const useManageQuestionSets = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState("all");
   const [selectedSubCategoryId, setSelectedSubCategoryId] = useState("all");
+  const [constraints, setConstraints] = useState<Constraint[]>([]);
+  const [selectedConstraintId, setSelectedConstraintId] = useState("none");
 
   const subCategories: SubCategory[] =
     categories.find((category) => category.id === selectedCategoryId)?.sub_categories ?? [];
@@ -59,6 +63,19 @@ export const useManageQuestionSets = () => {
     };
 
     loadCategories();
+  }, []);
+
+  useEffect(() => {
+    const loadConstraints = async () => {
+      try {
+        const data = await fetchConstraints();
+        setConstraints(data.constraints);
+      } catch {
+        toast.error("Failed to load constraints");
+      }
+    };
+
+    loadConstraints();
   }, []);
 
   useEffect(() => {
@@ -104,6 +121,13 @@ export const useManageQuestionSets = () => {
   ]);
 
   const selectedCount = selectedQuestionIds.length;
+  const selectedConstraint =
+    selectedConstraintId === "none"
+      ? null
+      : (constraints.find((constraint) => constraint.id === selectedConstraintId) ?? null);
+  const constraintTotalRequired = selectedConstraint
+    ? selectedConstraint.rules.reduce((sum, rule) => sum + rule.count, 0)
+    : 0;
 
   const selectedQuestionTextById = useMemo(() => {
     const map = new Map<string, string>();
@@ -145,6 +169,7 @@ export const useManageQuestionSets = () => {
     setPickerPage(1);
     setSelectedCategoryId("all");
     setSelectedSubCategoryId("all");
+    setSelectedConstraintId("none");
   };
 
   const openCreateForm = () => {
@@ -157,6 +182,7 @@ export const useManageQuestionSets = () => {
     setName(set.name);
     setDescription(set.description || "");
     setSelectedQuestionIds(extractQuestionIds(set.questions));
+    setSelectedConstraintId("none");
     setIsFormOpen(true);
   };
 
@@ -165,11 +191,19 @@ export const useManageQuestionSets = () => {
     resetForm();
   };
 
-  const buildPayload = (): QuestionSetPayload => ({
-    name: name.trim(),
-    description: description.trim(),
-    question_ids: selectedQuestionIds,
-  });
+  const buildPayload = (): QuestionSetPayload => {
+    const payload: QuestionSetPayload = {
+      name: name.trim(),
+      description: description.trim(),
+      question_ids: selectedQuestionIds,
+    };
+
+    if (selectedConstraintId !== "none") {
+      payload.constraint = selectedConstraintId;
+    }
+
+    return payload;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -177,6 +211,21 @@ export const useManageQuestionSets = () => {
     if (!name.trim()) {
       toast.error("Set name is required");
       return;
+    }
+
+    if (selectedConstraintId !== "none") {
+      if (!selectedConstraint) {
+        toast.error("Selected constraint could not be found");
+        return;
+      }
+      if (constraintTotalRequired === 0) {
+        toast.error("Constraint rules are missing");
+        return;
+      }
+      if (selectedCount !== constraintTotalRequired) {
+        toast.error(`Selected questions must match constraint total (${constraintTotalRequired}).`);
+        return;
+      }
     }
 
     setIsSubmitting(true);
@@ -291,5 +340,9 @@ export const useManageQuestionSets = () => {
     toggleQuestionSelection,
     toggleCurrentPageQuestions,
     removeSelectedQuestion,
+    constraints,
+    selectedConstraintId,
+    setSelectedConstraintId,
+    constraintTotalRequired,
   };
 };

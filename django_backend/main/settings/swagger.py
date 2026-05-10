@@ -3,6 +3,13 @@ SPECTACULAR_SETTINGS = {
     "TITLE": "MCQ API",
     "DESCRIPTION": """
 
+## May 9, 2026 Ishan Upadhyay
+- Added bulk CSV upload endpoint for question creation, including serializer and view wiring.
+- Refactored CSV upload handling, moved validation into the parser, and introduced constants for CSV validation.
+- Moved CSV-related hardcoded values into `core.constants.csv` for clearer reuse.
+- Enabled attempting bookmarked questions with session handling in the Bookmarks page.
+
+
 ## April 10, 2026
 - Seperated and defined constants for statues in `core.constants.status` to ensure consistency and maintainability across the codebase. Updated all relevant models, serializers, and views to utilize these constants for status fields, improving code readability and reducing the likelihood of errors due to typos or inconsistent status values.
 - Unlinked Questions from set when question status is changed from approved to pending or rejected.
