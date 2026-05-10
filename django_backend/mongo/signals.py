@@ -3,7 +3,7 @@
 from datetime import datetime
 from mongoengine import signals
 from core.constants.status import APPROVED_STATUS
-from .models import Question, QuestionClassification, SubCategory, Category, Submissions, Bookmarks, QuestionSet
+from .models import Question, QuestionClassification, SubCategory, Category, Submissions, Bookmarks, QuestionSet, Constraint
 from core.cloudinary import delete_question_folder
 
 
@@ -55,6 +55,8 @@ def subcategory_post_delete(sender, document, **kwargs):
 # Cascade ma xa Subcategory ma so logs matra rakheko
 def category_post_delete(sender, document, **kwargs):
     print(f"Category '{document.name}' deleted, Subcat ison cascade and questions on signals")
+    # when category is deleted, pull that reference from Constraint rules
+    Constraint.objects(rules__category=document).update(pull__rules__category=document)
 
 signals.pre_save.connect(question_pre_save, sender=Question)
 signals.post_save.connect(question_post_save, sender=Question)
