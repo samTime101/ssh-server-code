@@ -16,7 +16,6 @@ import { cn } from "@/lib/utils";
 import { Command, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import type { SignupFormProps } from "@/types/signupform";
-import Navbar from "./Navbar";
 
 const SignupForm: React.FC<SignupFormProps> = ({ onSuccess, addUser }) => {
   const { register } = useAuth();

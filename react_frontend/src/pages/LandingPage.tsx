@@ -27,7 +27,7 @@ const LandingPage = () => {
               <span className="hero-highlight">Precision.</span>
             </h1>
 
-            <p className="mt-8 text-lg leading-relaxed text-slate-400 max-w-[420px]">
+            <p className="mt-8 text-lg leading-relaxed text-slate-400 max-w-[420px] hero-text">
               Vaidix is built for medical students who take their craft seriously.
               Deep question banks, clinical reasoning, and adaptive feedback —
               designed to turn exam pressure into clinical confidence.
@@ -35,9 +35,9 @@ const LandingPage = () => {
 
             <div className="flex items-center gap-5 mt-10">
               <Link to="/auth/login">
-                <button className="primary-btn">
+                {/* <button className="primary-btn">
                   Start for <br /> free
-                </button>
+                </button> */}
               </Link>
 
               {/* <a
@@ -85,7 +85,7 @@ const LandingPage = () => {
               </div>
 
               {/* Question */}
-              <p className="text-[17px] leading-relaxed mb-7 text-slate-200">
+              <p className="text-[17px] leading-relaxed mb-7 text-slate-200 hero-text">
                 A patient presents with{" "}
                 <em className="hero-highlight font-semibold">
                   dry mouth
@@ -123,10 +123,10 @@ const LandingPage = () => {
                   },
                 ].map((option) => (
                   <div key={option.letter} className="option-item">
-                    <span className="w-8 h-8 flex items-center justify-center rounded-full text-xs font-semibold bg-slate-700/40 text-slate-400 border border-slate-600">
+                    <span className="w-8 h-8 flex items-center justify-center rounded-full text-xs font-semibold bg-slate-700/40 hero-text border border-slate-600">
                       {option.letter}
                     </span>
-                    <span className="text-[15px] text-slate-300">
+                    <span className="text-[15px] hero-text">
                       {option.text}
                     </span>
                   </div>
