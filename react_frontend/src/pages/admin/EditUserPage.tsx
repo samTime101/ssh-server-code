@@ -103,17 +103,16 @@ const EditUserPage = () => {
 
           <div>
             <label className="mb-2 block text-sm font-medium">Status</label>
-            <Select value={user.is_active ? "active" : "inactive"}>
+            <Select
+              value={user.is_active ? "active" : "inactive"}
+              onValueChange={(value) => handleInputChange("is_active", value === "active")}
+            >
               <SelectTrigger disabled={saving}>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="active" onClick={() => handleInputChange("is_active", true)}>
-                  Active
-                </SelectItem>
-                <SelectItem value="inactive" onClick={() => handleInputChange("is_active", false)}>
-                  Inactive
-                </SelectItem>
+                <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="inactive">Inactive</SelectItem>
               </SelectContent>
             </Select>
           </div>
