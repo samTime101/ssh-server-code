@@ -1,13 +1,16 @@
 import { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
+import { useQuestions } from "@/hooks/useQuestions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Bookmark as BookmarkIcon, Eye, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getBookmarks, removeBookmark, getQuestionById } from "@/services/user/bookmark-service";
 import { getSubmissionHistory } from "@/services/user/history-service";
+import axiosInstance from "@/services/axios";
+import { API_ENDPOINTS, getImageUrl } from "@/config/apiConfig";
 import type { Attempt } from "@/types/history";
 import type { Question } from "@/types/question";
 import { toast } from "sonner";
-import { getImageUrl } from "@/config/apiConfig";
 import SingleChoiceOption from "@/components/user/SingleChoiceOption";
 import MultipleChoiceOption from "@/components/user/MultipleChoiceOption";
 import Paginator from "@/components/Paginator";
@@ -19,6 +22,8 @@ interface BookmarkItem {
 }
 
 const BookmarksPage = () => {
+  const navigate = useNavigate();
+  const { setSessionQuestions } = useQuestions();
   const [bookmarks, setBookmarks] = useState<BookmarkItem[]>([]);
   const [isLoading, setLoading] = useState(true);
   const [pagination, setPagination] = useState({
@@ -130,6 +135,29 @@ const BookmarksPage = () => {
   const attemptSelectedOptions = currentAttempt?.selected_options_labels || [];
   const attemptSelectedOptionString =
     attemptSelectedOptions.length > 0 ? attemptSelectedOptions[0] : "";
+
+  const handleAttemptQuestionRedirect = async () => {
+    if (viewingQuestion) {
+      try {
+        // Since we need a valid submission ID from the backend to attempt the question,
+        // and we cannot change the backend endpoints, we generate an active session
+        // that encompasses this question by requesting a large page of questions.
+        const response = await axiosInstance.post(
+          `${API_ENDPOINTS.selectQuestions}?page_size=500`,
+          { category_ids: [], sub_category_ids: [] },
+          { params: { wrong_only: false, non_attempted: false } }
+        );
+        const submissionId = response?.data?.submission_id || null;
+
+        setSessionQuestions([viewingQuestion], submissionId);
+        navigate("/userpanel/question");
+        handleCloseModal();
+      } catch (error) {
+        console.error("Error creating session for bookmarked question:", error);
+        toast.error("Failed to start session for this question.");
+      }
+    }
+  };
 
   return (
     <div className="space-y-8 p-6">
@@ -292,8 +320,11 @@ const BookmarksPage = () => {
                   ))}
                 </div>
               ) : (
-                <div className="bg-muted text-muted-foreground rounded-md border p-4 text-center italic">
-                  Options are hidden because you have not attempted this question yet.
+                <div className="flex flex-col items-center justify-center rounded-md border p-6 text-center shadow-sm">
+                  <p className="text-muted-foreground mb-4">
+                    This question has not been attempted yet.
+                  </p>
+                  <Button onClick={handleAttemptQuestionRedirect}>Attempt Question</Button>
                 </div>
               )}
 

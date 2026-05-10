@@ -1,6 +1,7 @@
 import React, { createContext, useState } from "react"; //useContext,
 import { useAuth } from "@/hooks/useAuth.tsx";
 import { getQuestions, getNextPageQuestions } from "@/services/user/question-service";
+import { getAllBookmarkIds } from "@/services/user/bookmark-service";
 import type { Question, QuestionPaginationMeta, FetchQuestionsPayload } from "@/types/question";
 import {
   clampExamMinutes,
@@ -73,13 +74,25 @@ const QuestionProvider = ({ children }: { children: React.ReactNode }) => {
       };
       setLastFetchPayload(payload);
 
-      const response = await getQuestions(payload);
+      // Fetch questions and bookmark IDs in parallel
+      const [response, bookmarkIds] = await Promise.all([
+        getQuestions(payload),
+        getAllBookmarkIds(),
+      ]);
       console.log("Questions fetched in context:", response);
 
       if (response) {
-        const sessionQuestions = isExamModeEnabled
+        const bookmarkSet = new Set(bookmarkIds);
+        const rawQuestions = isExamModeEnabled
           ? shuffleQuestions(response.results)
           : response.results;
+
+        // Stamp is_bookmarked onto every question so the question page
+        // reflects the correct state without relying on the API to include it
+        const sessionQuestions = rawQuestions.map((q) => ({
+          ...q,
+          is_bookmarked: bookmarkSet.has(q.id),
+        }));
 
         setQuestionData(sessionQuestions);
         setQuestionPagination({
@@ -106,13 +119,22 @@ const QuestionProvider = ({ children }: { children: React.ReactNode }) => {
 
     setIsFetchingNextPage(true);
     try {
-      const response = await getNextPageQuestions(questionPagination.next, lastFetchPayload);
+      const [response, bookmarkIds] = await Promise.all([
+        getNextPageQuestions(questionPagination.next, lastFetchPayload),
+        getAllBookmarkIds(),
+      ]);
       console.log("Next page fetched in context:", response);
 
       if (response) {
-        const nextQuestions = isExamModeEnabled
+        const bookmarkSet = new Set(bookmarkIds);
+        const rawQuestions = isExamModeEnabled
           ? shuffleQuestions(response.results)
           : response.results;
+
+        const nextQuestions = rawQuestions.map((q) => ({
+          ...q,
+          is_bookmarked: bookmarkSet.has(q.id),
+        }));
 
         setQuestionData((prev) => [...prev, ...nextQuestions]);
         setQuestionPagination({
@@ -167,6 +189,12 @@ const QuestionProvider = ({ children }: { children: React.ReactNode }) => {
     setCurrentSubmissionId(submissionId ?? null);
   };
 
+  const updateQuestionBookmark = (questionId: string, isBookmarked: boolean) => {
+    setQuestionData((prev) =>
+      prev.map((q) => (q.id === questionId ? { ...q, is_bookmarked: isBookmarked } : q))
+    );
+  };
+
   return (
     <QuestionContext.Provider
       value={{
@@ -179,6 +207,7 @@ const QuestionProvider = ({ children }: { children: React.ReactNode }) => {
         fetchQuestions,
         fetchNextPage,
         setSessionQuestions,
+        updateQuestionBookmark,
         questionData,
         questionPagination,
         currentSubmissionId,

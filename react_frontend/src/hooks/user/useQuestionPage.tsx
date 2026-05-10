@@ -19,6 +19,7 @@ export const useQuestionPageController = () => {
     clearSessionTimer,
     resetQuestionSelection,
     currentSubmissionId,
+    updateQuestionBookmark,
   } = useQuestions();
   const navigate = useNavigate();
 
@@ -57,7 +58,9 @@ export const useQuestionPageController = () => {
         await bookmarkQuestion(currentQuestion.id);
         toast.success("Question bookmarked");
       }
-      currentQuestion.is_bookmarked = !previousState;
+      // Immutably update the question in context so the state persists
+      // across question navigation without direct object mutation
+      updateQuestionBookmark(currentQuestion.id, !previousState);
     } catch (e) {
       setIsBookmarked(previousState);
       toast.error("Failed to update bookmark");
