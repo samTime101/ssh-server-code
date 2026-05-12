@@ -103,3 +103,13 @@ class QuestionSet(TimeStampedDocument):
     description = StringField()
     questions = ListField(ReferenceField(Question))
     meta = {'collection': 'question_sets','indexes': ['questions']}
+
+class ConstraintRule(EmbeddedDocument):
+    category = ReferenceField(Category, required=True)
+    count = IntField(required=True, min_value=1)
+
+class Constraint(TimeStampedDocument):
+    name = StringField(required=True, unique=True)
+    rules = EmbeddedDocumentListField(ConstraintRule)
+
+    meta = {'collection': 'constraints','indexes': ['rules.sub_category']}

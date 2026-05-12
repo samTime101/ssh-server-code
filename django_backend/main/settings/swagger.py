@@ -9,6 +9,9 @@ SPECTACULAR_SETTINGS = {
 - Moved CSV-related hardcoded values into `core.constants.csv` for clearer reuse.
 - Enabled attempting bookmarked questions with session handling in the Bookmarks page.
 
+## April 13, 2026
+- Added Constraint model to define rules for question selection based on categories and subcategories for set.
+
 
 ## April 10, 2026
 - Seperated and defined constants for statues in `core.constants.status` to ensure consistency and maintainability across the codebase. Updated all relevant models, serializers, and views to utilize these constants for status fields, improving code readability and reducing the likelihood of errors due to typos or inconsistent status values.
