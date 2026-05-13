@@ -1,11 +1,9 @@
 import type { ReactNode } from "react";
-import AuthNavbar from "@/components/AuthNavbar";
 import { Card } from "@/components/ui/card";
 
 const AuthLayout = ({ children }: { children: ReactNode }) => {
   return (
     <div className="bg-background relative flex min-h-screen items-center justify-center px-4">
-      <AuthNavbar />
       <div className="flex w-full max-w-6xl items-center justify-center gap-10 rounded-lg bg-white p-2 shadow-lg sm:min-h-[76vh] sm:justify-normal">
         <div className="hidden w-full max-w-1/2 self-stretch sm:flex">
           <img
