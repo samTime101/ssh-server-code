@@ -44,8 +44,8 @@ function renderBlock(block: Block) {
       if (style === "checklist") {
         return (
           <ul key={block.id} className="space-y-1 text-sm">
-            {(block.data.items as ListItem[]).map((item, i) => (
-              <li key={i} className="flex items-center gap-2">
+            {(block.data.items as ListItem[]).map((item) => (
+              <li key={extractContent(item)} className="flex items-center gap-2">
                 <input
                   type="checkbox"
                   checked={isChecked(item)}
@@ -66,8 +66,11 @@ function renderBlock(block: Block) {
           key={block.id}
           className={`ml-4 space-y-1 text-sm ${isOrdered ? "list-decimal" : "list-disc"}`}
         >
-          {(block.data.items as ListItem[]).map((item, i) => (
-            <li key={i} dangerouslySetInnerHTML={{ __html: extractContent(item) }} />
+          {(block.data.items as ListItem[]).map((item) => (
+            <li
+              key={extractContent(item)}
+              dangerouslySetInnerHTML={{ __html: extractContent(item) }}
+            />
           ))}
         </ListTag>
       );

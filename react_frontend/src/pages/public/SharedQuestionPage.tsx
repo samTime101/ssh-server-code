@@ -97,8 +97,8 @@ const SharedQuestionPage = () => {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {question.options.map((opt, index) => (
-              <div key={opt.label || index} className="cursor-pointer">
+            {question.options.map((opt) => (
+              <div key={opt.label} className="cursor-pointer">
                 {question.option_type === "multiple" ? (
                   <MultipleChoiceOption
                     option={opt}

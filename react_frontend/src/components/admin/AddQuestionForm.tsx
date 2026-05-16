@@ -409,7 +409,7 @@ const AddQuestionForm = () => {
             <div className="space-y-3">
               {/* Answer Option A */}
               {questionFormData.options.map((option, index) => (
-                <div className="flex items-start gap-3" key={`${option.label}-${index}`}>
+                <div className="flex items-start gap-3" key={option.label}>
                   <div className="mt-2">
                     {questionFormData.optionType === "single" ? (
                       <input

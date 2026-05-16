@@ -1,6 +1,16 @@
 import { useState } from "react";
 import { useLocation, Link } from "react-router-dom";
-import { Book, Stethoscope, Folder, FileText, User, Settings, LogOut, X, Bookmark } from "lucide-react";
+import {
+  Book,
+  Stethoscope,
+  Folder,
+  FileText,
+  User,
+  Settings,
+  LogOut,
+  X,
+  Bookmark,
+} from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 
 interface SidebarProps {
@@ -55,7 +65,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
       <aside
         className={`border-sidebar-border bg-sidebar fixed top-[64px] left-0 z-40 flex h-[calc(100vh-64px)] w-64 flex-col border-r transition-transform duration-300 ease-in-out ${isOpen ? "translate-x-0" : "-translate-x-full"} md:z-10 md:translate-x-0`}
       >
-        <div >
+        <div>
           <div className="mb-4 flex justify-end md:hidden">
             <button
               onClick={onClose}
@@ -64,17 +74,17 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
             >
               <X size={20} className="text-muted-foreground" />
             </button>
-          </div>         
+          </div>
         </div>
 
         <nav className="flex-1 overflow-y-auto py-6">
           <ul className="flex flex-col gap-2 px-3">
-            {menuItems.map((item, idx) => {
+            {menuItems.map((item) => {
               const IconComponent = item.icon;
               const active = isActive(item.path);
               return (
                 <Link
-                  key={idx}
+                  key={item.path}
                   to={item.path}
                   onClick={onClose}
                   className={`${baseItemClass} ${active ? activeClass : inactiveClass}`}
@@ -91,13 +101,13 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
         </nav>
 
         <div className="border-sidebar-border bg-sidebar flex-shrink-0 border-t px-3 py-6">
-          {otherItems.map((item, idx) => {
+          {otherItems.map((item) => {
             const IconComponent = item.icon;
             if (item.type === "link" && item.path) {
               const active = isActive(item.path);
               return (
                 <Link
-                  key={idx}
+                  key={item.path}
                   to={item.path}
                   onClick={onClose}
                   className={`mt-2 ${baseItemClass} ${active ? activeClass : inactiveClass}`}
@@ -113,7 +123,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
             // Logout button
             return (
               <button
-                key={idx}
+                key={item.text}
                 onClick={() => setShowLogoutModal(true)}
                 className="text-destructive hover:border-destructive/20 hover:bg-destructive/10 mt-2 flex w-full items-center gap-4 rounded-lg border border-transparent px-6 py-3 transition-all duration-200 hover:shadow-sm"
               >
@@ -173,7 +183,14 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
             </div>
 
             {/* Title */}
-            <h2 style={{ margin: 0, fontSize: "1.2rem", fontWeight: 700, color: "var(--foreground, #111)" }}>
+            <h2
+              style={{
+                margin: 0,
+                fontSize: "1.2rem",
+                fontWeight: 700,
+                color: "var(--foreground, #111)",
+              }}
+            >
               Log Out
             </h2>
 

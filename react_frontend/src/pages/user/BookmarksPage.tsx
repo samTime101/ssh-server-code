@@ -297,8 +297,8 @@ const BookmarksPage = () => {
               {/* Options */}
               {isAttempted ? (
                 <div className="space-y-4">
-                  {viewingQuestion.options.map((option, index) => (
-                    <div key={option.label || index}>
+                  {viewingQuestion.options.map((option) => (
+                    <div key={option.label}>
                       {viewingQuestion.option_type === "multiple" ? (
                         <MultipleChoiceOption
                           option={option}
