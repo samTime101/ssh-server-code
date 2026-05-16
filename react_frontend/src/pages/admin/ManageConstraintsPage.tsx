@@ -138,9 +138,9 @@ const ManageConstraintsPage = () => {
               </Button>
             </div>
 
-            {rules.map((rule) => (
+            {rules.map((rule, index) => (
               <div
-                key={`${rule.categoryId}-${rule.count}`}
+                key={`${rule.categoryId}-${index}`}
                 className="border-border bg-muted/30 flex flex-col gap-3 rounded-md border p-3 md:flex-row"
               >
                 <Select
@@ -163,7 +163,7 @@ const ManageConstraintsPage = () => {
                   type="number"
                   min={1}
                   value={rule.count}
-                  onChange={(e) => updateRule(rules.indexOf(rule), { count: e.target.value })}
+                  onChange={(e) => updateRule(index, { count: e.target.value })}
                   placeholder="Count"
                   className="md:w-40"
                 />
