@@ -1,4 +1,5 @@
 import type { OutputData } from "@editorjs/editorjs";
+import DOMPurify from "dompurify";
 
 interface EditorRendererProps {
   data: string;
@@ -14,7 +15,7 @@ function renderBlock(block: Block) {
         <p
           key={block.id}
           className="text-sm leading-relaxed"
-          dangerouslySetInnerHTML={{ __html: block.data.text }}
+          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(block.data.text) }}
         />
       );
 
@@ -26,7 +27,7 @@ function renderBlock(block: Block) {
         <Tag
           key={block.id}
           className={`font-bold ${sizeClass}`}
-          dangerouslySetInnerHTML={{ __html: block.data.text }}
+          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(block.data.text) }}
         />
       );
     }
@@ -52,7 +53,9 @@ function renderBlock(block: Block) {
                   readOnly
                   className="accent-primary h-4 w-4 shrink-0"
                 />
-                <span dangerouslySetInnerHTML={{ __html: extractContent(item) }} />
+                <span
+                  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(extractContent(item)) }}
+                />
               </li>
             ))}
           </ul>
@@ -69,7 +72,7 @@ function renderBlock(block: Block) {
           {(block.data.items as ListItem[]).map((item) => (
             <li
               key={extractContent(item)}
-              dangerouslySetInnerHTML={{ __html: extractContent(item) }}
+              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(extractContent(item)) }}
             />
           ))}
         </ListTag>
