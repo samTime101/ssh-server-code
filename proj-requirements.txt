@@ -1,0 +1,28 @@
+if 
+	the user finishes all the question display message saying the questions are complete do you want to re-try 
+	the same questions.
+		if yes
+			show the same questions. 
+			The attempted count remains the same. 
+			The wrong and correct count will be updated accordingly. 
+			The history page will have a new record for question_bank type. 
+			
+if 
+	the user has not finised all the question, continue from where the user has left from. Do not start from the 
+	beginning. 
+		History page should have only one record for question_bank type. 
+		The questions attempted after each session should be updated accordingly in the same question_bank type. 
+		
+CEE practice set
+	does not continue from where they have left off. Show history with new attempt,  store the previous attempts.
+	
+Mock Exams 
+	does not continue from where they have left off. 
+		Total Questions: 200 (Single best response MCQs)
+		Total Marks: 200
+		Correct Answer: +1 mark
+		Wrong Answer: -0.25 marks
+		Unanswered Question: 0 marks
+		Pass Mark: 50th percentile (50% or more)
+		Duration: 3 hours
+		Question Type: Four options (A, B, C, D)

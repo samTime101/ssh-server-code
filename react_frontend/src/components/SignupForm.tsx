@@ -1,4 +1,4 @@
-// COPIED AS IT IS WITHOUT ANYCHANGES FROM 
+// COPIED AS IT IS WITHOUT ANYCHANGES FROM
 // https://github.com/sisani9/sisani-eps/blob/dev/react_frontend/src/pages/SignupPage.tsx
 
 import { useState, useEffect } from "react";
@@ -84,7 +84,6 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSuccess, addUser }) => {
   };
 
   return (
-   
     <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
       <div className="grid grid-cols-2 gap-4">
         {/* First Name */}
@@ -94,7 +93,8 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSuccess, addUser }) => {
             id="first_name"
             type="text"
             placeholder="Enter your first name"
-            {...formRegister("first_name", { required: "First name is required" })} />
+            {...formRegister("first_name", { required: "First name is required" })}
+          />
           {errors.first_name && <FormErrorMessage message={errors.first_name.message} />}
         </div>
 
@@ -105,7 +105,8 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSuccess, addUser }) => {
             id="last_name"
             type="text"
             placeholder="Enter your last name"
-            {...formRegister("last_name", { required: "Last name is required" })} />
+            {...formRegister("last_name", { required: "Last name is required" })}
+          />
           {errors.last_name && <FormErrorMessage message={errors.last_name.message} />}
         </div>
       </div>
@@ -117,7 +118,8 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSuccess, addUser }) => {
           id="username"
           type="text"
           placeholder="Enter your username"
-          {...formRegister("username", { required: "Username is required" })} />
+          {...formRegister("username", { required: "Username is required" })}
+        />
         {errors.username && <FormErrorMessage message={errors.username.message} />}
       </div>
 
@@ -129,11 +131,13 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSuccess, addUser }) => {
           placeholder="Enter your email"
           {...formRegister("email", {
             required: "Email is required",
+            setValueAs: (value) => (typeof value === "string" ? value.trim() : value),
             pattern: {
               value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
               message: "Invalid email address",
             },
-          })} />
+          })}
+        />
         {errors.email && <FormErrorMessage message={errors.email.message} />}
       </div>
 
@@ -152,7 +156,8 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSuccess, addUser }) => {
             },
             minLength: { value: 10, message: "Phone number must be at least 10 digits" },
             maxLength: { value: 10, message: "Phone number must be at most 10 digits" },
-          })} />
+          })}
+        />
         {errors.phonenumber && <FormErrorMessage message={errors.phonenumber.message} />}
       </div>
 
@@ -167,7 +172,8 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSuccess, addUser }) => {
             {...formRegister("password", {
               required: "Password is required",
               minLength: { value: 6, message: "Password must be at least 6 characters" },
-            })} />
+            })}
+          />
           <Button
             type="button"
             variant="ghost"
@@ -191,8 +197,10 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSuccess, addUser }) => {
             placeholder="Confirm your password"
             {...formRegister("confirm_password", {
               required: "Confirm password is required",
-              validate: (value, formValues) => value === formValues.password || "Passwords do not match",
-            })} />
+              validate: (value, formValues) =>
+                value === formValues.password || "Passwords do not match",
+            })}
+          />
           <Button
             type="button"
             variant="ghost"
@@ -200,16 +208,10 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSuccess, addUser }) => {
             className="absolute top-0 right-0 h-full px-3 py-2 hover:bg-transparent"
             onClick={() => setShowConfirmPassword(!showConfirmPassword)}
           >
-            {showConfirmPassword ? (
-              <EyeOff className="h-4 w-4" />
-            ) : (
-              <Eye className="h-4 w-4" />
-            )}
+            {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
           </Button>
         </div>
-        {errors.confirm_password && (
-          <FormErrorMessage message={errors.confirm_password.message} />
-        )}
+        {errors.confirm_password && <FormErrorMessage message={errors.confirm_password.message} />}
       </div>
 
       {/* College */}
@@ -225,7 +227,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSuccess, addUser }) => {
               variant="outline"
               role="combobox"
               aria-expanded={open}
-              className="w-full justify-between bg-card"
+              className="bg-card w-full justify-between"
             >
               {collegeValue || "Select college"}
               <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50" />
@@ -236,7 +238,8 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSuccess, addUser }) => {
               <CommandInput
                 placeholder="Search college..."
                 value={searchInput}
-                onValueChange={setSearchInput} />
+                onValueChange={setSearchInput}
+              />
               <div className="max-h-48 overflow-y-auto">
                 {searchInput.length < 3 ? (
                   <div className="text-muted-foreground p-4 text-center text-sm">
@@ -254,19 +257,17 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSuccess, addUser }) => {
                         value={college.name}
                         onSelect={(currentValue) => {
                           setCollegeValue(currentValue === collegeValue ? "" : currentValue);
-                          setValue(
-                            "college",
-                            currentValue === collegeValue ? "" : currentValue
-                          );
+                          setValue("college", currentValue === collegeValue ? "" : currentValue);
                           setOpen(false);
                           setSearchInput("");
-                        } }
+                        }}
                       >
                         <Check
                           className={cn(
                             "h-4 w-4",
                             collegeValue === college.name ? "opacity-100" : "opacity-20"
-                          )} />
+                          )}
+                        />
                         {college.name}
                       </CommandItem>
                     ))}
@@ -280,7 +281,13 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSuccess, addUser }) => {
       </div>
 
       <Button type="submit" className="w-full" disabled={loading}>
-        {loading ? (addUser ? "Adding User..." : "Creating Account...") : (addUser ? "Add User" : "Create Account")}
+        {loading
+          ? addUser
+            ? "Adding User..."
+            : "Creating Account..."
+          : addUser
+            ? "Add User"
+            : "Create Account"}
       </Button>
     </form>
   );

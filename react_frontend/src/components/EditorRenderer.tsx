@@ -1,4 +1,5 @@
 import type { OutputData } from "@editorjs/editorjs";
+import DOMPurify from "dompurify";
 
 interface EditorRendererProps {
   data: string;
@@ -14,7 +15,7 @@ function renderBlock(block: Block) {
         <p
           key={block.id}
           className="text-sm leading-relaxed"
-          dangerouslySetInnerHTML={{ __html: block.data.text }}
+          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(block.data.text) }}
         />
       );
 
@@ -26,7 +27,7 @@ function renderBlock(block: Block) {
         <Tag
           key={block.id}
           className={`font-bold ${sizeClass}`}
-          dangerouslySetInnerHTML={{ __html: block.data.text }}
+          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(block.data.text) }}
         />
       );
     }
@@ -44,15 +45,17 @@ function renderBlock(block: Block) {
       if (style === "checklist") {
         return (
           <ul key={block.id} className="space-y-1 text-sm">
-            {(block.data.items as ListItem[]).map((item, i) => (
-              <li key={i} className="flex items-center gap-2">
+            {(block.data.items as ListItem[]).map((item) => (
+              <li key={extractContent(item)} className="flex items-center gap-2">
                 <input
                   type="checkbox"
                   checked={isChecked(item)}
                   readOnly
                   className="accent-primary h-4 w-4 shrink-0"
                 />
-                <span dangerouslySetInnerHTML={{ __html: extractContent(item) }} />
+                <span
+                  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(extractContent(item)) }}
+                />
               </li>
             ))}
           </ul>
@@ -66,8 +69,11 @@ function renderBlock(block: Block) {
           key={block.id}
           className={`ml-4 space-y-1 text-sm ${isOrdered ? "list-decimal" : "list-disc"}`}
         >
-          {(block.data.items as ListItem[]).map((item, i) => (
-            <li key={i} dangerouslySetInnerHTML={{ __html: extractContent(item) }} />
+          {(block.data.items as ListItem[]).map((item) => (
+            <li
+              key={extractContent(item)}
+              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(extractContent(item)) }}
+            />
           ))}
         </ListTag>
       );

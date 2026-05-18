@@ -106,10 +106,18 @@ const QuestionPage = () => {
 
             <Button
               variant="outline"
-              onClick={() => {
+              onClick={async () => {
                 const url = `${window.location.origin}/shared/question/${currentQuestion.id}`;
-                navigator.clipboard.writeText(url);
-                toast.success("Link copied to clipboard!");
+                try {
+                  if (navigator.clipboard && navigator.clipboard.writeText) {
+                    await navigator.clipboard.writeText(url);
+                    toast.success("Link copied to clipboard!");
+                  } else {
+                    throw new Error("Clipboard API unavailable");
+                  }
+                } catch (err) {
+                  toast.error("Unable to copy link to clipboard.");
+                }
               }}
               className="hover:bg-muted text-muted-foreground bg-card px-4 py-2"
             >

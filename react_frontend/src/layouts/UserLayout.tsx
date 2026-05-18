@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Menu } from "lucide-react";
-import Header from "@/components/user/Header";
 import Sidebar from "@/components/user/Sidebar";
 import { Outlet } from "react-router-dom";
 
@@ -17,7 +16,6 @@ const UserLayout = () => {
 
   return (
     <div className="bg-background min-h-screen">
-      <Header />
       <div className="flex">
         <Sidebar isOpen={sidebarOpen} onClose={closeSidebar} />
         <main className="flex-1 p-4 md:ml-64 md:p-6">
