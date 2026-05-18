@@ -204,7 +204,7 @@ const HistoryPage = () => {
             <TableBody>
               {(selectedSubmission?.attempts ?? []).map((attempt, idx) => (
                 <TableRow
-                  key={`${selectedSubmission?.submission_id}-${idx}`}
+                  key={`${selectedSubmission?.submission_id}-${attempt.question_text}`}
                   className={`hover:bg-muted cursor-pointer transition-colors ${
                     isRedirecting ? "pointer-events-none opacity-60" : ""
                   }`}
@@ -229,7 +229,7 @@ const HistoryPage = () => {
                   </TableCell>
                   <TableCell className="whitespace-normal">
                     {(attempt.selected_answers ?? []).map((ans, i) => (
-                      <Badge key={i} className="mr-1 mb-1 whitespace-normal">
+                      <Badge key={ans} className="mr-1 mb-1 whitespace-normal">
                         {ans}: {attempt.selected_options_labels?.[i] ?? ""}
                       </Badge>
                     ))}

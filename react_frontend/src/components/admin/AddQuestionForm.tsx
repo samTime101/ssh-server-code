@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/select";
 import { ImageIcon, Upload, X } from "lucide-react";
 import { useQuestionForm } from "@/hooks/admin/useQuestionForm";
+import { useEffect, useState } from "react";
 
 const AddQuestionForm = () => {
   const {
@@ -38,6 +39,27 @@ const AddQuestionForm = () => {
   } = useQuestionForm({
     mode: "create",
   });
+
+  const [previewUrls, setPreviewUrls] = useState<{
+    question: string | null;
+    description: string | null;
+  }>({ question: null, description: null });
+
+  useEffect(() => {
+    const createdQuestionUrl = selectedImages.question
+      ? URL.createObjectURL(selectedImages.question)
+      : null;
+    const createdDescriptionUrl = selectedImages.description
+      ? URL.createObjectURL(selectedImages.description)
+      : null;
+
+    setPreviewUrls({ question: createdQuestionUrl, description: createdDescriptionUrl });
+
+    return () => {
+      if (createdQuestionUrl) URL.revokeObjectURL(createdQuestionUrl);
+      if (createdDescriptionUrl) URL.revokeObjectURL(createdDescriptionUrl);
+    };
+  }, [selectedImages.question, selectedImages.description]);
 
   return (
     <Card className="border-border border shadow-sm">
@@ -106,7 +128,7 @@ const AddQuestionForm = () => {
               {selectedImages.question && (
                 <div className="mt-3">
                   <img
-                    src={URL.createObjectURL(selectedImages.question)}
+                    src={previewUrls.question || ""}
                     alt="Question preview"
                     className="border-border max-h-48 max-w-xs rounded-md border"
                   />
@@ -154,7 +176,7 @@ const AddQuestionForm = () => {
               {selectedImages.description && (
                 <div className="mt-3">
                   <img
-                    src={URL.createObjectURL(selectedImages.description)}
+                    src={previewUrls.description || ""}
                     alt="Description preview"
                     className="border-border max-h-48 max-w-xs rounded-md border"
                   />
@@ -387,7 +409,7 @@ const AddQuestionForm = () => {
             <div className="space-y-3">
               {/* Answer Option A */}
               {questionFormData.options.map((option, index) => (
-                <div className="flex items-start gap-3" key={`${option.label}-${index}`}>
+                <div className="flex items-start gap-3" key={option.label}>
                   <div className="mt-2">
                     {questionFormData.optionType === "single" ? (
                       <input
