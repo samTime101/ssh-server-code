@@ -33,6 +33,7 @@ export const useQuestionPageController = () => {
   const [attempts, setAttempts] = useState<Record<string, QuestionAttemptState>>({});
 
   const prevDataLengthRef = useRef(0);
+  const prevQuestionIdsRef = useRef<string[]>([]);
   const timeoutHandledRef = useRef(false);
 
   const currentQuestion: Question | null =
@@ -73,12 +74,22 @@ export const useQuestionPageController = () => {
     const prevLength = prevDataLengthRef.current;
     prevDataLengthRef.current = questionData?.length ?? 0;
 
+    const currentIds = questionData?.map((q) => q.id) ?? [];
+    const prevIds = prevQuestionIdsRef.current;
+    const isSameList =
+      currentIds.length === prevIds.length && currentIds.every((id, idx) => id === prevIds[idx]);
+    const isAppend =
+      prevIds.length > 0 &&
+      currentIds.length > prevIds.length &&
+      prevIds.every((id, idx) => id === currentIds[idx]);
+    prevQuestionIdsRef.current = currentIds;
+
     if (!questionData || questionData.length === 0) {
       setCurrentIndex(0);
       return;
     }
 
-    if (questionData.length > prevLength) return;
+    if (questionData.length > prevLength || isSameList || isAppend) return;
 
     setCurrentIndex(0);
     setSelectedOptions([]);

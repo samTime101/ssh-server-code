@@ -54,6 +54,7 @@ const LoginPage = () => {
               placeholder="Enter your email"
               {...register("email", {
                 required: "Email is required",
+                setValueAs: (value) => (typeof value === "string" ? value.trim() : value),
                 pattern: {
                   value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
                   message: "Invalid email address",
