@@ -22,8 +22,8 @@ const LandingPage = () => {
             <h1 className="hero-title">
               Practice That <br />
               Builds <span className="hero-highlight">Confidence.</span> <br />
-              <span className="hero-bold">Questions</span> <br />
-              <span className="hero-bold">That Build</span> <br />
+              <span className="hero-title">Questions</span> <br />
+              <span className="hero-title">That Build</span> <br />
               <span className="hero-highlight">Precision.</span>
             </h1>
 
@@ -68,9 +68,9 @@ const LandingPage = () => {
                   Pharmacology
                 </span>
 
-                <span className="text-[11px] font-semibold uppercase px-3 py-1.5 rounded-full border border-yellow-400/40 bg-yellow-400/10 text-yellow-400">
+                {/* <span className="text-[11px] font-semibold uppercase px-3 py-1.5 rounded-full border border-yellow-400/40 bg-yellow-400/10 text-yellow-400">
                   Medium
-                </span>
+                </span> */}
 
                 <span className="text-sm ml-auto text-slate-500">
                   Q 07 / 26
@@ -87,17 +87,17 @@ const LandingPage = () => {
               {/* Question */}
               <p className="text-[17px] leading-relaxed mb-7 text-slate-200 hero-text">
                 A patient presents with{" "}
-                <em className="hero-highlight font-semibold">
+                {/* <em className="hero-highlight "> */}
                   dry mouth
-                </em>
+                {/* </em> */}
                 ,{" "}
-                <em className="hero-highlight font-semibold">
+                {/* <em className="hero-highlight "> */}
                   blurred vision
-                </em>
+                {/* </em> */}
                 , and{" "}
-                <em className="hero-highlight font-semibold">
+                {/* <em className="hero-highlight "> */}
                   urinary retention
-                </em>{" "}
+                {/* </em>{" "} */}
                 after taking medication for motion sickness. Which receptor does
                 this drug primarily antagonise?
               </p>

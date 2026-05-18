@@ -242,7 +242,7 @@ const QuestionPage = () => {
                     </div>
                   </div>
                   <div className="flex-1 space-y-2">
-                    <h3 className="text-primary flex items-center text-sm font-semibold">
+                    <h3 className="text-primary flex items-center text-xl font-bold">
                       Explanation
                     </h3>
                     <EditorRenderer
@@ -331,9 +331,9 @@ const QuestionPage = () => {
         </div>
 
         <div className="text-center">
-          <Button variant="destructive" size="lg" className="px-8 py-3" onClick={handleBack}>
+          {/* <Button variant="destructive" size="lg" className="px-8 py-3" onClick={handleBack}>
             Cancel
-          </Button>
+          </Button> */}
         </div>
       </div>
     </div>

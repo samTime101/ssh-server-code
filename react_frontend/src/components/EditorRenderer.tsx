@@ -85,10 +85,10 @@ const EditorRenderer = ({ data, className }: EditorRendererProps) => {
   try {
     parsed = JSON.parse(data) as OutputData;
     if (!parsed?.blocks?.length) {
-      return <p className={`text-sm leading-relaxed ${className ?? ""}`}>{data}</p>;
+      return <p className={`text-base leading-relaxed ${className ?? ""}`}>{data}</p>;
     }
   } catch {
-    return <p className={`text-sm leading-relaxed ${className ?? ""}`}>{data}</p>;
+    return <p className={`text-base leading-relaxed ${className ?? ""}`}>{data}</p>;
   }
 
   return <div className={`space-y-2 ${className ?? ""}`}>{parsed.blocks.map(renderBlock)}</div>;
