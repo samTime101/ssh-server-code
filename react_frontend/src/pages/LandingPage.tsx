@@ -1,4 +1,4 @@
-import Navbar from "@/components/Navbar";
+
 import { Link } from "react-router-dom";
 
 const LandingPage = () => {
@@ -12,7 +12,7 @@ const LandingPage = () => {
         <div className="bg-glow" />
         <div className="bg-fade-bottom" />
       </div>
-      <Navbar />
+
       {/* HERO */}
       <section className="mx-auto px-6 pt-12 pb-20 relative z-10 max-w-[1200px]">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
