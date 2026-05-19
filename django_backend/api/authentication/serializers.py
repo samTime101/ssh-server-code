@@ -37,7 +37,14 @@ class EmailVerifySerializer(serializers.Serializer):
     token = serializers.CharField()
 
 class ResetPasswordSerializer(serializers.Serializer):
-    old_password = serializers.CharField(required=True)
+    email = serializers.EmailField(required=True)
+    
+    def validate(self, data):
+        if User.objects.filter(email=data['email']).first() is None:
+            raise serializers.ValidationError("User not found.")
+        return data
+
+class ResetPasswordVerifySerializer(serializers.Serializer):
     new_password = serializers.CharField(required=True)
     confirm_new_password = serializers.CharField(required=True)
 

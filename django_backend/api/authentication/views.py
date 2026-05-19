@@ -2,6 +2,7 @@
 # Last update : Nov 3
 # Samip Regmi
 
+from rest_framework.decorators import permission_classes
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -12,6 +13,10 @@ from core.token.email_verification.generate import create_email_verification_tok
 from core.token.email_verification.verify import verify_email_token
 from core.token.email_verification.responses import *
 from core.token.email_verification.send import send_verification_email
+from core.token.password_reset.generate import create_password_reset_token
+from core.token.password_reset.verify import verify_password_reset_token
+from core.token.password_reset.responses import *
+from core.token.password_reset.send import send_password_reset_email
 
 # for signup
 class SignupView(APIView):
@@ -41,18 +46,32 @@ class EmailVerifyView(APIView):
         else:
             return Response(invalid_verification_token(), status=status.HTTP_400_BAD_REQUEST)
 
-
+# TODO: RATE
 class ResetPasswordView(APIView):
+    permission_classes = [AllowAny]
     serializer_class = ResetPasswordSerializer
     def post(self, request):
         serializer = ResetPasswordSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        user = request.user
-        new_password = serializer.validated_data['new_password']
-        user.set_password(new_password)
+        user = User.objects.get(email=serializer.validated_data['email'])
+        token = create_password_reset_token(user.id)
+        send_password_reset_email(user, token)
+        return Response(verified_password_reset(), status=status.HTTP_200_OK)
+
+class PasswordResetVerifyView(APIView):
+    permission_classes = [AllowAny]
+    serializer_class = ResetPasswordVerifySerializer
+    def post(self, request, token):
+        serializer = ResetPasswordVerifySerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        result = verify_password_reset_token(token)
+        if result["status"] != "success":
+            return Response(invalid_password_reset_token(), status=400)
+        user = User.objects.get(id=result["user_id"])
+        user.set_password(serializer.validated_data["new_password"])
         user.save()
-        return Response({"detail": "Password has been reset successfully."}, status=status.HTTP_200_OK)
-    
+        return Response(reset_password_success(), status=200)
+
 class ResetPhoneNumberView(APIView):
     serializer_class = ResetPhoneNumberSerializer
     def post(self, request):

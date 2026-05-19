@@ -3,6 +3,11 @@ SPECTACULAR_SETTINGS = {
     "TITLE": "MCQ API",
     "DESCRIPTION": """
 
+## May 19, 2026
+- Added type query parameter to submissions endpoint to filter submissions based on their type.
+- Added Pagination to submissions endpoint.
+- User can continue the existing submissions
+
 ## May 9, 2026 Ishan Upadhyay
 - Added bulk CSV upload endpoint for question creation, including serializer and view wiring.
 - Refactored CSV upload handling, moved validation into the parser, and introduced constants for CSV validation.
