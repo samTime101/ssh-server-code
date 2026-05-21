@@ -21,7 +21,7 @@ interface SidebarProps {
 const menuItems = [
   { icon: Book, text: "Question Bank", path: "/userpanel/question-bank" },
   { icon: Stethoscope, text: "CEE Practice", path: "/userpanel/cee-practice" },
-  { icon: Folder, text: "Case Studies", path: "/userpanel/case-studies" },
+  // { icon: Folder, text: "Case Studies", path: "/userpanel/case-studies" },
   { icon: FileText, text: "Mock Exams", path: "/userpanel/mock-exams" },
 ];
 
