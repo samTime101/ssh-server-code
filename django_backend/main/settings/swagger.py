@@ -9,6 +9,10 @@ SPECTACULAR_SETTINGS = {
 - Moved CSV-related hardcoded values into `core.constants.csv` for clearer reuse.
 - Enabled attempting bookmarked questions with session handling in the Bookmarks page.
 
+## May 22, 2026 Ishan  Upadhyay
+- Added public feedback endpoint `/api/feedback/` (POST) to collect app feedback with email and message.
+- Added admin-only listing of feedback at `/api/feedback/` (GET) with pagination.
+
 ## April 13, 2026
 - Added Constraint model to define rules for question selection based on categories and subcategories for set.
 
