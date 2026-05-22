@@ -125,3 +125,10 @@ export const getQuestionById = async (questionId: string): Promise<Question | nu
     return null;
   }
 };
+
+export const getQuestionsByIds = async (questionIds: string[]): Promise<Question[]> => {
+  if (!Array.isArray(questionIds) || questionIds.length === 0) return [];
+
+  const results = await Promise.all(questionIds.map((id) => getQuestionById(id)));
+  return results.filter((question): question is Question => Boolean(question));
+};

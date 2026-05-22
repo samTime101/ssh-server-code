@@ -30,6 +30,10 @@ const QuestionProvider = ({ children }: { children: React.ReactNode }) => {
   const [currentSubmissionId, setCurrentSubmissionId] = useState<string | null>(null);
   const [lastFetchPayload, setLastFetchPayload] = useState<FetchQuestionsPayload | null>(null);
   const [isFetchingNextPage, setIsFetchingNextPage] = useState(false);
+  const [sessionAttemptCount, setSessionAttemptCount] = useState(0);
+  const [sessionAttemptResults, setSessionAttemptResults] = useState<(boolean | null)[]>([]);
+  const [sessionInstanceId, setSessionInstanceId] = useState(0);
+  const [sessionWrongOnly, setSessionWrongOnly] = useState(false);
   const [sessionTimerSeconds, setSessionTimerSeconds] = useState(30 * 60);
   const [sessionQuestionLimit, setSessionQuestionLimit] = useState(20);
   const [sessionEndsAtMs, setSessionEndsAtMs] = useState<number | null>(null);
@@ -73,6 +77,7 @@ const QuestionProvider = ({ children }: { children: React.ReactNode }) => {
         wrong_only,
       };
       setLastFetchPayload(payload);
+      setSessionWrongOnly(Boolean(wrong_only));
 
       // Fetch questions and bookmark IDs in parallel
       const [response, bookmarkIds] = await Promise.all([
@@ -101,16 +106,23 @@ const QuestionProvider = ({ children }: { children: React.ReactNode }) => {
           total_pages: response.total_pages,
         });
         setCurrentSubmissionId(response.submission_id ?? null);
+        setSessionAttemptCount(0);
+        setSessionAttemptResults([]);
+        setSessionInstanceId((prev) => prev + 1);
       } else {
         setQuestionData([]);
         setQuestionPagination(null);
         setCurrentSubmissionId(null);
+        setSessionAttemptCount(0);
+        setSessionAttemptResults([]);
       }
     } catch (e) {
       console.error(e);
       setQuestionData([]);
       setQuestionPagination(null);
       setCurrentSubmissionId(null);
+      setSessionAttemptCount(0);
+      setSessionAttemptResults([]);
     }
   };
 
@@ -181,12 +193,23 @@ const QuestionProvider = ({ children }: { children: React.ReactNode }) => {
     setSelectedSubCategoryId([]);
     setSelectedSubSubCategoryId([]);
     setCurrentSubmissionId(null);
+    setSessionAttemptCount(0);
+    setSessionAttemptResults([]);
   };
 
-  const setSessionQuestions = (questions: Question[], submissionId?: string | null) => {
+  const setSessionQuestions = (
+    questions: Question[],
+    submissionId?: string | null,
+    attemptsCount: number = 0,
+    attemptResults: (boolean | null)[] = []
+  ) => {
     setQuestionData(questions);
     setQuestionPagination(null);
     setCurrentSubmissionId(submissionId ?? null);
+    setSessionAttemptCount(Math.max(0, Math.floor(attemptsCount)));
+    setSessionAttemptResults(attemptResults);
+    setSessionInstanceId((prev) => prev + 1);
+    setSessionWrongOnly(false);
   };
 
   const updateQuestionBookmark = (questionId: string, isBookmarked: boolean) => {
@@ -213,6 +236,11 @@ const QuestionProvider = ({ children }: { children: React.ReactNode }) => {
         currentSubmissionId,
         setCurrentSubmissionId,
         isFetchingNextPage,
+        sessionAttemptCount,
+        sessionAttemptResults,
+        sessionInstanceId,
+        sessionWrongOnly,
+        setSessionAttemptCount,
         sessionTimerSeconds,
         sessionQuestionLimit,
         sessionEndsAtMs,

@@ -3,17 +3,34 @@ import axiosInstance from "@/services/axios";
 import type { SubmissionHistoryItem, SubmissionHistoryResponse } from "@/types/history";
 import { getSubmissionItems } from "@/utils/historyUtils";
 
-export const getSubmissionHistory = async (): Promise<SubmissionHistoryItem[]> => {
+export const getSubmissionHistory = async (type?: string): Promise<SubmissionHistoryItem[]> => {
   try {
-    const response = await axiosInstance.get<SubmissionHistoryResponse>(
-      API_ENDPOINTS.attemptQuestion
-    );
+    const results: SubmissionHistoryItem[] = [];
+    let nextUrl: string | null = API_ENDPOINTS.attemptQuestion;
+    const params = type ? { type } : undefined;
+    let pageCount = 0;
 
-    if (!response) {
-      return [];
+    while (nextUrl && pageCount < 50) {
+      const response = await axiosInstance.get<SubmissionHistoryResponse>(nextUrl, {
+        params: pageCount === 0 ? params : undefined,
+      });
+
+      if (!response) {
+        break;
+      }
+
+      results.push(...getSubmissionItems(response.data));
+
+      if (Array.isArray(response.data)) {
+        nextUrl = null;
+      } else {
+        nextUrl = response.data.next ?? null;
+      }
+
+      pageCount += 1;
     }
 
-    return getSubmissionItems(response.data);
+    return results;
   } catch (error) {
     console.error("Error fetching submission history:", error);
     return [];
