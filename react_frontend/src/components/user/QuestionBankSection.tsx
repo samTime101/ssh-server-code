@@ -164,10 +164,11 @@ const QuestionBankSection = () => {
           <div className="mt-4 flex justify-end">
             <label className="flex items-center space-x-2">
               <Checkbox
+              className="appearance-none w-5 h-5 border-1 border-black cursor-pointer"
                 checked={reattemptWrongOnly}
                 onCheckedChange={() => setReattemptWrongOnly(!reattemptWrongOnly)}
               />
-              <span className="text-muted-foreground">Reattempt Wrong Only</span>
+              <span className="text-muted-foreground hero-text">Re-attempt Wrong Only</span>
             </label>
           </div>
         </div>
@@ -217,6 +218,7 @@ const QuestionBankSection = () => {
                 <div className="flex items-center justify-between rounded-md border p-3">
                   <p className="text-sm font-medium">Enable Exam Mode</p>
                   <Checkbox
+                  className="appearance-none w-5 h-5 border-1 border-black cursor-pointer"
                     checked={isExamModeEnabled}
                     onCheckedChange={(checked) => setIsExamModeEnabled(checked === true)}
                   />
