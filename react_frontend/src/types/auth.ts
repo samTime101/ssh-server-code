@@ -37,12 +37,15 @@ export interface SignupRequest {
   college: string;
 }
 
-export interface ResetPasswordForm {
-  old_password: string;
-  new_password: string;
-  confirm_new_password: string;
-}
-
 export interface ResetPhoneNumberForm {
   new_phonenumber: string;
+}
+
+export interface ForgotPasswordRequest {
+  email: string;
+}
+
+export interface ResetPasswordVerifyRequest {
+  new_password: string;
+  confirm_new_password: string;
 }

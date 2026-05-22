@@ -1,5 +1,10 @@
 import { API_ENDPOINTS } from "@/config/apiConfig";
-import type { LoginRequest, SignupRequest } from "@/types/auth";
+import type {
+  ForgotPasswordRequest,
+  LoginRequest,
+  ResetPasswordVerifyRequest,
+  SignupRequest,
+} from "@/types/auth";
 import axiosInstance from "@/services/axios";
 
 export const loginService = async ({ email, password }: LoginRequest) => {
@@ -33,4 +38,17 @@ export const signupService = async ({
 
 export const verifyEmailService = async (token: string) => {
   return axiosInstance.get(`${API_ENDPOINTS.verifyEmail}${token}/`);
+};
+
+export const requestPasswordResetService = async ({ email }: ForgotPasswordRequest) => {
+  return axiosInstance.post(API_ENDPOINTS.resetPasswordRequest, {
+    email,
+  });
+};
+
+export const verifyPasswordResetService = async (
+  token: string,
+  data: ResetPasswordVerifyRequest
+) => {
+  return axiosInstance.post(`${API_ENDPOINTS.resetPasswordVerify}${token}/`, data);
 };
