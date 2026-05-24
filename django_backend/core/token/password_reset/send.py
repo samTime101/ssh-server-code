@@ -5,7 +5,7 @@ from django.conf import settings
 
 def send_password_reset_email(user, token):
     subject = "Password Reset Link"
-    verification_link = f"http://localhost:8000/verify-password-reset/{token}"
+    verification_link = f"{settings.PASSWORD_RESET_URL}{token}"
 
     message = f"""
 Hi {user.first_name},
