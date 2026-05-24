@@ -15,14 +15,19 @@ import AddQuestionPage from "@/pages/admin/AddQuestionPage";
 import CreateCategoryPage from "@/pages/admin/CreateCategoryPage";
 import ManageCategoriesPage from "@/pages/admin/ManageCategoriesPage";
 import ManageSubcategoriesPage from "@/pages/admin/ManageSubcategoriesPage";
+import ManageConstraintsPage from "@/pages/admin/ManageConstraintsPage";
 import ManageUsersPage from "@/pages/admin/ManageUsersPage";
 import EditUserPage from "@/pages/admin/EditUserPage";
 import QuestionBankPage from "@/pages/admin/QuestionBankPage";
 import AddRolePage from "@/pages/admin/AddRolePage";
 import AddCollegePage from "@/pages/admin/AddCollegePage";
+import ManageQuestionSetsPage from "@/pages/admin/ManageQuestionSetsPage";
 import ProfilePage from "@/pages/user/ProfilePage";
+import MockExamPage from "@/pages/user/MockExamPage";
 import HistoryPage from "@/pages/user/HistoryPage";
+import BookmarksPage from "@/pages/user/BookmarksPage";
 import SettingsPage from "@/pages/user/SettingsPage";
+import SharedQuestionPage from "@/pages/public/SharedQuestionPage";
 import RoleRoute from "@/components/RoleRoute";
 import Loader from "@/components/ui/Loader";
 import ROLE_CONFIG from "@/config/roleConfig";
@@ -86,7 +91,16 @@ const App = () => {
           }
         />
       </Route>
+      <Route path="/shared/question/:id" element={<SharedQuestionPage />} />
       <Route element={<PrivateRoute />}>
+        <Route
+          path="/userpanel/mock-exams"
+          element={
+            <QuestionProvider>
+              <MockExamPage />
+            </QuestionProvider>
+          }
+        />
         {/* User Panel */}
         <Route
           path="/userpanel"
@@ -103,6 +117,7 @@ const App = () => {
           <Route path="cee-question" element={<CEEQuestionPage />} />
           <Route path="profile" element={<ProfilePage />} />
           <Route path="history" element={<HistoryPage />} />
+          <Route path="bookmarks" element={<BookmarksPage />} />
           <Route path="settings" element={<SettingsPage />} />
         </Route>
 
@@ -116,6 +131,10 @@ const App = () => {
             <Route path="question-bank" element={<QuestionBankPage />} />
           </Route>
 
+          <Route element={<RoleRoute allowedPermissions={["manage-question-sets"]} />}>
+            <Route path="manage-question-sets" element={<ManageQuestionSetsPage />} />
+          </Route>
+
           <Route element={<RoleRoute allowedPermissions={["create-category"]} />}>
             <Route path="create-category" element={<CreateCategoryPage />} />
           </Route>
@@ -126,6 +145,10 @@ const App = () => {
 
           <Route element={<RoleRoute allowedPermissions={["manage-subcategories"]} />}>
             <Route path="manage-subcategories" element={<ManageSubcategoriesPage />} />
+          </Route>
+
+          <Route element={<RoleRoute allowedPermissions={["manage-constraints"]} />}>
+            <Route path="manage-constraints" element={<ManageConstraintsPage />} />
           </Route>
 
           <Route element={<RoleRoute allowedPermissions={["manage-users"]} />}>

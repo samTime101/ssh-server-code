@@ -5,13 +5,14 @@ import {
   updateSubCategory,
   deleteSubCategory,
 } from "@/services/admin/subcategory-service";
-import type { SubCategoryDetail } from "@/types/category";
+import type { CategoryStatus, SubCategoryDetail } from "@/types/category";
 
 export const useManageSubcategories = () => {
   const [subcategories, setSubcategories] = useState<SubCategoryDetail[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [editTarget, setEditTarget] = useState<SubCategoryDetail | null>(null);
   const [editName, setEditName] = useState("");
+  const [editStatus, setEditStatus] = useState<CategoryStatus>("pending");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -33,11 +34,13 @@ export const useManageSubcategories = () => {
   const openEditModal = (subcategory: SubCategoryDetail) => {
     setEditTarget(subcategory);
     setEditName(subcategory.name);
+    setEditStatus(subcategory.status ?? "pending");
   };
 
   const closeEditModal = () => {
     setEditTarget(null);
     setEditName("");
+    setEditStatus("pending");
   };
 
   const handleEditSubmit = async (e: React.FormEvent) => {
@@ -45,7 +48,7 @@ export const useManageSubcategories = () => {
     if (!editTarget || !editName.trim()) return;
     setIsSubmitting(true);
     try {
-      await updateSubCategory(editTarget.id, editName.trim(), editTarget.categoryId);
+      await updateSubCategory(editTarget.id, editName.trim(), editTarget.categoryId, editStatus);
       toast.success("Subcategory updated successfully");
       closeEditModal();
       await loadSubcategories();
@@ -78,6 +81,8 @@ export const useManageSubcategories = () => {
     editTarget,
     editName,
     setEditName,
+    editStatus,
+    setEditStatus,
     isSubmitting,
     openEditModal,
     closeEditModal,

@@ -12,7 +12,16 @@ import { Input } from "@/components/ui/input";
 import { PenIcon, TrashIcon } from "lucide-react";
 import Modal from "@/components/Modal";
 import TableSkeletonLoader from "@/components/TableSkeletonLoader";
+import StatusBadge from "@/components/StatusBadge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useManageSubcategories } from "@/hooks/admin/useManageSubcategories";
+import type { CategoryStatus } from "@/types/category";
 
 const ManageSubcategoriesPage = () => {
   const {
@@ -21,6 +30,8 @@ const ManageSubcategoriesPage = () => {
     editTarget,
     editName,
     setEditName,
+    editStatus,
+    setEditStatus,
     isSubmitting,
     openEditModal,
     closeEditModal,
@@ -41,8 +52,8 @@ const ManageSubcategoriesPage = () => {
           <TableHeader>
             <TableRow>
               <TableHead>Name</TableHead>
+              <TableHead>Status</TableHead>
               <TableHead>Category</TableHead>
-              <TableHead>Questions</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -59,8 +70,10 @@ const ManageSubcategoriesPage = () => {
               subcategories.map((sub) => (
                 <TableRow key={sub.id} className="text-muted-foreground">
                   <TableCell className="font-semibold">{sub.name}</TableCell>
+                  <TableCell>
+                    <StatusBadge status={sub.status} />
+                  </TableCell>
                   <TableCell>{sub.categoryName}</TableCell>
-                  <TableCell>{sub.question_count ?? 0}</TableCell>
                   <TableCell className="flex gap-2">
                     <Button
                       className="bg-primary text-primary-foreground cursor-pointer rounded"
@@ -100,6 +113,19 @@ const ManageSubcategoriesPage = () => {
             required
             autoFocus
           />
+          <Select
+            value={editStatus}
+            onValueChange={(value) => setEditStatus(value as CategoryStatus)}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="approved">Approved</SelectItem>
+              <SelectItem value="pending">Pending</SelectItem>
+              <SelectItem value="rejected">Rejected</SelectItem>
+            </SelectContent>
+          </Select>
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={closeEditModal}>
               Cancel

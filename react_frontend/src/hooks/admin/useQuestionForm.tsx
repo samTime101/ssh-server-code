@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import type { Category, SubCategory } from "@/types/category";
-import { fetchCategories } from "@/services/admin/category-service";
+import { fetchCategoriesWithHierarchy } from "@/services/admin/category-service";
 import { toast } from "sonner";
 import {
   createQuestion,
@@ -16,12 +16,7 @@ import type {
 import { collectSubcategoriesFromCategories } from "@/utils/categoryUtils";
 import { extractBackendErrorMessages } from "@/utils/errorUtils";
 
-export const useQuestionForm = ({
-  mode,
-  questionId,
-  onSuccess,
-  onError,
-}: UseQuestionFormProps) => {
+export const useQuestionForm = ({ mode, questionId, onSuccess, onError }: UseQuestionFormProps) => {
   const { token } = useAuth();
 
   const defaultFormData: QuestionFormData = {
@@ -31,6 +26,7 @@ export const useQuestionForm = ({
     subCategories: [],
     optionType: "single",
     difficulty: "easy",
+    status: "pending",
     options: [
       { label: "A", text: "", isCorrect: false },
       { label: "B", text: "", isCorrect: false },
@@ -56,7 +52,7 @@ export const useQuestionForm = ({
       if (!token) return;
 
       try {
-        const fetchedCategories = await fetchCategories();
+        const fetchedCategories = await fetchCategoriesWithHierarchy();
         setCategories(fetchedCategories?.categories || []);
       } catch (error) {
         console.error("Failed to load categories:", error);
@@ -278,6 +274,7 @@ export const useQuestionForm = ({
         question_text: questionFormData.questionText,
         description: questionFormData.description,
         option_type: questionFormData?.optionType,
+        status: questionFormData.status,
         options: questionFormData?.options.map((answer) => ({
           label: answer.label,
           text: answer.text,

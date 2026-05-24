@@ -1,6 +1,12 @@
 import { API_ENDPOINTS } from "@/config/apiConfig";
 import axiosInstance from "@/services/axios";
-import type { PaginatedQuestionsResponse, FetchQuestionsPayload } from "@/types/question";
+import type {
+  AttemptQuestionResponse,
+  FetchQuestionsPayload,
+  PaginatedQuestionsResponse,
+  Question,
+  SubmitSubmissionResponse,
+} from "@/types/question";
 
 export const getCategories = async () => {
   try {
@@ -63,20 +69,59 @@ export const getNextPageQuestions = async (
   }
 };
 
-export const attemptQuestion = async (questionId: string, selectedOptions: string[]) => {
+export const attemptQuestion = async (
+  submissionId: string,
+  questionId: string,
+  selectedOptions: string[]
+): Promise<AttemptQuestionResponse | null> => {
   try {
-    const response = await axiosInstance.post(API_ENDPOINTS.attemptQuestion, {
-      question: questionId,
-      selected_answers: selectedOptions,
-    });
+    const response = await axiosInstance.post<AttemptQuestionResponse>(
+      `${API_ENDPOINTS.attemptQuestion}${submissionId}/attempts/`,
+      {
+        question: questionId,
+        selected_answers: selectedOptions,
+      }
+    );
 
     if (!response) {
       return null;
     }
-    console.log("The response from attemptquestion is", response.data);
+
     return response.data;
   } catch (error) {
     console.error("Error attempting question:", error);
+    return null;
+  }
+};
+
+export const submitSubmission = async (
+  submissionId: string
+): Promise<SubmitSubmissionResponse | null> => {
+  try {
+    const response = await axiosInstance.post<SubmitSubmissionResponse>(
+      `${API_ENDPOINTS.attemptQuestion}${submissionId}/submit/`
+    );
+
+    if (!response) {
+      return null;
+    }
+
+    return response.data;
+  } catch (error) {
+    console.error("Error submitting submission:", error);
+    return null;
+  }
+};
+
+export const getQuestionById = async (questionId: string): Promise<Question | null> => {
+  try {
+    const response = await axiosInstance.get(`${API_ENDPOINTS.adminQuestions}${questionId}/`);
+    if (!response) {
+      return null;
+    }
+    return response.data as Question;
+  } catch (error) {
+    console.error("Error fetching question by id:", error);
     return null;
   }
 };

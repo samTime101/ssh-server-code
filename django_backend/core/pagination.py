@@ -30,16 +30,19 @@ class StandardResultsSetPagination(PageNumberPagination):
 class QuestionResultsSetPagination(PageNumberPagination):
     page_size = 10
     page_size_query_param = 'page_size'
+    submission_id = None
 
     def get_paginated_response(self, data):
         response = super().get_paginated_response(data)            
         total_pages = math.ceil(self.page.paginator.count / self.page.paginator.per_page)
         response.data['total_pages'] = total_pages
         response.data['current_page'] = self.page.number
+        response.data['submission_id'] = getattr(self, 'submission_id', None)
         return response
     
     def get_paginated_response_schema(self, schema):
         response_schema = super().get_paginated_response_schema(schema)
         response_schema['properties']['current_page'] = {'type': 'integer','example': 3,}
         response_schema['properties']['total_pages'] =  {'type': 'integer','example': 13,}
+        response_schema['properties']['submission_id'] = {'type': 'string','example': '123456789012345678901234',}
         return response_schema

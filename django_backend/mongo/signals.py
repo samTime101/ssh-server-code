@@ -2,17 +2,20 @@
 # Paila models mai thyo, paila Question model vitra save() ra delete() method was overridden
 from datetime import datetime
 from mongoengine import signals
-from .models import Question, QuestionClassification, SubCategory, Category, Submissions
+from core.constants.status import APPROVED_STATUS
+from .models import Question, QuestionClassification, SubCategory, Category, Submissions, Bookmarks, QuestionSet, Constraint
 from core.cloudinary import delete_question_folder
 
 
 # Question save hunu aagai, if question exists, we collect its sub_categories
 def question_pre_save(sender, document, **kwargs):
     document.previous_subcategory_ids = set()
+    document.previous_status = None
     if document.id:
         # check for question, loading only sub_categories field
         old_question = Question.objects(id=document.id).only('sub_categories').first()
         document.previous_subcategory_ids = {sc.id for sc in old_question.sub_categories}
+        document.previous_status = old_question.status
 
 # Save vaye paxi, Classificatio ma link ya unlink garne
 def question_post_save(sender, document, **kwargs):
@@ -26,12 +29,20 @@ def question_post_save(sender, document, **kwargs):
 
     for sc_id in to_remove:
         QuestionClassification.objects(sub_category=sc_id).update_one(pull__questions=document)
+    # if question status changed from approved to non approved, remove from set
+    if document.previous_status == APPROVED_STATUS and document.status != APPROVED_STATUS:
+        QuestionSet.objects(questions=document).update(pull__questions=document)
 
 # Question delete huda unlink it from QuestionClassification and delete its image folder
 def question_post_delete(sender, document, **kwargs):
     QuestionClassification.objects(questions=document).update(pull__questions=document, set__updated_at=datetime.utcnow())
     # Removing attempts referencing the question
     Submissions.objects(attempts__question=document).update(pull__attempts__question=document)
+    # Remove question from bookmarks
+    Bookmarks.objects(bookmark__question=document).update(pull__bookmark__question=document)
+    # Remove question from question sets
+    QuestionSet.objects(questions=document).update(pull__questions=document)
+    # Delete question image
     delete_question_folder(document.id)
 
 
@@ -44,6 +55,8 @@ def subcategory_post_delete(sender, document, **kwargs):
 # Cascade ma xa Subcategory ma so logs matra rakheko
 def category_post_delete(sender, document, **kwargs):
     print(f"Category '{document.name}' deleted, Subcat ison cascade and questions on signals")
+    # when category is deleted, pull that reference from Constraint rules
+    Constraint.objects(rules__category=document).update(pull__rules__category=document)
 
 signals.pre_save.connect(question_pre_save, sender=Question)
 signals.post_save.connect(question_post_save, sender=Question)

@@ -1,3 +1,5 @@
+export type QuestionStatus = "approved" | "pending" | "rejected";
+
 export interface Question {
   id: string;
   question_text: string;
@@ -14,6 +16,9 @@ export interface Question {
   description_image_url?: string;
   contributor: string;
   contributor_specialization: string;
+  is_bookmarked?: boolean;
+  category_names?: string[];
+  subcategory_names?: string[];
 }
 
 export interface PaginatedQuestionsResponse {
@@ -23,12 +28,29 @@ export interface PaginatedQuestionsResponse {
   results: Question[];
   current_page: number;
   total_pages: number;
+  submission_id?: string;
 }
 
 export interface QuestionPaginationMeta {
   count: number;
   next: string | null;
   total_pages: number;
+}
+
+export interface AttemptQuestionResponse {
+  submission_id?: string;
+  is_correct: boolean;
+  detail?: string;
+  incorrect_answers?: string[];
+  correct_answers?: string[];
+  selected_answers?: string[];
+}
+
+export interface SubmitSubmissionResponse {
+  submission_id: string;
+  status: string;
+  submitted_at: string;
+  detail?: string;
 }
 
 export interface FetchQuestionsPayload {
@@ -44,6 +66,7 @@ export interface QuestionAttemptState {
   isAttempted: boolean;
   feedback?: string;
   correctOptions?: string[];
+  isCorrect?: boolean;
 }
 
 interface Option {
@@ -62,6 +85,7 @@ export interface CreateQuestionPayload {
   description?: string;
   contributor?: string;
   contributor_specialization?: string;
+  status?: QuestionStatus;
 }
 
 import type { Category } from "@/types/category";
@@ -77,6 +101,7 @@ export interface QuestionFormData {
   subCategories: string[];
   optionType: "single" | "multiple";
   difficulty: "easy" | "medium" | "hard";
+  status: QuestionStatus;
   options: Array<{
     label: string;
     text: string;

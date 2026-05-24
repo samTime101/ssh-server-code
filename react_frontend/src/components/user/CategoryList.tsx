@@ -8,7 +8,7 @@ const CategoryList: React.FC<{ category: Category }> = ({ category }) => {
   const {
     selectedCategoriesId,
     handleCategorySelection,
-    // selectedSubCategoryId,
+    selectedSubCategoryId,
     handleSubCategorySelection,
     // selectedSubSubCategoryId,
     // handleSubSubCategorySelection,
@@ -52,10 +52,17 @@ const CategoryList: React.FC<{ category: Category }> = ({ category }) => {
               onClick={() => toggleCategoryExpansion(category.id)}
             />
             <Checkbox
+            className="border-input appearance-none w-5 h-5 border-1 border-black cursor-pointer"
               id={`category-${category.id}`}
-              className="border-input"
+              
               checked={selectedCategoriesId.includes(category.id)}
-              onCheckedChange={() => handleCategorySelection(category.id)}
+              onCheckedChange={() => {
+                handleCategorySelection(category.id);
+                // Auto-expand the category when it is being selected
+                if (!selectedCategoriesId.includes(category.id) && !expandedCategories.includes(category.id)) {
+                  toggleCategoryExpansion(category.id);
+                }
+              }}
             />
             <label
               htmlFor={`category-${category.id}`}
@@ -108,8 +115,13 @@ const CategoryList: React.FC<{ category: Category }> = ({ category }) => {
                           />
                         )} */}
                           <Checkbox
+                          className="border-input appearance-none w-5 h-5 border-1 border-black cursor-pointer"
                             id={`subcategory-${subCategory.id}`}
-                            className="border-input"
+                            
+                            checked={
+                              selectedCategoriesId.includes(category.id) ||
+                              selectedSubCategoryId.includes(subCategory.id)
+                            }
                             onCheckedChange={() => handleSubCategorySelection(subCategory.id)}
                           />
                           <label

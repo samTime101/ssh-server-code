@@ -7,6 +7,7 @@ import {
   FileText,
   Settings,
   List,
+  SlidersHorizontal,
 } from "lucide-react";
 import type { NavItem } from "@/types/sidebar";
 
@@ -59,6 +60,12 @@ export const QUESTION_SUB_ITEMS: NavItem[] = [
     path: "/admin/question-bank",
     allowedPermissions: ["question-bank"],
   },
+  {
+    icon: List,
+    text: "Question Sets",
+    path: "/admin/manage-question-sets",
+    allowedPermissions: ["manage-question-sets"],
+  },
 ];
 
 export const CATEGORY_SUB_ITEMS: NavItem[] = [
@@ -79,5 +86,11 @@ export const CATEGORY_SUB_ITEMS: NavItem[] = [
     text: "Manage Subcategories",
     path: "/admin/manage-subcategories",
     allowedPermissions: ["manage-subcategories"],
+  },
+  {
+    icon: SlidersHorizontal,
+    text: "Constraints",
+    path: "/admin/manage-constraints",
+    allowedPermissions: ["manage-constraints"],
   },
 ];

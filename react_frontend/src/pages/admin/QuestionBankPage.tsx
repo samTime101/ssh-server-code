@@ -24,6 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useQuestionBank } from "@/hooks/admin/useQuestionBank";
+import StatusBadge from "@/components/StatusBadge";
 
 const QuestionBankPage = () => {
   const {
@@ -111,6 +112,7 @@ const QuestionBankPage = () => {
             <TableHeader>
               <TableRow>
                 <TableHead>Question Text</TableHead>
+                <TableHead>Status</TableHead>
                 <TableHead>Created At</TableHead>
                 <TableHead>Category</TableHead>
                 <TableHead>Subcategory</TableHead>
@@ -119,18 +121,24 @@ const QuestionBankPage = () => {
             </TableHeader>
             <TableBody>
               {isLoading ? (
-                <TableSkeletonLoader rows={5} columns={5} />
+                <TableSkeletonLoader rows={5} columns={6} />
               ) : questionList.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center">
+                  <TableCell colSpan={6} className="text-center">
                     No questions found
                   </TableCell>
                 </TableRow>
               ) : (
-                questionList.map((question: any, index) => (
-                  <TableRow className="text-muted-foreground" key={index + question.question_text}>
+                questionList.map((question: any) => (
+                  <TableRow
+                    className="text-muted-foreground"
+                    key={question.id || question.question_text}
+                  >
                     <TableCell className="max-w-md whitespace-normal">
                       <p className="font-normal">{question.question_text}</p>
+                    </TableCell>
+                    <TableCell>
+                      <StatusBadge status={question.status} />
                     </TableCell>
                     <TableCell>
                       {convertToLocalDateTime(question.created_at).toLocaleString(LOCALE)}

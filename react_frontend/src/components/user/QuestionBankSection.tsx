@@ -1,8 +1,9 @@
-import { Search } from "lucide-react";
+import { Minus, Plus, Search, SlidersHorizontal } from "lucide-react";
 import { useContext, useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "../ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 //import { getCategories } from "@/services/user/questionService.ts";
@@ -13,6 +14,14 @@ import type { Category, GetCategoriesResponse } from "@/types/category";
 import { getCategories } from "@/services/user/question-service";
 import { AuthContext } from "@/contexts/AuthContext";
 import { getAttemptStats } from "@/utils/attemptUtils";
+import {
+  EXAM_MINUTES_STEP,
+  EXAM_QUESTION_STEP,
+  MAX_EXAM_MINUTES,
+  MAX_EXAM_QUESTIONS,
+  MIN_EXAM_MINUTES,
+  MIN_EXAM_QUESTIONS,
+} from "@/utils/examModeUtils";
 
 /*
     Please note that the implementation of sub-sub-categories is currently on hold
@@ -24,13 +33,27 @@ import { getAttemptStats } from "@/utils/attemptUtils";
 
 const QuestionBankSection = () => {
   const { token } = useAuth();
-  const { fetchQuestions } = useQuestions(); //selectedCategoriesId, selectedSubSubCategoryId, selectedSubCategoryId,
+  const {
+    fetchQuestions,
+    sessionTimerSeconds,
+    sessionQuestionLimit,
+    isExamModeEnabled,
+    setIsExamModeEnabled,
+    configureSessionTimer,
+    configureSessionQuestionLimit,
+    startSessionTimer,
+    clearSessionTimer,
+    selectedCategoriesId,
+    selectedSubCategoryId,
+  } = useQuestions(); //selectedSubSubCategoryId,
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
 
   const [categories, setCategories] = useState<GetCategoriesResponse>();
   const [reattemptWrongOnly, setReattemptWrongOnly] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+
+  const timerMinutes = Math.floor(sessionTimerSeconds / 60);
 
   useEffect(() => {
     if (!token) return;
@@ -50,8 +73,24 @@ const QuestionBankSection = () => {
   }, [token]);
 
   const handleStartSession = async (reattemptWrongOnly: boolean) => {
+    if (isExamModeEnabled) {
+      startSessionTimer(sessionTimerSeconds);
+    } else {
+      clearSessionTimer();
+    }
+
     await fetchQuestions(reattemptWrongOnly);
     navigate("/userpanel/question");
+  };
+
+  const adjustQuestionCount = (direction: "inc" | "dec") => {
+    const delta = direction === "inc" ? EXAM_QUESTION_STEP : -EXAM_QUESTION_STEP;
+    configureSessionQuestionLimit(sessionQuestionLimit + delta);
+  };
+
+  const adjustDurationMinutes = (direction: "inc" | "dec") => {
+    const delta = direction === "inc" ? EXAM_MINUTES_STEP : -EXAM_MINUTES_STEP;
+    configureSessionTimer(timerMinutes + delta, 0);
   };
 
   const normalizeSearch = searchQuery.trim().toLowerCase();
@@ -125,36 +164,164 @@ const QuestionBankSection = () => {
           <div className="mt-4 flex justify-end">
             <label className="flex items-center space-x-2">
               <Checkbox
+              className="appearance-none w-5 h-5 border-1 border-black cursor-pointer"
                 checked={reattemptWrongOnly}
                 onCheckedChange={() => setReattemptWrongOnly(!reattemptWrongOnly)}
               />
-              <span className="text-muted-foreground">Reattempt Wrong Only</span>
+              <span className="text-muted-foreground hero-text">Re-attempt Wrong Only</span>
             </label>
           </div>
         </div>
 
         <div className="space-y-4">
           <h3 className="text-foreground mb-4 text-lg font-medium">Select Categories</h3>
-          {filteredCategories.length === 0 ? (
-            <p className="text-muted-foreground text-sm">
-              No matching topics found for your search.
-            </p>
-          ) : (
-            <ul className="space-y-3">
-              {filteredCategories.map((category) => (
-                <CategoryList key={category.id} category={category} />
-              ))}
-            </ul>
-          )}
+          <div className="scrollbar-thin max-h-[250px] overflow-y-auto  p-1 pr-2 md:max-h-[350px]">
+            {filteredCategories.length === 0 ? (
+              <p className="text-muted-foreground text-sm">
+                No matching topics found for your search.
+              </p>
+            ) : (
+              <ul className="space-y-3">
+                {filteredCategories.map((category) => (
+                  <CategoryList key={category.id} category={category} />
+                ))}
+              </ul>
+            )}
+          </div>
         </div>
 
-        <div className="border-border mt-8 flex gap-4 border-t pt-6">
-          <Button
-            className="cursor-pointer rounded-lg px-8 py-6 font-medium shadow-sm transition-all duration-200 hover:shadow-md"
-            onClick={() => handleStartSession(reattemptWrongOnly)}
-          >
-            Start Session
-          </Button>
+        <div className="border-border mt-8 flex flex-wrap items-center justify-between gap-4 border-t pt-6">
+          <div className="flex flex-wrap items-center gap-3">
+            <Button
+              className="cursor-pointer rounded-lg px-8 py-6 font-medium shadow-sm transition-all duration-200 hover:shadow-md"
+              onClick={() => handleStartSession(reattemptWrongOnly)}
+            >
+              Start Session
+            </Button>
+
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant={isExamModeEnabled ? "default" : "outline"}
+                  size="sm"
+                  className="h-12 px-4"
+                >
+                  <SlidersHorizontal className="h-4 w-4" />
+                  Exam Mode
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent align="start" className="w-80 space-y-4">
+                <div>
+                  <p className="text-sm font-semibold">Exam Settings</p>
+                </div>
+
+                <div className="flex items-center justify-between rounded-md border p-3">
+                  <p className="text-sm font-medium">Enable Exam Mode</p>
+                  <Checkbox
+                  className="appearance-none w-5 h-5 border-1 border-black cursor-pointer"
+                    checked={isExamModeEnabled}
+                    onCheckedChange={(checked) => setIsExamModeEnabled(checked === true)}
+                  />
+                </div>
+
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-medium">Question Count</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        size="icon"
+                        variant="outline"
+                        onClick={() => adjustQuestionCount("dec")}
+                        disabled={!isExamModeEnabled || sessionQuestionLimit <= MIN_EXAM_QUESTIONS}
+                        aria-label="Decrease question count"
+                      >
+                        <Minus className="h-4 w-4" />
+                      </Button>
+                      <span className="w-12 text-center text-sm font-semibold">
+                        {sessionQuestionLimit}
+                      </span>
+                      <Button
+                        size="icon"
+                        variant="outline"
+                        onClick={() => adjustQuestionCount("inc")}
+                        disabled={!isExamModeEnabled || sessionQuestionLimit >= MAX_EXAM_QUESTIONS}
+                        aria-label="Increase question count"
+                      >
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-medium">Time Limit</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        size="icon"
+                        variant="outline"
+                        onClick={() => adjustDurationMinutes("dec")}
+                        disabled={!isExamModeEnabled || timerMinutes <= MIN_EXAM_MINUTES}
+                        aria-label="Decrease time limit"
+                      >
+                        <Minus className="h-4 w-4" />
+                      </Button>
+                      <span className="w-14 text-center text-sm font-semibold">
+                        {timerMinutes}m
+                      </span>
+                      <Button
+                        size="icon"
+                        variant="outline"
+                        onClick={() => adjustDurationMinutes("inc")}
+                        disabled={!isExamModeEnabled || timerMinutes >= MAX_EXAM_MINUTES}
+                        aria-label="Increase time limit"
+                      >
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
+          </div>
+
+          {/* Total Selected Question Bubble */}
+          {categories && categories.categories.length > 0 && (
+            <div>
+              {(() => {
+                let totalSelectedQuestions = 0;
+                if (selectedCategoriesId.length === 0 && selectedSubCategoryId.length === 0) {
+                  totalSelectedQuestions = 0;
+                } else {
+                  categories.categories.forEach((cat) => {
+                    if (selectedCategoriesId.includes(cat.id)) {
+                      totalSelectedQuestions += cat.question_count || 0;
+                    } else {
+                      const selectedSubcats =
+                        cat.sub_categories?.filter((sub) =>
+                          selectedSubCategoryId.includes(sub.id)
+                        ) || [];
+                      totalSelectedQuestions += selectedSubcats.reduce(
+                        (acc, sub) => acc + (sub.question_count || 0),
+                        0
+                      );
+                    }
+                  });
+                }
+
+                return (
+                  <div className="bg-primary/10 text-primary border-primary/20 hover:bg-primary/15 flex items-center gap-3 rounded-full border px-5 py-2 text-sm font-semibold shadow-sm transition-all">
+                    <span> Selected Questions</span>
+                    <span className="bg-primary text-primary-foreground flex h-6 items-center justify-center rounded-full px-3 text-xs font-bold shadow-sm">
+                      {totalSelectedQuestions}
+                    </span>
+                  </div>
+                );
+              })()}
+            </div>
+          )}
         </div>
       </div>
     </section>

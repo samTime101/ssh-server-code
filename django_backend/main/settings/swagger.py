@@ -3,6 +3,46 @@ SPECTACULAR_SETTINGS = {
     "TITLE": "MCQ API",
     "DESCRIPTION": """
 
+## May 9, 2026 Ishan Upadhyay
+- Added bulk CSV upload endpoint for question creation, including serializer and view wiring.
+- Refactored CSV upload handling, moved validation into the parser, and introduced constants for CSV validation.
+- Moved CSV-related hardcoded values into `core.constants.csv` for clearer reuse.
+- Enabled attempting bookmarked questions with session handling in the Bookmarks page.
+
+## April 13, 2026
+- Added Constraint model to define rules for question selection based on categories and subcategories for set.
+
+
+## April 10, 2026
+- Seperated and defined constants for statues in `core.constants.status` to ensure consistency and maintainability across the codebase. Updated all relevant models, serializers, and views to utilize these constants for status fields, improving code readability and reducing the likelihood of errors due to typos or inconsistent status values.
+- Unlinked Questions from set when question status is changed from approved to pending or rejected.
+
+
+## March 30, 2026
+- Refactored submissions now allows users to create multiple submissions and each submission can have its own set of selected questions and attempts. This allows for better tracking of user progress and performance across different sets of questions.
+- User will get `submission_id` when they select question `/api/questions/select/`, and their attempt will be stored under that submission. They can have multiple active submissions at a time, but each attempt will be linked to a specific submission.
+- User will also get `submission_id` when they retrieve a set ``/api/sets/<set_id>/``. This allows them to track their attempts and progress for that specific set of questions.
+    
+## March 28, 2026
+- Added `QuestionSet` model to allow grouping of questions into sets. Each set can have a name, description, and a list of questions.
+- Created serializers and viewsets for `QuestionSet` to handle CRUD operations. Admin users can create, update, and delete question sets, while non-admin users can only view them.
+    
+
+## March 20, 2026
+- Added `status` to question and classifications
+- Added `status` query parameter to filter questions and classifications based on their status (approved, pending, rejected). Admin users can view all statuses, while non-admin users can only view approved items.
+- Updated `get_queryset` methods in `QuestionViewSet` and `QuestionClassificationViewSet` to utilize the new `status` filtering logic, ensuring that the appropriate items are returned based on the user's permissions and the specified status filter.
+- if no query param is sent, all questions and classifications are returned (including pending and rejected)
+- if `status` query param is sent with valid value, questions and classifications are filtered based on that status
+- For subcategories, to filter based on category status, `category_status` query parameter can be used. If sent with valid value, subcategories are filtered based on the status of their parent category.
+
+
+## March 14, 2026
+- Added `Bookmark` model and `Bookmarks` model to handle question bookmarking functionality. Users can now bookmark questions using the `/api/questions/{id}/bookmark/` endpoint, and the bookmarks are stored in the database with a reference to the user and the question.
+- Updated the `QuestionViewSet` to include a new action for bookmarking questions. This action allows authenticated users to bookmark a question by sending a POST request to the specified endpoint.
+- Added a DELETE method to the bookmark action to allow users to remove bookmarks from questions.
+
+
 ## March 9, 2026
 - Restructured the UserManager to another file called `managers/user_manager.py` to improve code organization and maintainability. Updated the User model to use the new UserManager for user creation and management operations.
     
@@ -113,13 +153,15 @@ SPECTACULAR_SETTINGS = {
 
 ## November 6, 2025
 - Images now supported for `question` endpoint. (1 image per question)
-- When requesting from API CLIENT (*Insomnia* recommended/ *Postman*) put `https://sisani-mcq-latest.onrender.com/api/<endpoint>`
+- When requesting from API CLIENT (*Insomnia* recommended/ *Postman*) put `https://sisani-mcq-latest.onrender.com/api/<endpoint>` (deprecated)
 
 ## November 4, 2025
 - Added `total_pages` and `current_page` fields in pagination responses.
 
 ## Information
 
+- GET /questions/ returns all (approved, rejected,pending)
+- GET /questions/?status= filters between approved, pending and rejected questions
 - When creating a category or subcategory, provide their `ObjectId`.
 - To select questions based on topics, include a list of `ObjectId`s for the relevant category/subcategory.
 - When submitting attempts, send the question `ObjectId`s in the `question` field.
