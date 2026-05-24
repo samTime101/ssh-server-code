@@ -12,13 +12,10 @@ export const useQuestionPageController = () => {
     questionData,
     questionPagination,
     fetchNextPage,
-    fetchQuestions,
     isFetchingNextPage,
     isExamModeEnabled,
     sessionQuestionLimit,
-    sessionTimerSeconds,
     sessionEndsAtMs,
-    startSessionTimer,
     clearSessionTimer,
     resetQuestionSelection,
     currentSubmissionId,
@@ -26,7 +23,6 @@ export const useQuestionPageController = () => {
     sessionAttemptCount,
     sessionAttemptResults,
     sessionInstanceId,
-    sessionWrongOnly,
   } = useQuestions();
   const navigate = useNavigate();
 
@@ -83,10 +79,11 @@ export const useQuestionPageController = () => {
     const prevLength = prevDataLengthRef.current;
     prevDataLengthRef.current = questionData?.length ?? 0;
 
-    const currentIds = questionData?.map((q) => q.id) ?? [];
+    const currentIds = (questionData as Question[] | undefined)?.map((q: Question) => q.id) ?? [];
     const prevIds = prevQuestionIdsRef.current;
     const isSameList =
-      currentIds.length === prevIds.length && currentIds.every((id, idx) => id === prevIds[idx]);
+      currentIds.length === prevIds.length &&
+      currentIds.every((id: string, idx: number) => id === prevIds[idx]);
     const isAppend =
       prevIds.length > 0 &&
       currentIds.length > prevIds.length &&

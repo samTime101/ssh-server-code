@@ -52,7 +52,7 @@ const CategoryList: React.FC<{ category: Category }> = ({ category }) => {
               onClick={() => toggleCategoryExpansion(category.id)}
             />
             <Checkbox
-            className="border-input appearance-none w-5 h-5 border-1 border-black cursor-pointer"
+            className="border-input appearance-none w-5 h-5 border-1 cursor-pointer"
               id={`category-${category.id}`}
               
               checked={selectedCategoriesId.includes(category.id)}
@@ -115,7 +115,7 @@ const CategoryList: React.FC<{ category: Category }> = ({ category }) => {
                           />
                         )} */}
                           <Checkbox
-                          className="border-input appearance-none w-5 h-5 border-1 border-black cursor-pointer"
+                          className="border-input appearance-none w-5 h-5 border-1 cursor-pointer"
                             id={`subcategory-${subCategory.id}`}
                             
                             checked={
