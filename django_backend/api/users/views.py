@@ -116,6 +116,7 @@ class SubmissionCollectionViewSet(ModelViewSet):
     queryset = Submissions.objects.all()
     serializer_class = SubmissionsSerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = StandardResultsSetPagination
     http_method_names = ["post","get"]
     lookup_field = 'id'
     lookup_value_regex = '[0-9a-f]{24}'
@@ -131,12 +132,19 @@ class SubmissionCollectionViewSet(ModelViewSet):
     # DISABLE POST /api/submissions/ FOR CREATING SUBMISSIONS, AS THEY SHOULD BE CREATED VIA /api/sets/<set_id>/ RETRIEVE ENDPOINT
     def create(self, request, *args, **kwargs):
         raise MethodNotAllowed("Method 'create' not allowed")
-
+    
     def get_queryset(self):
         user_guid = getattr(self.request.user, "user_guid", None)
-        return Submissions.objects(user_guid=user_guid) if user_guid else Submissions.objects.none()
-    
+        if not user_guid:
+            return Submissions.objects.none()
+        queryset = Submissions.objects(user_guid=user_guid)
+        submission_type = self.request.query_params.get("type")
+        if submission_type:
+            queryset = queryset.filter(type=submission_type)
+        return queryset
+
     # submissions/
+    @extend_schema(parameters=[SubmissionQuerySerializer])
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset().order_by('-started_at')
         page = self.paginate_queryset(queryset)
