@@ -113,3 +113,11 @@ class Constraint(TimeStampedDocument):
     rules = EmbeddedDocumentListField(ConstraintRule)
 
     meta = {'collection': 'constraints','indexes': ['rules.sub_category']}
+
+
+class QuestionNote(TimeStampedDocument):
+    question = ReferenceField(Question, required=True)
+    user_guid = UUIDField(required=True, binary=False)
+    note = StringField(required=True)
+
+    meta = {'collection': 'question_notes','indexes': ['question', 'user_guid']}

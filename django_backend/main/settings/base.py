@@ -39,6 +39,8 @@ LOCAL_APPS = [
     'api.roles',
     'api.sets',
     'api.constraint',
+    'api.analytics',
+    'api.notes',
 ]
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
