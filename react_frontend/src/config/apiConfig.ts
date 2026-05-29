@@ -8,6 +8,7 @@ export const getImageUrl = (path: string | null | undefined): string => {
 };
 
 export const API_ENDPOINTS = {
+  // Auth
   login: "/auth/signin/",
   signup: "/auth/signup/",
   verifyEmail: "/auth/verify-email/",
@@ -15,28 +16,38 @@ export const API_ENDPOINTS = {
   resetPasswordVerify: "/auth/reset-password-verify/",
   resetPhoneNumber: "/auth/reset-phonenumber/",
 
-  colleges: "/colleges/",
-
-  accountInfo: "/users/profile/",
-
+  // Categories
   createCategory: "/categories/",
   getCategories: "/categories/",
-  getSubcategories: "/subcategories/",
   getCategoriesWithHierarchy: "/questions/hierarchy/",
+
+  // Colleges
+  colleges: "/colleges/",
+
+  // Constraints
+  constraints: "/constraints/",
+
+  // Questions
+  createQuestion: "/questions/",
+  adminQuestions: "/questions/",
+  selectQuestions: "/questions/select/",
+
+  // Roles
+  roles: "/roles/",
+
+  // Sets
+  questionSets: "/sets/",
+
+  // Subcategories
+  getSubcategories: "/subcategories/",
   createSubCategory: "/subcategories/",
   createSubSubCategory: "/create/subsubcategory/",
 
-  selectQuestions: "/questions/select/",
+  // Submissions
   attemptQuestion: "/submissions/",
-  createQuestion: "/questions/",
-  bookmarks: "/users/bookmarks/",
 
-  // Admin Routes
+  // Users
+  accountInfo: "/users/profile/",
   usersList: "/users/",
-  adminQuestions: "/questions/",
-  questionSets: "/sets/",
-  constraints: "/constraints/",
-  // Roles (backend endpoint should expose /roles/)
-  roles: "/roles/",
-  userRoles: "/user-roles/",
+  bookmarks: "/users/bookmarks/",
 };
