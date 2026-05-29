@@ -32,6 +32,7 @@ import RoleRoute from "@/components/RoleRoute";
 import Loader from "@/components/ui/Loader";
 import ROLE_CONFIG from "@/config/roleConfig";
 import EmailVerified from "@/pages/EmailVerified";
+import ResetPasswordPage from "@/pages/ResetPasswordPage";
 
 // Redirect user to correct panel based on role
 const RootRedirect = () => {
@@ -87,6 +88,14 @@ const App = () => {
           element={
             <PublicRoute>
               <EmailVerified />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="reset-password/:token"
+          element={
+            <PublicRoute>
+              <ResetPasswordPage />
             </PublicRoute>
           }
         />
