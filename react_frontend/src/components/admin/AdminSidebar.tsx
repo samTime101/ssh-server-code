@@ -1,5 +1,14 @@
 import { useState } from "react";
-import { Settings, LogOut, X, ChevronDown, ChevronRight, FolderOpen, BookOpen } from "lucide-react";
+import {
+  Settings,
+  LogOut,
+  X,
+  ChevronDown,
+  ChevronRight,
+  FolderOpen,
+  BookOpen,
+  MessageCircle,
+} from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdminSidebar } from "@/hooks/useAdminSidebar";
@@ -79,12 +88,16 @@ const AdminSidebar = ({ isOpen, onClose }: AdminSidebarProps) => {
     visibleBottomItems,
     visibleQuestionItems,
     visibleCategoryItems,
+    visibleFeedbackItems,
     isQuestionGroupActive,
     isCategoryGroupActive,
+    isFeedbackGroupActive,
     questionsOpen,
     categoriesOpen,
+    feedbackOpen,
     toggleQuestions,
     toggleCategories,
+    toggleFeedback,
   } = useAdminSidebar();
 
   return (
@@ -163,6 +176,19 @@ const AdminSidebar = ({ isOpen, onClose }: AdminSidebarProps) => {
                 isGroupActive={isCategoryGroupActive}
                 isOpen={categoriesOpen}
                 onToggle={toggleCategories}
+                onNavClick={onClose}
+                isPathActive={isPathActive}
+              />
+            )}
+
+            {visibleFeedbackItems.length > 0 && (
+              <CollapsibleNavGroup
+                icon={MessageCircle}
+                label="Feedback"
+                items={visibleFeedbackItems}
+                isGroupActive={isFeedbackGroupActive}
+                isOpen={feedbackOpen}
+                onToggle={toggleFeedback}
                 onNavClick={onClose}
                 isPathActive={isPathActive}
               />

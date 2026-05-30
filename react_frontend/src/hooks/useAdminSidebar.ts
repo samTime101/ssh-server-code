@@ -7,6 +7,7 @@ import {
   BOTTOM_MENU_ITEMS,
   QUESTION_SUB_ITEMS,
   CATEGORY_SUB_ITEMS,
+  FEEDBACK_SUB_ITEMS,
 } from "@/config/sidebarConfig";
 
 export const useAdminSidebar = () => {
@@ -30,15 +31,20 @@ export const useAdminSidebar = () => {
   const visibleCategoryItems = CATEGORY_SUB_ITEMS.filter((item) =>
     hasPermission(item.allowedPermissions)
   );
+  const visibleFeedbackItems = FEEDBACK_SUB_ITEMS.filter((item) =>
+    hasPermission(item.allowedPermissions)
+  );
 
   const isPathActive = (path: string) =>
     location.pathname === path || location.pathname.startsWith(`${path}/`);
 
   const isQuestionGroupActive = QUESTION_SUB_ITEMS.some((item) => isPathActive(item.path));
   const isCategoryGroupActive = CATEGORY_SUB_ITEMS.some((item) => isPathActive(item.path));
+  const isFeedbackGroupActive = FEEDBACK_SUB_ITEMS.some((item) => isPathActive(item.path));
 
   const [questionsOpen, setQuestionsOpen] = useState(isQuestionGroupActive);
   const [categoriesOpen, setCategoriesOpen] = useState(isCategoryGroupActive);
+  const [feedbackOpen, setFeedbackOpen] = useState(isFeedbackGroupActive);
 
   return {
     isPathActive,
@@ -46,11 +52,15 @@ export const useAdminSidebar = () => {
     visibleBottomItems,
     visibleQuestionItems,
     visibleCategoryItems,
+    visibleFeedbackItems,
     isQuestionGroupActive,
     isCategoryGroupActive,
+    isFeedbackGroupActive,
     questionsOpen,
     categoriesOpen,
+    feedbackOpen,
     toggleQuestions: () => setQuestionsOpen((prev) => !prev),
     toggleCategories: () => setCategoriesOpen((prev) => !prev),
+    toggleFeedback: () => setFeedbackOpen((prev) => !prev),
   };
 };

@@ -15,6 +15,7 @@ export const API_ENDPOINTS = {
   resetPhoneNumber: "/auth/reset-phonenumber/",
 
   colleges: "/colleges/",
+  feedback: "/feedback/",
 
   accountInfo: "/users/profile/",
 
@@ -38,4 +39,6 @@ export const API_ENDPOINTS = {
   // Roles (backend endpoint should expose /roles/)
   roles: "/roles/",
   userRoles: "/user-roles/",
+
+  
 };

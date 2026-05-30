@@ -8,6 +8,7 @@ import {
   Settings,
   List,
   SlidersHorizontal,
+  MessageSquare,
 } from "lucide-react";
 import type { NavItem } from "@/types/sidebar";
 
@@ -92,5 +93,14 @@ export const CATEGORY_SUB_ITEMS: NavItem[] = [
     text: "Constraints",
     path: "/admin/manage-constraints",
     allowedPermissions: ["manage-constraints"],
+  },
+];
+
+export const FEEDBACK_SUB_ITEMS: NavItem[] = [
+  {
+    icon: MessageSquare,
+    text: "Application Feedback",
+    path: "/admin/feedback/application",
+    allowedPermissions: ["application-feedback"],
   },
 ];
