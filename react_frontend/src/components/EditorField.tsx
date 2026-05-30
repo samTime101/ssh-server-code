@@ -93,9 +93,13 @@ const EditorField = ({
   }, [holderId]);
 
   useEffect(() => {
-    if (!value || value === lastEmittedRef.current) return;
+    if (value === lastEmittedRef.current) return;
     if (!editorRef.current || !isReadyRef.current) {
       pendingValueRef.current = value;
+      return;
+    }
+    if (!value) {
+      editorRef.current.clear();
       return;
     }
     const data = parseEditorValue(value);

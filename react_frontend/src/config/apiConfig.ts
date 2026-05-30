@@ -53,4 +53,7 @@ export const API_ENDPOINTS = {
   accountInfo: "/users/profile/",
   usersList: "/users/",
   bookmarks: "/users/bookmarks/",
+
+  // Notes
+  notes: "/notes/",
 };
