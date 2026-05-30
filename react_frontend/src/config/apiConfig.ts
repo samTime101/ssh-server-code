@@ -16,7 +16,11 @@ export const API_ENDPOINTS = {
   resetPasswordVerify: "/auth/reset-password-verify/",
   resetPhoneNumber: "/auth/reset-phonenumber/",
 
-  // Categories
+  colleges: "/colleges/",
+  feedback: "/feedback/",
+
+  accountInfo: "/users/profile/",
+
   createCategory: "/categories/",
   getCategories: "/categories/",
   getCategoriesWithHierarchy: "/questions/hierarchy/",
@@ -50,4 +54,15 @@ export const API_ENDPOINTS = {
   accountInfo: "/users/profile/",
   usersList: "/users/",
   bookmarks: "/users/bookmarks/",
+
+  // Admin Routes
+  usersList: "/users/",
+  adminQuestions: "/questions/",
+  questionSets: "/sets/",
+  constraints: "/constraints/",
+  // Roles (backend endpoint should expose /roles/)
+  roles: "/roles/",
+  userRoles: "/user-roles/",
+
+  
 };
