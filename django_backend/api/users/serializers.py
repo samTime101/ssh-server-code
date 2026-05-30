@@ -120,9 +120,10 @@ class SubmissionResponseSerializer(me_serializers.EmbeddedDocumentSerializer):
     detail = serializers.CharField(default="Submission recorded successfully")
     incorrect_answers = serializers.SerializerMethodField()
     correct_answers = serializers.SerializerMethodField()
+    actual_answers = serializers.SerializerMethodField()
     class Meta:
         model = Attempt
-        fields = ('is_correct', 'detail', 'incorrect_answers', 'correct_answers', 'selected_answers')
+        fields = ('is_correct', 'detail', 'incorrect_answers', 'correct_answers', 'selected_answers', 'actual_answers')
         read_only_fields = fields
 
     def get_incorrect_answers(self, obj):
@@ -134,8 +135,12 @@ class SubmissionResponseSerializer(me_serializers.EmbeddedDocumentSerializer):
     def get_correct_answers(self, obj):
         question = obj.question
         correct_answers = question.correct_answers()
+        print(correct_answers)
         selected_answers = set(obj.selected_answers)
         return list(selected_answers & correct_answers)
+    
+    def get_actual_answers(self, obj):
+        return obj.question.correct_answers()
 
 class SubmissionSerializer(me_serializers.DocumentSerializer):
     submission_id = serializers.SerializerMethodField()
@@ -199,3 +204,6 @@ class BookmarkSerializer(me_serializers.EmbeddedDocumentSerializer):
 
     def get_question_id(self, obj):
         return str(obj.question.id)
+
+class SubmissionQuerySerializer(serializers.Serializer):
+    type = serializers.CharField(required=False)
