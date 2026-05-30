@@ -50,8 +50,9 @@ const QuestionPage = () => {
 
     const attempt = attempts[question.id];
     if (!attempt?.isAttempted) return "pending";
-
-    return attempt.isCorrect ? "correct" : "incorrect";
+    if (attempt.isCorrect === true) return "correct";
+    if (attempt.isCorrect === false) return "incorrect";
+    return "pending";
   };
 
   if (showReview && isExamModeEnabled) {
