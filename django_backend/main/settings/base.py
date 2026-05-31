@@ -40,6 +40,7 @@ LOCAL_APPS = [
     'api.sets',
     'api.constraint',
     'api.feedback',
+    'api.notes',
 ]
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',

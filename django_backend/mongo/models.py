@@ -120,3 +120,10 @@ class Feedback(TimeStampedDocument):
     feedback = StringField(required=True, max_length=2000)
 
     meta = {'collection': 'feedback', 'indexes': ['email', '-created_at']}
+
+class QuestionNote(TimeStampedDocument):
+    question = ReferenceField(Question, required=True)
+    user_guid = UUIDField(required=True, binary=False)
+    note = StringField(required=True)
+
+    meta = {'collection': 'question_notes','indexes': ['question', 'user_guid']}
