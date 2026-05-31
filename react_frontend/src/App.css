@@ -13,3 +13,20 @@
   max-width: 100% !important;
   margin: 0 !important;
 }
+.note-editor .codex-editor--narrow .ce-toolbar__actions {
+  right: 100% !important;
+  left: auto !important;
+}
+
+.note-editor .codex-editor--narrow .ce-toolbar__plus {
+  left: 0 !important;
+  right: auto !important;
+}
+.editor-field-holder .ce-block__content,
+.editor-field-holder .ce-paragraph,
+.editor-field-holder .ce-header,
+.editor-field-holder .cdx-list__item {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  white-space: pre-wrap;
+}

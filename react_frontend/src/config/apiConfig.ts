@@ -16,11 +16,7 @@ export const API_ENDPOINTS = {
   resetPasswordVerify: "/auth/reset-password-verify/",
   resetPhoneNumber: "/auth/reset-phonenumber/",
 
-  colleges: "/colleges/",
-  feedback: "/feedback/",
-
-  accountInfo: "/users/profile/",
-
+  // Categories
   createCategory: "/categories/",
   getCategories: "/categories/",
   getCategoriesWithHierarchy: "/questions/hierarchy/",
@@ -30,6 +26,9 @@ export const API_ENDPOINTS = {
 
   // Constraints
   constraints: "/constraints/",
+
+  // Feedback
+  feedback: "/feedback/",
 
   // Questions
   createQuestion: "/questions/",
@@ -55,14 +54,6 @@ export const API_ENDPOINTS = {
   usersList: "/users/",
   bookmarks: "/users/bookmarks/",
 
-  // Admin Routes
-  usersList: "/users/",
-  adminQuestions: "/questions/",
-  questionSets: "/sets/",
-  constraints: "/constraints/",
-  // Roles (backend endpoint should expose /roles/)
-  roles: "/roles/",
-  userRoles: "/user-roles/",
-
-  
+  // Notes
+  notes: "/notes/",
 };

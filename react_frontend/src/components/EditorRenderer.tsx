@@ -90,14 +90,16 @@ const EditorRenderer = ({ data, className }: EditorRendererProps) => {
   let parsed: OutputData;
   try {
     parsed = JSON.parse(data) as OutputData;
-    if (!parsed?.blocks?.length) {
-      return <p className={`text-base leading-relaxed ${className ?? ""}`}>{data}</p>;
-    }
+    if (!parsed?.blocks?.length) return null;
   } catch {
     return <p className={`text-base leading-relaxed ${className ?? ""}`}>{data}</p>;
   }
 
-  return <div className={`space-y-2 ${className ?? ""}`}>{parsed.blocks.map(renderBlock)}</div>;
+  return (
+    <div className={`space-y-2 break-words ${className ?? ""}`}>
+      {parsed.blocks.map(renderBlock)}
+    </div>
+  );
 };
 
 export default EditorRenderer;
