@@ -3,6 +3,13 @@ SPECTACULAR_SETTINGS = {
     "TITLE": "MCQ API",
     "DESCRIPTION": """
 
+## May 29, 2026
+- added Notes for users to write notes for their questions
+
+## May 22, 2026 Ishan  Upadhyay
+- Added public feedback endpoint `/api/feedback/` (POST) to collect app feedback with email and message.
+- Added admin-only listing of feedback at `/api/feedback/` (GET) with pagination.
+
 ## May 19, 2026
 - Added type query parameter to submissions endpoint to filter submissions based on their type.
 - Added Pagination to submissions endpoint.
@@ -13,10 +20,6 @@ SPECTACULAR_SETTINGS = {
 - Refactored CSV upload handling, moved validation into the parser, and introduced constants for CSV validation.
 - Moved CSV-related hardcoded values into `core.constants.csv` for clearer reuse.
 - Enabled attempting bookmarked questions with session handling in the Bookmarks page.
-
-## May 22, 2026 Ishan  Upadhyay
-- Added public feedback endpoint `/api/feedback/` (POST) to collect app feedback with email and message.
-- Added admin-only listing of feedback at `/api/feedback/` (GET) with pagination.
 
 ## April 13, 2026
 - Added Constraint model to define rules for question selection based on categories and subcategories for set.
