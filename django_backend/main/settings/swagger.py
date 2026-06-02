@@ -3,6 +3,9 @@ SPECTACULAR_SETTINGS = {
     "TITLE": "MCQ API",
     "DESCRIPTION": """
 
+## June 2, 2026
+- Added QuestionFeedback model to allow users to submit feedback for individual questions.
+
 ## May 29, 2026
 - added Notes for users to write notes for their questions
 
