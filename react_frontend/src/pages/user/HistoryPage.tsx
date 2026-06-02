@@ -19,7 +19,7 @@ import {
   getSubmissionMetrics,
   getSubmissionOverview,
 } from "@/utils/historyUtils";
-import { getQuestionById } from "@/services/user/question-service";
+import { getQuestionsByIds } from "@/services/user/question-service";
 import { useQuestions } from "@/hooks/useQuestions";
 
 const HistoryPage = () => {
@@ -49,31 +49,38 @@ const HistoryPage = () => {
   const { totalSubmissions, totalAttempts, correctAttempts, incorrectAttempts } =
     getSubmissionOverview(submissionHistory);
 
-  const handleAttemptStart = async (submission: SubmissionHistoryItem, attemptIndex: number) => {
-    const questionId = submission.selected_question_ids?.[attemptIndex];
-
-    if (!questionId) {
-      toast.error("Question not available for this attempt.");
+  const handleResumeSubmission = async (submission: SubmissionHistoryItem) => {
+    if (!submission.selected_question_ids?.length) {
+      toast.error("No questions available for this submission.");
       return;
     }
 
     try {
       setIsRedirecting(true);
-      const question = await getQuestionById(questionId);
+      const questions = await getQuestionsByIds(submission.selected_question_ids);
 
-      if (!question) {
-        toast.error("Failed to load the question.");
+      if (questions.length === 0) {
+        toast.error("Failed to load questions for this submission.");
         return;
       }
 
+      const attemptResults = (submission.attempts ?? []).map((attempt) =>
+        attempt?.is_correct === true ? true : attempt?.is_correct === false ? false : null
+      );
+
       clearSessionTimer();
       setIsExamModeEnabled(false);
-      setSessionQuestions([question], submission.submission_id);
+      setSessionQuestions(
+        questions,
+        submission.submission_id,
+        submission.attempts?.length ?? 0,
+        attemptResults
+      );
       setSelectedSubmission(null);
       navigate("/userpanel/question");
     } catch (error) {
-      console.error("Error starting single-question session:", error);
-      toast.error("Unable to start the question session.");
+      console.error("Error resuming submission:", error);
+      toast.error("Unable to resume the submission.");
     } finally {
       setIsRedirecting(false);
     }
@@ -204,11 +211,10 @@ const HistoryPage = () => {
             <TableBody>
               {(selectedSubmission?.attempts ?? []).map((attempt, idx) => (
                 <TableRow
-                  key={`${selectedSubmission?.submission_id}-${idx}`}
-                  className={`hover:bg-muted cursor-pointer transition-colors ${
+                  key={`${selectedSubmission?.submission_id}-${attempt.question_text}`}
+                  className={`hover:bg-muted transition-colors ${
                     isRedirecting ? "pointer-events-none opacity-60" : ""
                   }`}
-                  onClick={() => selectedSubmission && handleAttemptStart(selectedSubmission, idx)}
                 >
                   <TableCell className="w-[38%] break-words whitespace-normal">
                     {attempt.question_text}
@@ -229,7 +235,7 @@ const HistoryPage = () => {
                   </TableCell>
                   <TableCell className="whitespace-normal">
                     {(attempt.selected_answers ?? []).map((ans, i) => (
-                      <Badge key={i} className="mr-1 mb-1 whitespace-normal">
+                      <Badge key={ans} className="mr-1 mb-1 whitespace-normal">
                         {ans}: {attempt.selected_options_labels?.[i] ?? ""}
                       </Badge>
                     ))}

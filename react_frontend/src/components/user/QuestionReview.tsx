@@ -93,7 +93,7 @@ const QuestionReview = ({ questions, attempts, onDone }: QuestionReviewProps) =>
                       </div>
                     </div>
                     <div className="flex-1 space-y-2">
-                      <h3 className="text-primary flex items-center text-sm font-semibold">
+                      <h3 className="text-primary flex items-center text-xl font-bold">
                         Explanation
                       </h3>
                       <EditorRenderer data={question.description} className="text-foreground" />

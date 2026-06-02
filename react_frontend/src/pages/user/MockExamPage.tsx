@@ -24,7 +24,7 @@ const MockExamPage = () => {
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
   const [selectedOption, setSelectedOption] = useState<string>("");
   const [attempts, setAttempts] = useState<{ [id: string]: QuestionAttemptState }>({});
-  const [timeLeft, setTimeLeft] = useState(2 * 60 * 60); // 2 hours in seconds
+  const [timeLeft, setTimeLeft] = useState(3 * 60 * 60); // 2 hours in seconds
   const [isExamFinished, setIsExamFinished] = useState(false);
 
   const handleFinishExam = useCallback(async () => {

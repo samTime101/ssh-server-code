@@ -20,6 +20,9 @@ export const useQuestionPageController = () => {
     resetQuestionSelection,
     currentSubmissionId,
     updateQuestionBookmark,
+    sessionAttemptCount,
+    sessionAttemptResults,
+    sessionInstanceId,
   } = useQuestions();
   const navigate = useNavigate();
 
@@ -33,7 +36,10 @@ export const useQuestionPageController = () => {
   const [attempts, setAttempts] = useState<Record<string, QuestionAttemptState>>({});
 
   const prevDataLengthRef = useRef(0);
+  const prevQuestionIdsRef = useRef<string[]>([]);
   const timeoutHandledRef = useRef(false);
+  const sessionInitRef = useRef<number | null>(null);
+  const completionPromptedRef = useRef(false);
 
   const currentQuestion: Question | null =
     questionData && questionData.length > 0 ? questionData[currentIndex] || null : null;
@@ -73,17 +79,85 @@ export const useQuestionPageController = () => {
     const prevLength = prevDataLengthRef.current;
     prevDataLengthRef.current = questionData?.length ?? 0;
 
+    const currentIds = (questionData as Question[] | undefined)?.map((q: Question) => q.id) ?? [];
+    const prevIds = prevQuestionIdsRef.current;
+    const isSameList =
+      currentIds.length === prevIds.length &&
+      currentIds.every((id: string, idx: number) => id === prevIds[idx]);
+    const isAppend =
+      prevIds.length > 0 &&
+      currentIds.length > prevIds.length &&
+      prevIds.every((id, idx) => id === currentIds[idx]);
+    prevQuestionIdsRef.current = currentIds;
+
     if (!questionData || questionData.length === 0) {
       setCurrentIndex(0);
       return;
     }
 
-    if (questionData.length > prevLength) return;
+    if (questionData.length > prevLength || isSameList || isAppend) return;
 
     setCurrentIndex(0);
     setSelectedOptions([]);
     setSelectedOption("");
   }, [questionData]);
+
+  useEffect(() => {
+    if (sessionInitRef.current === sessionInstanceId) return;
+    sessionInitRef.current = sessionInstanceId;
+    completionPromptedRef.current = false;
+
+    setAttempts({});
+    setCurrentIndex(0);
+    setSelectedOptions([]);
+    setSelectedOption("");
+    setShowReview(false);
+
+    if (!questionData || questionData.length === 0) return;
+
+    const safeAttemptCount = Math.max(0, Math.floor(sessionAttemptCount));
+    if (safeAttemptCount === 0) return;
+
+    const maxIndex = Math.max(questionData.length - 1, 0);
+    const nextIndex = Math.min(safeAttemptCount, maxIndex + 1);
+    const resumeIndex = Math.min(nextIndex, maxIndex);
+
+    const initialAttempts: Record<string, QuestionAttemptState> = {};
+    for (let i = 0; i < Math.min(safeAttemptCount, questionData.length); i += 1) {
+      const question = questionData[i];
+      if (!question) continue;
+      const isCorrect = sessionAttemptResults[i];
+      initialAttempts[question.id] = {
+        selectedOptions: [],
+        isAttempted: true,
+        isCorrect: typeof isCorrect === "boolean" ? isCorrect : undefined,
+      };
+    }
+
+    setAttempts(initialAttempts);
+    setCurrentIndex(resumeIndex);
+  }, [questionData, sessionAttemptCount, sessionAttemptResults, sessionInstanceId]);
+
+  useEffect(() => {
+    if (completionPromptedRef.current) return;
+    if (!questionData || questionData.length === 0) return;
+
+    const totalAvailable = questionPagination?.count ?? questionData.length;
+    const totalCount = isExamModeEnabled
+      ? getEffectiveQuestionCount(sessionQuestionLimit, totalAvailable)
+      : totalAvailable;
+
+    if (sessionAttemptCount < totalCount || sessionAttemptCount === 0) return;
+
+    completionPromptedRef.current = true;
+    void finalizeAndExitSession();
+  }, [
+    isExamModeEnabled,
+    questionData,
+    questionPagination?.count,
+    sessionAttemptCount,
+    sessionQuestionLimit,
+  ]);
 
   useEffect(() => {
     timeoutHandledRef.current = false;
@@ -312,10 +386,7 @@ export const useQuestionPageController = () => {
     const nextIndex = currentIndex + 1;
 
     if (nextIndex >= totalCount) {
-      toast.info("You've completed all questions!");
-      clearSessionTimer();
-      resetQuestionSelection();
-      navigate("/userpanel");
+      await finalizeAndExitSession();
       return;
     }
 
@@ -324,10 +395,7 @@ export const useQuestionPageController = () => {
         await fetchNextPage();
         setCurrentIndex(nextIndex);
       } else {
-        toast.info("You've completed all questions!");
-        clearSessionTimer();
-        resetQuestionSelection();
-        navigate("/userpanel");
+        await finalizeAndExitSession();
       }
       return;
     }
@@ -342,6 +410,21 @@ export const useQuestionPageController = () => {
     }
 
     await handleNormalNextQuestion();
+  };
+
+  const finalizeAndExitSession = async () => {
+    if (currentSubmissionId) {
+      try {
+        await submitSubmission(currentSubmissionId);
+      } catch (error) {
+        console.error("Error submitting session:", error);
+      }
+    }
+
+    toast.info("You've completed all questions!");
+    clearSessionTimer();
+    resetQuestionSelection();
+    navigate("/userpanel/question-bank");
   };
 
   return {

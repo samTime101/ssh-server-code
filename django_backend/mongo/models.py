@@ -115,6 +115,12 @@ class Constraint(TimeStampedDocument):
     meta = {'collection': 'constraints','indexes': ['rules.sub_category']}
 
 
+class Feedback(TimeStampedDocument):
+    email = StringField(required=True, max_length=254)
+    feedback = StringField(required=True, max_length=2000)
+
+    meta = {'collection': 'feedback', 'indexes': ['email', '-created_at']}
+
 class QuestionNote(TimeStampedDocument):
     question = ReferenceField(Question, required=True)
     user_guid = UUIDField(required=True, binary=False)

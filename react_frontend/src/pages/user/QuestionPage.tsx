@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { ArrowLeft, ArrowRight, Bookmark, Lightbulb, Loader2, Share2 } from "lucide-react";
 import { useQuestionPageController } from "@/hooks/user/useQuestionPage";
+import QuestionNotePanel from "@/components/user/QuestionNotePanel";
 import MultipleChoiceOption from "@/components/user/MultipleChoiceOption";
 import SingleChoiceOption from "@/components/user/SingleChoiceOption";
 import { getImageUrl } from "@/config/apiConfig";
@@ -50,15 +51,10 @@ const QuestionPage = () => {
 
     const attempt = attempts[question.id];
     if (!attempt?.isAttempted) return "pending";
-
-    return attempt.isCorrect ? "correct" : "incorrect";
+    if (attempt.isCorrect === true) return "correct";
+    if (attempt.isCorrect === false) return "incorrect";
+    return "pending";
   };
-
-  if (showReview && isExamModeEnabled) {
-    return (
-      <QuestionReview questions={reviewQuestions} attempts={attempts} onDone={handleReviewDone} />
-    );
-  }
 
   if (!currentQuestion) {
     if (isFetchingNextPage) {
@@ -76,6 +72,85 @@ const QuestionPage = () => {
           No questions available. Please select categories.
         </p>
       </div>
+    );
+  }
+
+  const questionCard = (
+    <Card className="shadow-lg">
+      <CardHeader className="pb-4">
+        <h2 className="text-foreground text-xl leading-relaxed font-semibold">
+          {currentQuestion.question_text}
+        </h2>
+        {currentQuestion.question_image_url && (
+          <div className="flex justify-center">
+            <img
+              src={getImageUrl(currentQuestion.question_image_url)}
+              alt="Question illustration"
+              className="max-h-72 w-auto max-w-full rounded-lg border object-contain shadow-md"
+            />
+          </div>
+        )}
+      </CardHeader>
+
+      <CardContent className="space-y-4">
+        <div className="space-y-4">
+          {currentQuestion.option_type === "multiple"
+            ? currentQuestion.options.map((option) => (
+                <MultipleChoiceOption
+                  key={option.label}
+                  option={option}
+                  handleOptionSelect={handleOptionSelect}
+                  selectedOptions={selectedOptions}
+                  disabled={isExamModeEnabled ? isSavingAnswer || isSubmittingSession : isAttempted}
+                  correctOptions={isExamModeEnabled ? [] : (currentAttempt?.correctOptions ?? [])}
+                  showResultStyles={!isExamModeEnabled}
+                />
+              ))
+            : currentQuestion.options.map((option) => (
+                <SingleChoiceOption
+                  key={option.label}
+                  option={option}
+                  handleOptionSelect={handleOptionSelect}
+                  selectedOption={selectedOption}
+                  disabled={isExamModeEnabled ? isSavingAnswer || isSubmittingSession : isAttempted}
+                  correctOptions={isExamModeEnabled ? [] : (currentAttempt?.correctOptions ?? [])}
+                  radioName={`question-${currentQuestion.id}`}
+                  showResultStyles={!isExamModeEnabled}
+                />
+              ))}
+        </div>
+
+        {!isExamModeEnabled && isAttempted && (
+          <div className="border-primary bg-primary/5 rounded-lg border-l-4 p-5">
+            <div className="flex items-start gap-3">
+              <div className="mt-1 flex-shrink-0">
+                <div className="bg-primary flex h-8 w-8 items-center justify-center rounded-full">
+                  <Lightbulb size={18} className="text-primary-foreground" />
+                </div>
+              </div>
+              <div className="flex-1 space-y-2">
+                <h3 className="text-primary flex items-center text-xl font-bold">Explanation</h3>
+                <EditorRenderer data={currentQuestion.description} className="text-foreground" />
+                {currentQuestion.description_image_url && (
+                  <div className="flex justify-center">
+                    <img
+                      src={getImageUrl(currentQuestion.description_image_url)}
+                      alt="Question explanation"
+                      className="max-h-72 w-auto max-w-full rounded-lg object-contain shadow-md"
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+
+  if (showReview && isExamModeEnabled) {
+    return (
+      <QuestionReview questions={reviewQuestions} attempts={attempts} onDone={handleReviewDone} />
     );
   }
 
@@ -106,10 +181,18 @@ const QuestionPage = () => {
 
             <Button
               variant="outline"
-              onClick={() => {
+              onClick={async () => {
                 const url = `${window.location.origin}/shared/question/${currentQuestion.id}`;
-                navigator.clipboard.writeText(url);
-                toast.success("Link copied to clipboard!");
+                try {
+                  if (navigator.clipboard && navigator.clipboard.writeText) {
+                    await navigator.clipboard.writeText(url);
+                    toast.success("Link copied to clipboard!");
+                  } else {
+                    throw new Error("Clipboard API unavailable");
+                  }
+                } catch (err) {
+                  toast.error("Unable to copy link to clipboard.");
+                }
               }}
               className="hover:bg-muted text-muted-foreground bg-card px-4 py-2"
             >
@@ -181,89 +264,14 @@ const QuestionPage = () => {
           </div>
         )}
 
-        <Card className="shadow-lg">
-          <CardHeader className="pb-4">
-            <h2 className="text-foreground text-xl leading-relaxed font-semibold">
-              {currentQuestion.question_text}
-            </h2>
-            {currentQuestion.question_image_url && (
-              <div className="flex justify-center">
-                <img
-                  src={getImageUrl(currentQuestion.question_image_url)}
-                  alt="Question illustration"
-                  className="max-h-72 w-auto max-w-full rounded-lg border object-contain shadow-md"
-                />
-              </div>
-            )}
-          </CardHeader>
-
-          <CardContent className="space-y-4">
-            <div className="space-y-4">
-              {currentQuestion.option_type === "multiple"
-                ? currentQuestion.options.map((option) => (
-                    <MultipleChoiceOption
-                      key={option.label}
-                      option={option}
-                      handleOptionSelect={handleOptionSelect}
-                      selectedOptions={selectedOptions}
-                      disabled={
-                        isExamModeEnabled ? isSavingAnswer || isSubmittingSession : isAttempted
-                      }
-                      correctOptions={
-                        isExamModeEnabled ? [] : (currentAttempt?.correctOptions ?? [])
-                      }
-                      showResultStyles={!isExamModeEnabled}
-                    />
-                  ))
-                : currentQuestion.options.map((option) => (
-                    <SingleChoiceOption
-                      key={option.label}
-                      option={option}
-                      handleOptionSelect={handleOptionSelect}
-                      selectedOption={selectedOption}
-                      disabled={
-                        isExamModeEnabled ? isSavingAnswer || isSubmittingSession : isAttempted
-                      }
-                      correctOptions={
-                        isExamModeEnabled ? [] : (currentAttempt?.correctOptions ?? [])
-                      }
-                      radioName={`question-${currentQuestion.id}`}
-                      showResultStyles={!isExamModeEnabled}
-                    />
-                  ))}
-            </div>
-
-            {!isExamModeEnabled && isAttempted && (
-              <div className="border-primary bg-primary/5 rounded-lg border-l-4 p-5">
-                <div className="flex items-start gap-3">
-                  <div className="mt-1 flex-shrink-0">
-                    <div className="bg-primary flex h-8 w-8 items-center justify-center rounded-full">
-                      <Lightbulb size={18} className="text-primary-foreground" />
-                    </div>
-                  </div>
-                  <div className="flex-1 space-y-2">
-                    <h3 className="text-primary flex items-center text-sm font-semibold">
-                      Explanation
-                    </h3>
-                    <EditorRenderer
-                      data={currentQuestion.description}
-                      className="text-foreground"
-                    />
-                    {currentQuestion.description_image_url && (
-                      <div className="flex justify-center">
-                        <img
-                          src={getImageUrl(currentQuestion.description_image_url)}
-                          alt="Question explanation"
-                          className="max-h-72 w-auto max-w-full rounded-lg object-contain shadow-md"
-                        />
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        {isExamModeEnabled ? (
+          questionCard
+        ) : (
+          <div className="grid items-start gap-6 lg:grid-cols-[2fr_1fr]">
+            {questionCard}
+            <QuestionNotePanel questionId={currentQuestion.id} />
+          </div>
+        )}
 
         <div className="flex items-center justify-between">
           <Button
@@ -331,9 +339,9 @@ const QuestionPage = () => {
         </div>
 
         <div className="text-center">
-          <Button variant="destructive" size="lg" className="px-8 py-3" onClick={handleBack}>
+          {/* <Button variant="destructive" size="lg" className="px-8 py-3" onClick={handleBack}>
             Cancel
-          </Button>
+          </Button> */}
         </div>
       </div>
     </div>

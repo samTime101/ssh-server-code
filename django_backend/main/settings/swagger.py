@@ -3,6 +3,13 @@ SPECTACULAR_SETTINGS = {
     "TITLE": "MCQ API",
     "DESCRIPTION": """
 
+## May 29, 2026
+- added Notes for users to write notes for their questions
+
+## May 22, 2026 Ishan  Upadhyay
+- Added public feedback endpoint `/api/feedback/` (POST) to collect app feedback with email and message.
+- Added admin-only listing of feedback at `/api/feedback/` (GET) with pagination.
+
 ## May 19, 2026
 - Added type query parameter to submissions endpoint to filter submissions based on their type.
 - Added Pagination to submissions endpoint.

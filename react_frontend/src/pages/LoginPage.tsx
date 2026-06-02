@@ -5,21 +5,33 @@ import { Label } from "@/components/ui/label";
 import { Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { useAuth } from "@/hooks/useAuth";
-import type { LoginRequest } from "@/types/auth";
+import type { ForgotPasswordRequest, LoginRequest } from "@/types/auth";
 import FormErrorMessage from "@/components/FormErrorMessage";
 import { Eye, EyeOff } from "lucide-react";
 import AuthLayout from "@/layouts/AuthLayout";
 import { CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import Modal from "@/components/Modal";
+import { requestPasswordResetService } from "@/services/auth";
+import { toast } from "sonner";
 
 const LoginPage = () => {
   const { login } = useAuth();
   const [loading, setLoading] = useState<boolean>(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [forgotOpen, setForgotOpen] = useState(false);
+  const [forgotLoading, setForgotLoading] = useState(false);
   const {
-    register,
-    handleSubmit,
-    formState: { errors },
+    register: registerLogin,
+    handleSubmit: handleSubmitLogin,
+    formState: { errors: loginErrors },
   } = useForm<LoginRequest>();
+
+  const {
+    register: registerForgot,
+    handleSubmit: handleSubmitForgot,
+    formState: { errors: forgotErrors },
+    reset: resetForgot,
+  } = useForm<ForgotPasswordRequest>();
 
   const onSubmit = async (data: LoginRequest) => {
     if (!data.email || !data.password) {
@@ -37,6 +49,24 @@ const LoginPage = () => {
       setLoading(false);
     }
   };
+  const onForgotSubmit = async (data: ForgotPasswordRequest) => {
+    if (!data.email) {
+      return;
+    }
+    setForgotLoading(true);
+    try {
+      await requestPasswordResetService({ email: data.email });
+      toast.success("If the email exists, a reset link has been sent.");
+      resetForgot();
+      setForgotOpen(false);
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.detail || "Failed to send reset link";
+      toast.error(errorMessage);
+    } finally {
+      setForgotLoading(false);
+    }
+  };
+
   return (
     <AuthLayout>
       <CardHeader className="space-y-1 text-center">
@@ -46,21 +76,22 @@ const LoginPage = () => {
         </p>
       </CardHeader>
       <CardContent>
-        <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
+        <form className="space-y-4" onSubmit={handleSubmitLogin(onSubmit)}>
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input
               id="email"
               placeholder="Enter your email"
-              {...register("email", {
+              {...registerLogin("email", {
                 required: "Email is required",
+                setValueAs: (value) => (typeof value === "string" ? value.trim() : value),
                 pattern: {
                   value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
                   message: "Invalid email address",
                 },
               })}
             />
-            {errors.email && <FormErrorMessage message={errors.email.message} />}{" "}
+            {loginErrors.email && <FormErrorMessage message={loginErrors.email.message} />}{" "}
           </div>
           <div className="space-y-2">
             <Label htmlFor="password">Password</Label>
@@ -69,7 +100,7 @@ const LoginPage = () => {
                 id="password"
                 type={showPassword ? "text" : "password"}
                 placeholder="Enter your password"
-                {...register("password", {
+                {...registerLogin("password", {
                   required: "Password is required",
                   minLength: { value: 6, message: "Password must be at least 6 characters" },
                 })}
@@ -84,7 +115,17 @@ const LoginPage = () => {
                 {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </Button>
             </div>
-            {errors.password && <FormErrorMessage message={errors.password.message} />}
+            {loginErrors.password && <FormErrorMessage message={loginErrors.password.message} />}
+          </div>
+          <div className="flex justify-end">
+            <Button
+              type="button"
+              variant="link"
+              className="px-0 text-sm"
+              onClick={() => setForgotOpen(true)}
+            >
+              Forgot password?
+            </Button>
           </div>
           {/* TODO: Signup ma pani */}
           <Button type="submit" className="w-full" disabled={loading}>
@@ -100,6 +141,34 @@ const LoginPage = () => {
           </Link>
         </p>
       </CardFooter>
+      <Modal open={forgotOpen} onOpenChange={setForgotOpen} title="Reset your password">
+        <form className="space-y-4" onSubmit={handleSubmitForgot(onForgotSubmit)}>
+          <div className="space-y-2">
+            <Label htmlFor="forgot-email">Email</Label>
+            <Input
+              id="forgot-email"
+              placeholder="Enter your email"
+              {...registerForgot("email", {
+                required: "Email is required",
+                setValueAs: (value) => (typeof value === "string" ? value.trim() : value),
+                pattern: {
+                  value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+                  message: "Invalid email address",
+                },
+              })}
+            />
+            {forgotErrors.email && <FormErrorMessage message={forgotErrors.email.message} />}
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button type="button" variant="outline" onClick={() => setForgotOpen(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={forgotLoading}>
+              {forgotLoading ? "Sending..." : "Send reset link"}
+            </Button>
+          </div>
+        </form>
+      </Modal>
     </AuthLayout>
   );
 };

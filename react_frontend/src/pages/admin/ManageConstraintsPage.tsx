@@ -140,7 +140,7 @@ const ManageConstraintsPage = () => {
 
             {rules.map((rule, index) => (
               <div
-                key={`rule-${index}`}
+                key={`${rule.categoryId}-${index}`}
                 className="border-border bg-muted/30 flex flex-col gap-3 rounded-md border p-3 md:flex-row"
               >
                 <Select

@@ -11,7 +11,8 @@ import { toast } from "sonner";
 import { useQuestions } from "@/hooks/useQuestions.tsx";
 import CategoryList from "./CategoryList";
 import type { Category, GetCategoriesResponse } from "@/types/category";
-import { getCategories } from "@/services/user/question-service";
+import { getCategories, getQuestionsByIds } from "@/services/user/question-service";
+import { getSubmissionHistory } from "@/services/user/history-service";
 import { AuthContext } from "@/contexts/AuthContext";
 import { getAttemptStats } from "@/utils/attemptUtils";
 import {
@@ -43,6 +44,7 @@ const QuestionBankSection = () => {
     configureSessionQuestionLimit,
     startSessionTimer,
     clearSessionTimer,
+    setSessionQuestions,
     selectedCategoriesId,
     selectedSubCategoryId,
   } = useQuestions(); //selectedSubSubCategoryId,
@@ -75,12 +77,68 @@ const QuestionBankSection = () => {
   const handleStartSession = async (reattemptWrongOnly: boolean) => {
     if (isExamModeEnabled) {
       startSessionTimer(sessionTimerSeconds);
+      await fetchQuestions(reattemptWrongOnly);
+      navigate("/userpanel/question");
+      return;
     } else {
       clearSessionTimer();
     }
 
+    const startMode = await getQuestionBankStartMode();
+
+    if (startMode === "retry") {
+      const wantsRetry = window.confirm(
+        "All questions are complete. Do you want to retry the same questions?"
+      );
+      if (!wantsRetry) {
+        return;
+      }
+    }
+
+    if (startMode === "resume") {
+      navigate("/userpanel/question");
+      return;
+    }
+
     await fetchQuestions(reattemptWrongOnly);
     navigate("/userpanel/question");
+  };
+
+  const getQuestionBankStartMode = async (): Promise<"resume" | "retry" | "new"> => {
+    try {
+      const submissions = await getSubmissionHistory("question_bank");
+      const activeSubmission = submissions.find((submission) => {
+        return submission.status === "in_progress";
+      });
+
+      if (!activeSubmission?.selected_question_ids?.length) {
+        const latestSubmission = submissions[0];
+        if (latestSubmission?.status === "submitted") {
+          return "retry";
+        }
+        return "new";
+      }
+
+      const questions = await getQuestionsByIds(activeSubmission.selected_question_ids);
+      if (questions.length === 0) {
+        return "new";
+      }
+
+      const attemptResults = (activeSubmission.attempts ?? []).map((attempt) =>
+        attempt?.is_correct === true ? true : attempt?.is_correct === false ? false : null
+      );
+
+      setSessionQuestions(
+        questions,
+        activeSubmission.submission_id,
+        activeSubmission.attempts?.length ?? 0,
+        attemptResults
+      );
+      return "resume";
+    } catch (error) {
+      console.error("Failed to resume question bank session:", error);
+      return "new";
+    }
   };
 
   const adjustQuestionCount = (direction: "inc" | "dec") => {
@@ -164,17 +222,18 @@ const QuestionBankSection = () => {
           <div className="mt-4 flex justify-end">
             <label className="flex items-center space-x-2">
               <Checkbox
+                className="h-5 w-5 cursor-pointer appearance-none border-1 border-black"
                 checked={reattemptWrongOnly}
                 onCheckedChange={() => setReattemptWrongOnly(!reattemptWrongOnly)}
               />
-              <span className="text-muted-foreground">Reattempt Wrong Only</span>
+              <span className="text-muted-foreground hero-text">Re-attempt Wrong Only</span>
             </label>
           </div>
         </div>
 
         <div className="space-y-4">
           <h3 className="text-foreground mb-4 text-lg font-medium">Select Categories</h3>
-          <div className="scrollbar-thin max-h-[250px] overflow-y-auto  p-1 pr-2 md:max-h-[350px]">
+          <div className="scrollbar-thin max-h-[250px] overflow-y-auto p-1 pr-2 md:max-h-[350px]">
             {filteredCategories.length === 0 ? (
               <p className="text-muted-foreground text-sm">
                 No matching topics found for your search.
@@ -217,6 +276,7 @@ const QuestionBankSection = () => {
                 <div className="flex items-center justify-between rounded-md border p-3">
                   <p className="text-sm font-medium">Enable Exam Mode</p>
                   <Checkbox
+                    className="h-5 w-5 cursor-pointer appearance-none border-1 border-black"
                     checked={isExamModeEnabled}
                     onCheckedChange={(checked) => setIsExamModeEnabled(checked === true)}
                   />

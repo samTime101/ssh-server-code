@@ -272,9 +272,14 @@ const BookmarksPage = () => {
           >
             <div className="bg-background sticky top-0 z-10 flex items-center justify-between border-b px-6 py-4">
               <h2 className="text-lg font-semibold">Question Preview</h2>
-              <Button variant="ghost" size="sm" onClick={handleCloseModal}>
-                <X className="h-5 w-5" />
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm" onClick={handleAttemptQuestionRedirect}>
+                  Go to Question
+                </Button>
+                <Button variant="ghost" size="sm" onClick={handleCloseModal}>
+                  <X className="h-5 w-5" />
+                </Button>
+              </div>
             </div>
 
             <div className="space-y-6 p-6">
@@ -297,8 +302,8 @@ const BookmarksPage = () => {
               {/* Options */}
               {isAttempted ? (
                 <div className="space-y-4">
-                  {viewingQuestion.options.map((option, index) => (
-                    <div key={option.label || index}>
+                  {viewingQuestion.options.map((option) => (
+                    <div key={option.label}>
                       {viewingQuestion.option_type === "multiple" ? (
                         <MultipleChoiceOption
                           option={option}
@@ -321,10 +326,7 @@ const BookmarksPage = () => {
                 </div>
               ) : (
                 <div className="flex flex-col items-center justify-center rounded-md border p-6 text-center shadow-sm">
-                  <p className="text-muted-foreground mb-4">
-                    This question has not been attempted yet.
-                  </p>
-                  <Button onClick={handleAttemptQuestionRedirect}>Attempt Question</Button>
+                  <p className="text-muted-foreground">This question has not been attempted yet.</p>
                 </div>
               )}
 
