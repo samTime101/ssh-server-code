@@ -3,6 +3,11 @@ SPECTACULAR_SETTINGS = {
     "TITLE": "MCQ API",
     "DESCRIPTION": """
 
+## June 2, 2026
+- Added threaded comments feature for questions.
+- Added `/api/comments/` (POST, PATCH, DELETE) for managing comments.
+- Added `/api/comments/tree/?question_id={id}` (GET) to fetch comments in a nested, threaded tree structure.
+
 ## May 29, 2026
 - added Notes for users to write notes for their questions
 

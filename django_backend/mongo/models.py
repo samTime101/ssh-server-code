@@ -121,6 +121,14 @@ class Feedback(TimeStampedDocument):
 
     meta = {'collection': 'feedback', 'indexes': ['email', '-created_at']}
 
+class Comment(TimeStampedDocument):
+    user_guid = UUIDField(required=True, binary=False)
+    question = ReferenceField(Question, required=True)
+    parent_comment = ReferenceField('self', null=True, required=False)
+    text = StringField(required=True, max_length=2000)
+
+    meta = {'collection': 'comments', 'indexes': ['question', 'parent_comment', 'user_guid', '-created_at']}
+
 class QuestionNote(TimeStampedDocument):
     question = ReferenceField(Question, required=True)
     user_guid = UUIDField(required=True, binary=False)
