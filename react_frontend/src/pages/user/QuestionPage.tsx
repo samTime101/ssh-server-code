@@ -9,6 +9,7 @@ import { getImageUrl } from "@/config/apiConfig";
 import QuestionReview from "@/components/user/QuestionReview";
 import { toast } from "sonner";
 import EditorRenderer from "@/components/EditorRenderer";
+import QuestionProgress from "@/components/user/QuestionProgress";
 
 const QuestionPage = () => {
   const {
@@ -43,17 +44,6 @@ const QuestionPage = () => {
     const minutes = Math.floor(totalSeconds / 60);
     const seconds = totalSeconds % 60;
     return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
-  };
-
-  const getQuestionProgressStatus = (index: number) => {
-    const question = questionData?.[index];
-    if (!question) return "pending";
-
-    const attempt = attempts[question.id];
-    if (!attempt?.isAttempted) return "pending";
-    if (attempt.isCorrect === true) return "correct";
-    if (attempt.isCorrect === false) return "incorrect";
-    return "pending";
   };
 
   if (!currentQuestion) {
@@ -156,7 +146,7 @@ const QuestionPage = () => {
 
   return (
     <div className="min-h-screen p-6">
-      <div className="mx-auto max-w-4xl space-y-6">
+      <div className="mx-auto max-w-6xl space-y-6">
         <div className="flex items-center justify-between">
           <Button
             variant="outline"
@@ -216,59 +206,23 @@ const QuestionPage = () => {
           </div>
         </div>
 
-        {!isExamModeEnabled && totalCount > 0 && (
-          <div className="bg-card rounded-lg border p-4 shadow-sm">
-            <div className="mb-3 flex items-center justify-between gap-2">
-              <p className="text-sm font-semibold">Session Progress</p>
-              <p className="text-muted-foreground text-xs">Green = correct, Red = incorrect</p>
-            </div>
-
-            <div className="overflow-x-auto overflow-y-visible px-1 py-2">
-              <div className="flex min-w-max items-center pr-1">
-                {Array.from({ length: totalCount }).map((_, index) => {
-                  const status = getQuestionProgressStatus(index);
-                  const isCurrent = index === currentIndex;
-
-                  const bubbleClasses =
-                    status === "correct"
-                      ? "border-green-600 bg-green-500 text-white"
-                      : status === "incorrect"
-                        ? "border-red-600 bg-red-500 text-white"
-                        : "border-border bg-muted text-muted-foreground";
-
-                  const lineClasses =
-                    status === "correct"
-                      ? "bg-green-500/70"
-                      : status === "incorrect"
-                        ? "bg-red-500/70"
-                        : "bg-border";
-
-                  return (
-                    <div key={`progress-${index}`} className="flex items-center">
-                      <div
-                        className={`flex h-8 w-8 items-center justify-center rounded-full border text-xs font-semibold ${bubbleClasses} ${
-                          isCurrent
-                            ? "ring-primary ring-offset-background ring-2 ring-offset-1"
-                            : ""
-                        }`}
-                      >
-                        {index + 1}
-                      </div>
-
-                      {index < totalCount - 1 && <div className={`h-0.5 w-7 ${lineClasses}`} />}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        )}
-
         {isExamModeEnabled ? (
           questionCard
         ) : (
-          <div className="grid items-start gap-6 lg:grid-cols-[2fr_1fr]">
-            {questionCard}
+          <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+            <div className="space-y-6">
+              {totalCount > 0 && (
+                <QuestionProgress
+                  totalCount={totalCount}
+                  currentIndex={currentIndex}
+                  questionData={questionData}
+                  attempts={attempts}
+                />
+              )}
+
+              {questionCard}
+            </div>
+
             <QuestionNotePanel questionId={currentQuestion.id} />
           </div>
         )}
