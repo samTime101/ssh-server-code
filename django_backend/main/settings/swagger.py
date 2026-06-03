@@ -3,8 +3,12 @@ SPECTACULAR_SETTINGS = {
     "TITLE": "MCQ API",
     "DESCRIPTION": """
 
+## June 2, 2026
+- Added QuestionFeedback model to allow users to submit feedback for individual questions.
+
 ## May 29, 2026
 - added Notes for users to write notes for their questions
+- added /analytics/questionbank/ endpoint to provide analytics on question bank
 
 ## May 22, 2026 Ishan  Upadhyay
 - Added public feedback endpoint `/api/feedback/` (POST) to collect app feedback with email and message.
