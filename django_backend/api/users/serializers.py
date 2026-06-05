@@ -105,6 +105,7 @@ class SubmissionsSerializer(me_serializers.DocumentSerializer):
     class Meta:
         model = Submissions
         fields = ('submission_id','user_guid','selected_question_ids','attempts','status','started_at','submitted_at','type','submission_label',)
+        extra_kwargs = {'user_guid': {'read_only': True},'attempts': {'read_only': True},'status': {'read_only': True}, 'started_at': {'read_only': True}, 'submitted_at': {'read_only': True}, 'type': {'read_only': True}}
 
     def get_submission_id(self, obj):
         return str(obj.id)

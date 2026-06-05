@@ -3,6 +3,8 @@
 
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
+from rest_framework.exceptions import AuthenticationFailed
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 # SQL model for auth
 User = get_user_model()
@@ -55,3 +57,19 @@ class ResetPasswordVerifySerializer(serializers.Serializer):
 
 class ResetPhoneNumberSerializer(serializers.Serializer):
     new_phonenumber = serializers.CharField(required=True)
+
+class VerifyEmailRequestSerializer(serializers.Serializer):
+    email = serializers.EmailField(required=True)
+    def validate_email(self, value):
+        user = User.objects.filter(email=value).first()
+        if not user:
+            raise serializers.ValidationError("User not found.")
+        self.context["user"] = user
+        return value
+
+class VerifiedTokenObtainPairSerializer(TokenObtainPairSerializer):
+    def validate(self, attrs):
+        data = super().validate(attrs)
+        if not self.user.is_email_verified:
+            raise AuthenticationFailed("Please verify your email address before signing in.")
+        return data

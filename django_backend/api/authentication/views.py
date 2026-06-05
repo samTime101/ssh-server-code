@@ -17,6 +17,10 @@ from core.token.password_reset.generate import create_password_reset_token
 from core.token.password_reset.verify import verify_password_reset_token
 from core.token.password_reset.responses import *
 from core.token.password_reset.send import send_password_reset_email
+from django.contrib.auth import get_user_model
+from rest_framework_simplejwt.views import TokenObtainPairView
+
+User = get_user_model()
 
 # for signup
 class SignupView(APIView):
@@ -45,6 +49,23 @@ class EmailVerifyView(APIView):
             return Response(email_already_verified(), status=status.HTTP_200_OK)
         else:
             return Response(invalid_verification_token(), status=status.HTTP_400_BAD_REQUEST)
+
+
+class VerifyEmailRequestView(APIView):
+    permission_classes = [AllowAny]
+    serializer_class = VerifyEmailRequestSerializer
+
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.context["user"]
+
+        if user.is_email_verified:
+            return Response(email_already_verified(), status=status.HTTP_200_OK)
+
+        token = create_email_verification_token(user.id)
+        send_verification_email(user, token)
+        return Response(verification_email_sent(), status=status.HTTP_200_OK)
 
 # TODO: RATE
 class ResetPasswordView(APIView):
@@ -82,3 +103,7 @@ class ResetPhoneNumberView(APIView):
         user.phonenumber = new_phonenumber
         user.save()
         return Response({"detail": "Phone number has been updated successfully."}, status=status.HTTP_200_OK)
+
+class VerifiedTokenObtainPairView(TokenObtainPairView):
+    permission_classes = [AllowAny]
+    serializer_class = VerifiedTokenObtainPairSerializer
