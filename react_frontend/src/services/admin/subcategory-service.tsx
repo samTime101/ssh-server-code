@@ -52,16 +52,16 @@ export async function getCategories(): Promise<{
   }
 }
 
-export async function fetchSubcategories(): Promise<SubCategoryDetail[]> {
+export async function fetchSubcategories(page: number = 1, pageSize: number = 10): Promise<import("@/types/category").GetSubCategoriesResponse> {
   try {
     const [subcategoriesResponse, categoriesResponse] = await Promise.all([
-      axiosInstance.get(API_ENDPOINTS.getSubcategories),
-      axiosInstance.get(API_ENDPOINTS.getCategories),
+      axiosInstance.get(`${API_ENDPOINTS.getSubcategories}?page=${page}&page_size=${pageSize}`),
+      axiosInstance.get(`${API_ENDPOINTS.getCategories}?page_size=1000`) // Try to get all categories for mapping
     ]);
 
     const categoryList: Category[] = Array.isArray(categoriesResponse.data)
       ? categoriesResponse.data
-      : (categoriesResponse.data?.categories ?? []);
+      : (categoriesResponse.data?.categories ?? categoriesResponse.data?.results ?? []);
     const categoryNameById = new Map(categoryList.map((cat) => [cat.id, cat.name]));
     const categoryIdByName = new Map(
       categoryList.map((cat) => [cat.name.trim().toLowerCase(), cat.id])
@@ -71,7 +71,7 @@ export async function fetchSubcategories(): Promise<SubCategoryDetail[]> {
       ? subcategoriesResponse.data
       : (subcategoriesResponse.data?.results ?? subcategoriesResponse.data?.subcategories ?? []);
 
-    return rawSubcategories.map((sub) => {
+    const subcategories = rawSubcategories.map((sub) => {
       const normalizedCategoryName =
         sub.category_name?.trim().toLowerCase() ||
         (typeof sub.category === "object" ? sub.category?.name?.trim().toLowerCase() : undefined);
@@ -97,6 +97,20 @@ export async function fetchSubcategories(): Promise<SubCategoryDetail[]> {
         question_count: sub.question_count,
       };
     });
+
+    let pagination = undefined;
+    if (subcategoriesResponse.data && typeof subcategoriesResponse.data === "object" && "results" in subcategoriesResponse.data) {
+      pagination = {
+        count: subcategoriesResponse.data.count,
+        total_pages: subcategoriesResponse.data.total_pages,
+        current_page: subcategoriesResponse.data.current_page,
+      };
+    }
+
+    return {
+      subcategories,
+      pagination,
+    };
   } catch (error) {
     console.error(error);
     throw new Error("Failed to fetch subcategories");

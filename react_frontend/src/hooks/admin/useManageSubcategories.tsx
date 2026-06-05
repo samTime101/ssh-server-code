@@ -15,15 +15,26 @@ export const useManageSubcategories = () => {
   const [editStatus, setEditStatus] = useState<CategoryStatus>("pending");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [pagination, setPagination] = useState({
+    count: 0,
+    total_pages: 0,
+    current_page: 1,
+  });
+
   useEffect(() => {
     loadSubcategories();
-  }, []);
+  }, [currentPage, pageSize]);
 
   const loadSubcategories = async () => {
     setIsLoading(true);
     try {
-      const data = await fetchSubcategories();
-      setSubcategories(data);
+      const data = await fetchSubcategories(currentPage, pageSize);
+      setSubcategories(data.subcategories);
+      if (data.pagination) {
+        setPagination(data.pagination);
+      }
     } catch {
       toast.error("Failed to load subcategories");
     } finally {
@@ -75,6 +86,15 @@ export const useManageSubcategories = () => {
     }
   };
 
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const handlePageSizeChange = (size: number) => {
+    setPageSize(size);
+    setCurrentPage(1);
+  };
+
   return {
     subcategories,
     isLoading,
@@ -88,5 +108,10 @@ export const useManageSubcategories = () => {
     closeEditModal,
     handleEditSubmit,
     handleDelete,
+    currentPage,
+    pageSize,
+    pagination,
+    handlePageChange,
+    handlePageSizeChange,
   };
 };
