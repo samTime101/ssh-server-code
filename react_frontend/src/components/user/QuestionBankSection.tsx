@@ -13,6 +13,9 @@ import CategoryList from "./CategoryList";
 import type { Category, GetCategoriesResponse } from "@/types/category";
 import { getCategories, getQuestionsByIds } from "@/services/user/question-service";
 import { getSubmissionHistory } from "@/services/user/history-service";
+import { getQuestionBankAnalytics } from "@/services/user/analytics-service";
+import type { QuestionBankAnalytics } from "@/types/analytics";
+import { getQuestionBankProgress } from "@/utils/questionBankUtils";
 import {
   EXAM_MINUTES_STEP,
   EXAM_QUESTION_STEP,
@@ -62,7 +65,6 @@ const QuestionBankSection = () => {
       try {
         const categoryResponse = await getCategories();
 
-        console.log("The category response:", categoryResponse);
         setCategories(categoryResponse);
       } catch (error) {
         console.error("Failed to fetch categories:", error);
@@ -158,93 +160,45 @@ const QuestionBankSection = () => {
   const filteredCategories: Category[] = !normalizeSearch
     ? (categories?.categories ?? [])
     : (categories?.categories ?? [])
-      .map((category) => {
-        const categoryMatches =
-          category.name.toLowerCase().includes(normalizeSearch) ||
-          category.id.toLowerCase().includes(normalizeSearch);
+        .map((category) => {
+          const categoryMatches =
+            category.name.toLowerCase().includes(normalizeSearch) ||
+            category.id.toLowerCase().includes(normalizeSearch);
 
-        const matchingSubCategories = (category.sub_categories ?? []).filter(
-          (subCategory) =>
-            subCategory.name.toLowerCase().includes(normalizeSearch) ||
-            subCategory.id.toLowerCase().includes(normalizeSearch)
-        );
+          const matchingSubCategories = (category.sub_categories ?? []).filter(
+            (subCategory) =>
+              subCategory.name.toLowerCase().includes(normalizeSearch) ||
+              subCategory.id.toLowerCase().includes(normalizeSearch)
+          );
 
-        if (categoryMatches) return category;
-        if (matchingSubCategories.length === 0) return null;
+          if (categoryMatches) return category;
+          if (matchingSubCategories.length === 0) return null;
 
-        return {
-          ...category,
-          sub_categories: matchingSubCategories,
-        };
-      })
-      .filter((category): category is Category => category !== null);
+          return {
+            ...category,
+            sub_categories: matchingSubCategories,
+          };
+        })
+        .filter((category): category is Category => category !== null);
 
-  const [sessionStats, setSessionStats] = useState({
-    total: 0,
-    attempted: 0,
-    correct: 0,
-    incorrect: 0,
-  });
+  const [analytics, setAnalytics] = useState<QuestionBankAnalytics | null>(null);
 
-  // Compute progress based on selected categories and latest question_bank submission
   useEffect(() => {
-    const computeStats = async () => {
+    if (!token) return;
+    const loadAnalytics = async () => {
       try {
-        // Determine total selected questions from current selection
-        let totalSelectedQuestions = 0;
-        if (selectedCategoriesId.length === 0 && selectedSubCategoryId.length === 0) {
-          totalSelectedQuestions = 0;
-        } else {
-          categories?.categories.forEach((cat) => {
-            if (selectedCategoriesId.includes(cat.id)) {
-              totalSelectedQuestions += cat.question_count || 0;
-            } else {
-              const selectedSubcats =
-                cat.sub_categories?.filter((sub) => selectedSubCategoryId.includes(sub.id)) || [];
-              totalSelectedQuestions += selectedSubcats.reduce(
-                (acc, sub) => acc + (sub.question_count || 0),
-                0
-              );
-            }
-          });
-        }
-
-        // Default stats (no session yet)
-        let total = totalSelectedQuestions;
-        let attempted = 0;
-        let correct = 0;
-
-        // Try to fetch latest submission history for question_bank
-        const submissions = await getSubmissionHistory("question_bank");
-        if (submissions && submissions.length > 0) {
-          // Prefer an in-progress submission
-          const inProgress = submissions.find((s) => s.status === "in_progress");
-          const latest = inProgress ?? submissions[0];
-
-          // Use selected_question_ids when available to determine total for that session
-          if (latest.selected_question_ids && latest.selected_question_ids.length > 0) {
-            total = latest.selected_question_ids.length;
-          }
-
-          const attempts = Array.isArray(latest.attempts) ? latest.attempts : [];
-          attempted = attempts.length;
-          correct = attempts.filter((a) => a?.is_correct === true).length;
-        }
-
-        setSessionStats({
-          total: Math.max(0, total),
-          attempted: Math.max(0, attempted),
-          correct: Math.max(0, correct),
-          incorrect: Math.max(0, attempted - correct),
-        });
+        const data = await getQuestionBankAnalytics();
+        setAnalytics(data);
       } catch (err) {
-        console.error("Failed to compute session stats:", err);
-        setSessionStats({ total: 0, attempted: 0, correct: 0, incorrect: 0 });
+        console.error("Failed to load question bank analytics:", err);
+        setAnalytics(null);
       }
     };
 
-    void computeStats();
-  }, [selectedCategoriesId, selectedSubCategoryId, categories]);
+    void loadAnalytics();
+  }, [token]);
+
+  const stats = getQuestionBankProgress(analytics);
 
   return (
     <section className="mx-auto flex min-h-full max-w-[1500px] flex-1 flex-col gap-8 p-8">
@@ -254,37 +208,25 @@ const QuestionBankSection = () => {
         <div className="space-y-3">
           <div className="text-muted-foreground flex items-center justify-between text-sm">
             <span>Overall Progress</span>
-            <span className="font-medium">
-              {sessionStats.total > 0
-                ? Math.round((sessionStats.attempted / sessionStats.total) * 100)
-                : 0}% Complete
-            </span>
+            <span className="font-medium">{Math.round(stats.percentComplete)}% Complete</span>
           </div>
           <div className="bg-muted h-3 overflow-hidden rounded-full">
-            {sessionStats.total > 0 ? (
-              (() => {
-                const greenPct = (sessionStats.correct / sessionStats.total) * 100;
-                const redPct = (sessionStats.incorrect / sessionStats.total) * 100;
-                const greenEnd = Math.max(0, Math.min(100, greenPct));
-                const redEnd = Math.max(0, Math.min(100, greenEnd + redPct));
-                return (
-                  <div
-                    className="h-full rounded-full transition-all duration-500"
-                    style={{
-                      width: `100%`,
-                      background: `linear-gradient(to right, #22c55e 0%, #22c55e ${greenEnd}%, #ef4444 ${greenEnd}%, #ef4444 ${redEnd}%, #9ca3af ${redEnd}%, #9ca3af 100%)`,
-                    }}
-                  />
-                );
-              })()
+            {stats.total > 0 ? (
+              <div
+                className="h-full rounded-full transition-all duration-500"
+                style={{
+                  width: `100%`,
+                  background: `linear-gradient(to right, #22c55e 0%, #22c55e ${stats.greenEnd}%, #ef4444 ${stats.greenEnd}%, #ef4444 ${stats.redEnd}%, #9ca3af ${stats.redEnd}%, #9ca3af 100%)`,
+                }}
+              />
             ) : (
               <div className="h-full rounded-full bg-slate-300/40" />
             )}
           </div>
           <div className="flex items-center justify-between text-sm">
-            <span className="font-medium text-green-600">{sessionStats.correct} Correct</span>
+            <span className="font-medium text-green-600">{stats.correct} Correct</span>
             <span className="text-muted-foreground">
-              {sessionStats.attempted} of {sessionStats.total} completed
+              {stats.attempted} of {stats.total} completed
             </span>
           </div>
         </div>
@@ -470,28 +412,26 @@ const QuestionBankSection = () => {
       {/* All Questions Complete — Retry Modal */}
       {showRetryModal && (
         <div
-          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in duration-150"
+          className="animate-in fade-in fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm duration-150"
           onClick={() => {
             setShowRetryModal(false);
             retryResolveRef.current?.(false);
           }}
         >
           <div
-            className="w-full max-w-sm rounded-2xl bg-background p-8 shadow-2xl flex flex-col items-center gap-3 animate-in slide-in-from-bottom-4 duration-200"
+            className="bg-background animate-in slide-in-from-bottom-4 flex w-full max-w-sm flex-col items-center gap-3 rounded-2xl p-8 shadow-2xl duration-200"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Icon */}
-            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-blue-100 mb-1">
+            <div className="mb-1 flex h-14 w-14 items-center justify-center rounded-full bg-blue-100">
               <RefreshCw size={24} color="#4f6bff" />
             </div>
 
             {/* Title */}
-            <h2 className="text-xl font-bold text-foreground">
-              All Questions Complete
-            </h2>
+            <h2 className="text-foreground text-xl font-bold">All Questions Complete</h2>
 
             {/* Message */}
-            <p className="my-1 mb-4 text-sm text-muted-foreground text-center leading-relaxed">
+            <p className="text-muted-foreground my-1 mb-4 text-center text-sm leading-relaxed">
               Do you want to retry the same questions?
             </p>
 
@@ -502,7 +442,7 @@ const QuestionBankSection = () => {
                   setShowRetryModal(false);
                   retryResolveRef.current?.(false);
                 }}
-                className="flex-1 rounded-lg border-2 border-border bg-transparent py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
+                className="border-border text-foreground hover:bg-muted flex-1 rounded-lg border-2 bg-transparent py-2.5 text-sm font-semibold transition-colors"
               >
                 Cancel
               </button>
@@ -511,7 +451,7 @@ const QuestionBankSection = () => {
                   setShowRetryModal(false);
                   retryResolveRef.current?.(true);
                 }}
-                className="flex-1 rounded-lg border-0 bg-primary py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary/90"
+                className="bg-primary hover:bg-primary/90 flex-1 rounded-lg border-0 py-2.5 text-sm font-semibold text-white transition-colors"
               >
                 Retry
               </button>
