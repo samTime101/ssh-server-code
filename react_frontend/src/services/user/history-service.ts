@@ -1,5 +1,6 @@
 import { API_ENDPOINTS } from "@/config/apiConfig";
 import axiosInstance from "@/services/axios";
+import type { AxiosResponse } from "axios";
 import type { SubmissionHistoryItem, SubmissionHistoryResponse } from "@/types/history";
 import { getSubmissionItems } from "@/utils/historyUtils";
 
@@ -11,7 +12,7 @@ export const getSubmissionHistory = async (type?: string): Promise<SubmissionHis
     let pageCount = 0;
 
     while (nextUrl && pageCount < 50) {
-      const response = await axiosInstance.get<SubmissionHistoryResponse>(nextUrl, {
+      const response: AxiosResponse<SubmissionHistoryResponse> = await axiosInstance.get<SubmissionHistoryResponse>(nextUrl, {
         params: pageCount === 0 ? params : undefined,
       });
 
