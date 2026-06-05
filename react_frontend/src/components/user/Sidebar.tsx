@@ -3,7 +3,6 @@ import { useLocation, Link } from "react-router-dom";
 import {
   Book,
   Stethoscope,
-  Folder,
   FileText,
   User,
   Settings,
