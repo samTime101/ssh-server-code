@@ -6,14 +6,14 @@ from rest_framework import status
 from rest_framework.exceptions import ValidationError
 from drf_spectacular.utils import extend_schema
 
-from core.permissions.permissions import IsAdminUser
+from core.permissions.permissions import IsAuthenticated
 from core.constants.status import APPROVED_STATUS
 from mongo.models import Question, Submissions
 from .serializers import QuestionBankStatsSerializer
 
 
 class QuestionBankStatsAPIView(APIView):
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAuthenticated]
 
     @extend_schema(responses=QuestionBankStatsSerializer)
     def get(self, request, *args, **kwargs):
