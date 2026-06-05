@@ -3,6 +3,9 @@ SPECTACULAR_SETTINGS = {
     "TITLE": "MCQ API",
     "DESCRIPTION": """
 
+## June 5, 2026
+- Added `submission_label` field in SubmissionsSerializer to provide a human-readable label for the submission type, improving clarity in API responses.    
+
 ## June 2, 2026
 - Added QuestionFeedback model to allow users to submit feedback for individual questions.
 
