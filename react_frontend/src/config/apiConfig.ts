@@ -8,6 +8,9 @@ export const getImageUrl = (path: string | null | undefined): string => {
 };
 
 export const API_ENDPOINTS = {
+  // Analytics
+  analytics: "/analytics/questionbank/",
+
   // Auth
   login: "/auth/signin/",
   signup: "/auth/signup/",
