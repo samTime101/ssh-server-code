@@ -11,6 +11,7 @@ import SingleChoiceOption from "@/components/user/SingleChoiceOption";
 import EditorRenderer from "@/components/EditorRenderer";
 import { useNavigate } from "react-router-dom";
 import { getImageUrl } from "@/config/apiConfig";
+import QuestionFeedbackWidget from "@/components/user/QuestionFeedbackWidget";
 
 const CEEQuestionPage = () => {
   const { questionData, currentSubmissionId, resetQuestionSelection } = useQuestions();
@@ -114,6 +115,8 @@ const CEEQuestionPage = () => {
           isAttempted: true,
           feedback: result?.detail ?? "",
           correctOptions: result?.correct_answers,
+          actualAnswers: result?.actual_answers ?? [],
+          isCorrect: result.is_correct,
         },
       }));
 
@@ -163,7 +166,7 @@ const CEEQuestionPage = () => {
         </Button>
         <h1 className="text-foreground text-3xl font-bold">CEE Practice</h1>
 
-        <Card className="shadow-lg">
+        <Card className="relative shadow-lg overflow-visible">
           <CardHeader className="pb-4">
             <h2 className="text-foreground text-xl leading-relaxed font-semibold">
               {currentQuestion.question_text}
@@ -189,7 +192,11 @@ const CEEQuestionPage = () => {
                       handleOptionSelect={handleOptionSelect}
                       selectedOptions={selectedOptions}
                       disabled={isAttempted}
-                      correctOptions={currentAttempt?.correctOptions ?? []}
+                      correctOptions={
+                        currentAttempt?.isCorrect === false
+                          ? (currentAttempt?.actualAnswers ?? [])
+                          : (currentAttempt?.correctOptions ?? [])
+                      }
                     />
                   ))
                 : currentQuestion.options.map((option) => (
@@ -199,10 +206,15 @@ const CEEQuestionPage = () => {
                       handleOptionSelect={handleOptionSelect}
                       selectedOption={selectedOption}
                       disabled={isAttempted}
-                      correctOptions={currentAttempt?.correctOptions ?? []}
+                      correctOptions={
+                        currentAttempt?.isCorrect === false
+                          ? (currentAttempt?.actualAnswers ?? [])
+                          : (currentAttempt?.correctOptions ?? [])
+                      }
                     />
                   ))}
             </div>
+            <QuestionFeedbackWidget questionId={currentQuestion.id} />
 
             {isAttempted && (
               <div className="border-primary bg-primary/5 rounded-lg border-l-4 p-5">
