@@ -1,5 +1,5 @@
 import { Minus, Plus, Search, SlidersHorizontal, RefreshCw } from "lucide-react";
-import { useContext, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "../ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -13,8 +13,6 @@ import CategoryList from "./CategoryList";
 import type { Category, GetCategoriesResponse } from "@/types/category";
 import { getCategories, getQuestionsByIds } from "@/services/user/question-service";
 import { getSubmissionHistory } from "@/services/user/history-service";
-import { AuthContext } from "@/contexts/AuthContext";
-import { getAttemptStats } from "@/utils/attemptUtils";
 import {
   EXAM_MINUTES_STEP,
   EXAM_QUESTION_STEP,
@@ -49,7 +47,6 @@ const QuestionBankSection = () => {
     selectedSubCategoryId,
   } = useQuestions(); //selectedSubSubCategoryId,
   const navigate = useNavigate();
-  const { user } = useContext(AuthContext);
 
   const [categories, setCategories] = useState<GetCategoriesResponse>();
   const [reattemptWrongOnly, setReattemptWrongOnly] = useState(false);
@@ -182,8 +179,6 @@ const QuestionBankSection = () => {
       })
       .filter((category): category is Category => category !== null);
 
-  const stats = getAttemptStats(user, categories);
-
   const [sessionStats, setSessionStats] = useState({
     total: 0,
     attempted: 0,
@@ -270,7 +265,6 @@ const QuestionBankSection = () => {
               (() => {
                 const greenPct = (sessionStats.correct / sessionStats.total) * 100;
                 const redPct = (sessionStats.incorrect / sessionStats.total) * 100;
-                const greyPct = 100 - greenPct - redPct;
                 const greenEnd = Math.max(0, Math.min(100, greenPct));
                 const redEnd = Math.max(0, Math.min(100, greenEnd + redPct));
                 return (
