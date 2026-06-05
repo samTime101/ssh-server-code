@@ -23,6 +23,7 @@ import AddRolePage from "@/pages/admin/AddRolePage";
 import AddCollegePage from "@/pages/admin/AddCollegePage";
 import ManageQuestionSetsPage from "@/pages/admin/ManageQuestionSetsPage";
 import ApplicationFeedbackPage from "@/pages/admin/ApplicationFeedbackPage";
+import QuestionFeedbackPage from "@/pages/admin/QuestionFeedbackPage";
 import ProfilePage from "@/pages/user/ProfilePage";
 import MockExamPage from "@/pages/user/MockExamPage";
 import HistoryPage from "@/pages/user/HistoryPage";
@@ -179,6 +180,7 @@ const App = () => {
 
           <Route element={<RoleRoute allowedPermissions={["application-feedback"]} />}>
             <Route path="feedback/application" element={<ApplicationFeedbackPage />} />
+            <Route path="feedback/question" element={<QuestionFeedbackPage />} />
           </Route>
         </Route>
       </Route>

@@ -11,3 +11,14 @@ export const fetchFeedbacks = async (
   });
   return response.data as FeedbackListResponse;
 };
+
+export const fetchQuestionFeedbacks = async (
+  page: number,
+  pageSize: number
+): Promise<any> => {
+  const response = await axiosInstance.get("/questions/any/feedback/", {
+    params: { page, page_size: pageSize },
+  });
+  return response.data;
+};
+
