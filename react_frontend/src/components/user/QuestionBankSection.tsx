@@ -1,5 +1,5 @@
-import { Minus, Plus, Search, SlidersHorizontal } from "lucide-react";
-import { useContext, useEffect, useState } from "react";
+import { Minus, Plus, Search, SlidersHorizontal, RefreshCw } from "lucide-react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "../ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -54,6 +54,8 @@ const QuestionBankSection = () => {
   const [categories, setCategories] = useState<GetCategoriesResponse>();
   const [reattemptWrongOnly, setReattemptWrongOnly] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [showRetryModal, setShowRetryModal] = useState(false);
+  const retryResolveRef = useRef<((val: boolean) => void) | null>(null);
 
   const timerMinutes = Math.floor(sessionTimerSeconds / 60);
 
@@ -74,6 +76,12 @@ const QuestionBankSection = () => {
     getCategoriesData();
   }, [token]);
 
+  const askRetryConfirm = (): Promise<boolean> =>
+    new Promise((resolve) => {
+      retryResolveRef.current = resolve;
+      setShowRetryModal(true);
+    });
+
   const handleStartSession = async (reattemptWrongOnly: boolean) => {
     if (isExamModeEnabled) {
       startSessionTimer(sessionTimerSeconds);
@@ -87,9 +95,7 @@ const QuestionBankSection = () => {
     const startMode = await getQuestionBankStartMode();
 
     if (startMode === "retry") {
-      const wantsRetry = window.confirm(
-        "All questions are complete. Do you want to retry the same questions?"
-      );
+      const wantsRetry = await askRetryConfirm();
       if (!wantsRetry) {
         return;
       }
@@ -155,28 +161,95 @@ const QuestionBankSection = () => {
   const filteredCategories: Category[] = !normalizeSearch
     ? (categories?.categories ?? [])
     : (categories?.categories ?? [])
-        .map((category) => {
-          const categoryMatches =
-            category.name.toLowerCase().includes(normalizeSearch) ||
-            category.id.toLowerCase().includes(normalizeSearch);
+      .map((category) => {
+        const categoryMatches =
+          category.name.toLowerCase().includes(normalizeSearch) ||
+          category.id.toLowerCase().includes(normalizeSearch);
 
-          const matchingSubCategories = (category.sub_categories ?? []).filter(
-            (subCategory) =>
-              subCategory.name.toLowerCase().includes(normalizeSearch) ||
-              subCategory.id.toLowerCase().includes(normalizeSearch)
-          );
+        const matchingSubCategories = (category.sub_categories ?? []).filter(
+          (subCategory) =>
+            subCategory.name.toLowerCase().includes(normalizeSearch) ||
+            subCategory.id.toLowerCase().includes(normalizeSearch)
+        );
 
-          if (categoryMatches) return category;
-          if (matchingSubCategories.length === 0) return null;
+        if (categoryMatches) return category;
+        if (matchingSubCategories.length === 0) return null;
 
-          return {
-            ...category,
-            sub_categories: matchingSubCategories,
-          };
-        })
-        .filter((category): category is Category => category !== null);
+        return {
+          ...category,
+          sub_categories: matchingSubCategories,
+        };
+      })
+      .filter((category): category is Category => category !== null);
 
   const stats = getAttemptStats(user, categories);
+
+  const [sessionStats, setSessionStats] = useState({
+    total: 0,
+    attempted: 0,
+    correct: 0,
+    incorrect: 0,
+  });
+
+  // Compute progress based on selected categories and latest question_bank submission
+  useEffect(() => {
+    const computeStats = async () => {
+      try {
+        // Determine total selected questions from current selection
+        let totalSelectedQuestions = 0;
+        if (selectedCategoriesId.length === 0 && selectedSubCategoryId.length === 0) {
+          totalSelectedQuestions = 0;
+        } else {
+          categories?.categories.forEach((cat) => {
+            if (selectedCategoriesId.includes(cat.id)) {
+              totalSelectedQuestions += cat.question_count || 0;
+            } else {
+              const selectedSubcats =
+                cat.sub_categories?.filter((sub) => selectedSubCategoryId.includes(sub.id)) || [];
+              totalSelectedQuestions += selectedSubcats.reduce(
+                (acc, sub) => acc + (sub.question_count || 0),
+                0
+              );
+            }
+          });
+        }
+
+        // Default stats (no session yet)
+        let total = totalSelectedQuestions;
+        let attempted = 0;
+        let correct = 0;
+
+        // Try to fetch latest submission history for question_bank
+        const submissions = await getSubmissionHistory("question_bank");
+        if (submissions && submissions.length > 0) {
+          // Prefer an in-progress submission
+          const inProgress = submissions.find((s) => s.status === "in_progress");
+          const latest = inProgress ?? submissions[0];
+
+          // Use selected_question_ids when available to determine total for that session
+          if (latest.selected_question_ids && latest.selected_question_ids.length > 0) {
+            total = latest.selected_question_ids.length;
+          }
+
+          const attempts = Array.isArray(latest.attempts) ? latest.attempts : [];
+          attempted = attempts.length;
+          correct = attempts.filter((a) => a?.is_correct === true).length;
+        }
+
+        setSessionStats({
+          total: Math.max(0, total),
+          attempted: Math.max(0, attempted),
+          correct: Math.max(0, correct),
+          incorrect: Math.max(0, attempted - correct),
+        });
+      } catch (err) {
+        console.error("Failed to compute session stats:", err);
+        setSessionStats({ total: 0, attempted: 0, correct: 0, incorrect: 0 });
+      }
+    };
+
+    void computeStats();
+  }, [selectedCategoriesId, selectedSubCategoryId, categories]);
 
   return (
     <section className="mx-auto flex min-h-full max-w-[1500px] flex-1 flex-col gap-8 p-8">
@@ -186,21 +259,38 @@ const QuestionBankSection = () => {
         <div className="space-y-3">
           <div className="text-muted-foreground flex items-center justify-between text-sm">
             <span>Overall Progress</span>
-            <span className="font-medium">{user?.completion_percent}% Complete</span>
+            <span className="font-medium">
+              {sessionStats.total > 0
+                ? Math.round((sessionStats.attempted / sessionStats.total) * 100)
+                : 0}% Complete
+            </span>
           </div>
           <div className="bg-muted h-3 overflow-hidden rounded-full">
-            <div
-              className="h-full rounded-full transition-all duration-500"
-              style={{
-                width: `${stats.progressPercent}%`,
-                background: `linear-gradient(to right, #22c55e 0%, #22c55e ${stats.correctPercent}%, #ef4444 ${stats.correctPercent}%, #ef4444 100%)`,
-              }}
-            ></div>
+            {sessionStats.total > 0 ? (
+              (() => {
+                const greenPct = (sessionStats.correct / sessionStats.total) * 100;
+                const redPct = (sessionStats.incorrect / sessionStats.total) * 100;
+                const greyPct = 100 - greenPct - redPct;
+                const greenEnd = Math.max(0, Math.min(100, greenPct));
+                const redEnd = Math.max(0, Math.min(100, greenEnd + redPct));
+                return (
+                  <div
+                    className="h-full rounded-full transition-all duration-500"
+                    style={{
+                      width: `100%`,
+                      background: `linear-gradient(to right, #22c55e 0%, #22c55e ${greenEnd}%, #ef4444 ${greenEnd}%, #ef4444 ${redEnd}%, #9ca3af ${redEnd}%, #9ca3af 100%)`,
+                    }}
+                  />
+                );
+              })()
+            ) : (
+              <div className="h-full rounded-full bg-slate-300/40" />
+            )}
           </div>
           <div className="flex items-center justify-between text-sm">
-            <span className="font-medium text-green-600">{stats.totalRight} Correct</span>
+            <span className="font-medium text-green-600">{sessionStats.correct} Correct</span>
             <span className="text-muted-foreground">
-              {stats.totalAttempts} of {stats.totalQuestions} completed
+              {sessionStats.attempted} of {sessionStats.total} completed
             </span>
           </div>
         </div>
@@ -382,6 +472,59 @@ const QuestionBankSection = () => {
           )}
         </div>
       </div>
+
+      {/* All Questions Complete — Retry Modal */}
+      {showRetryModal && (
+        <div
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in duration-150"
+          onClick={() => {
+            setShowRetryModal(false);
+            retryResolveRef.current?.(false);
+          }}
+        >
+          <div
+            className="w-full max-w-sm rounded-2xl bg-background p-8 shadow-2xl flex flex-col items-center gap-3 animate-in slide-in-from-bottom-4 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Icon */}
+            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-blue-100 mb-1">
+              <RefreshCw size={24} color="#4f6bff" />
+            </div>
+
+            {/* Title */}
+            <h2 className="text-xl font-bold text-foreground">
+              All Questions Complete
+            </h2>
+
+            {/* Message */}
+            <p className="my-1 mb-4 text-sm text-muted-foreground text-center leading-relaxed">
+              Do you want to retry the same questions?
+            </p>
+
+            {/* Buttons */}
+            <div className="flex w-full gap-3">
+              <button
+                onClick={() => {
+                  setShowRetryModal(false);
+                  retryResolveRef.current?.(false);
+                }}
+                className="flex-1 rounded-lg border-2 border-border bg-transparent py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  setShowRetryModal(false);
+                  retryResolveRef.current?.(true);
+                }}
+                className="flex-1 rounded-lg border-0 bg-primary py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary/90"
+              >
+                Retry
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 };

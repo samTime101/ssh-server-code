@@ -14,6 +14,7 @@ from mongo.models import Question, Bookmark, Bookmarks, Submissions
 from api.questions.serializers.question import *
 from api.questions.serializers.hierarchy import *
 from api.questions.serializers.selection import *
+from api.questions.serializers.feedback import *
 from core.heirarchy import get_heirarchy
 from core.selection.selection import get_questions_by_selection
 from core.pagination import StandardResultsSetPagination,QuestionResultsSetPagination
@@ -192,3 +193,22 @@ class QuestionViewSet(viewsets.ModelViewSet):
         self.paginator.submission_id = str(submission.id)
         serializer = QuestionPublicSerializer(selected_questions, many=True)
         return self.get_paginated_response(serializer.data)
+
+class QuestionFeedbackViewSet(viewsets.ModelViewSet):
+    queryset = QuestionFeedback.objects.order_by("-created_at")
+    serializer_class = QuestionFeedbackSerializer
+    pagination_class = StandardResultsSetPagination
+    lookup_field = "id"
+    lookup_value_regex = "[0-9a-f]{24}"
+    http_method_names = ['get', 'post']
+
+    def get_permissions(self):
+        if self.action == "create":
+            return [IsAuthenticated()]
+        return [IsAdminUser()]
+
+    def perform_create(self, serializer):
+        question = Question.objects(id=self.kwargs["question_id"]).first()
+        if not question or question.status != APPROVED_STATUS:
+            raise NotFound("Question not found.")
+        serializer.save(question=question,user_guid=self.request.user.user_guid,)
