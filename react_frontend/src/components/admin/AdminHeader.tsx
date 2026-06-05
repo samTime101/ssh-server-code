@@ -29,6 +29,7 @@ const AdminHeader = ({ onMenuClick }: AdminHeaderProps) => {
           {user?.roles?.includes("ADMIN") && (
             <Button onClick={() => navigate("/userpanel")}>User Panel</Button>
           )}
+
           {/* Notifications */}
           <button className="text-muted-foreground hover:text-foreground hover:bg-muted relative rounded-lg p-2 transition-colors">
             <Bell size={18} />
