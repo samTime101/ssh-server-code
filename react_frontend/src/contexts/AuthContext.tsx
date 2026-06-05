@@ -148,11 +148,12 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         const messages = getAlreadyExistsErrors(error.response.data);
         if (messages.length > 0) {
           messages.forEach((msg) => toast.error(msg));
-          return;
+          throw error;
         }
       }
       // Fallback for other errors
       toast.error("Registration failed. Please try again.");
+      throw error;
     }
   };
   const refreshUserData = async () => {
