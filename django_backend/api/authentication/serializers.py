@@ -5,6 +5,7 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from drf_recaptcha.fields import ReCaptchaV2Field
 
 # SQL model for auth
 User = get_user_model()
@@ -68,6 +69,7 @@ class VerifyEmailRequestSerializer(serializers.Serializer):
         return value
 
 class VerifiedTokenObtainPairSerializer(TokenObtainPairSerializer):
+    recaptcha = ReCaptchaV2Field()
     def validate(self, attrs):
         data = super().validate(attrs)
         if not self.user.is_email_verified:

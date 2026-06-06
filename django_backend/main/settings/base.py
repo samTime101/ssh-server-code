@@ -25,6 +25,7 @@ THIRD_PARTY_APPS = [
     'rest_framework_mongoengine',
     'corsheaders',
     'rest_framework_simplejwt',
+    'drf_recaptcha',
 ]
 
 # https://stackoverflow.com/a/71172233

@@ -3,6 +3,10 @@ SPECTACULAR_SETTINGS = {
     "TITLE": "MCQ API",
     "DESCRIPTION": """
 
+## June 6, 2026
+- Captcha added to signin endpoint.
+    
+
 ## June 5, 2026
 - Added `submission_label` field in SubmissionsSerializer to provide a human-readable label for the submission type, improving clarity in API responses.    
 - Not sending JWT tokens to unverified users
