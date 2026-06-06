@@ -1,41 +1,31 @@
-from uuid import UUID
-
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.exceptions import ValidationError
 from drf_spectacular.utils import extend_schema
 
-from core.permissions.permissions import IsAdminUser
+from core.permissions.permissions import IsAuthenticated
 from core.constants.status import APPROVED_STATUS
 from mongo.models import Question, Submissions
 from .serializers import QuestionBankStatsSerializer
 
 
 class QuestionBankStatsAPIView(APIView):
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAuthenticated]
 
     @extend_schema(responses=QuestionBankStatsSerializer)
     def get(self, request, *args, **kwargs):
-        user_guid = request.query_params.get('user_guid')
-        submissions = Submissions.objects(type='question_bank')
-
-        if user_guid:
-            try:
-                submissions = submissions.filter(user_guid=UUID(user_guid))
-            except ValueError:
-                raise ValidationError({'user_guid': 'Invalid UUID format.'})
+        user_guid = getattr(request.user, "user_guid", None)
+        submissions = Submissions.objects(type='question_bank', user_guid=user_guid)
 
         total_questions = Question.objects(status=APPROVED_STATUS).count()
 
         latest_attempts = {}
         unique_question_ids = set()
         for submission in submissions:
-            submission_user_guid = str(submission.user_guid)
             for attempt in submission.attempts or []:
                 question_id = str(attempt.question.id)
                 unique_question_ids.add(question_id)
-                key = (submission_user_guid, question_id)
+                key = question_id
                 existing_attempt = latest_attempts.get(key)
                 if existing_attempt is None or attempt.attempted_at > existing_attempt.attempted_at:
                     latest_attempts[key] = attempt

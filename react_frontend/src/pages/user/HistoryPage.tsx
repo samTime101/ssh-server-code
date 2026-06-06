@@ -1,7 +1,5 @@
 import { getSubmissionHistory } from "@/services/user/history-service";
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -19,16 +17,12 @@ import {
   getSubmissionMetrics,
   getSubmissionOverview,
 } from "@/utils/historyUtils";
-import { getQuestionsByIds } from "@/services/user/question-service";
-import { useQuestions } from "@/hooks/useQuestions";
+
 
 const HistoryPage = () => {
-  const navigate = useNavigate();
-  const { setSessionQuestions, clearSessionTimer, setIsExamModeEnabled } = useQuestions();
   const [submissionHistory, setSubmissionHistory] = useState<SubmissionHistoryItem[]>([]);
   const [isLoading, setLoading] = useState(true);
   const [selectedSubmission, setSelectedSubmission] = useState<SubmissionHistoryItem | null>(null);
-  const [isRedirecting, setIsRedirecting] = useState(false);
 
   useEffect(() => {
     async function fetchSubmissionHistory() {
@@ -49,42 +43,7 @@ const HistoryPage = () => {
   const { totalSubmissions, totalAttempts, correctAttempts, incorrectAttempts } =
     getSubmissionOverview(submissionHistory);
 
-  const handleResumeSubmission = async (submission: SubmissionHistoryItem) => {
-    if (!submission.selected_question_ids?.length) {
-      toast.error("No questions available for this submission.");
-      return;
-    }
 
-    try {
-      setIsRedirecting(true);
-      const questions = await getQuestionsByIds(submission.selected_question_ids);
-
-      if (questions.length === 0) {
-        toast.error("Failed to load questions for this submission.");
-        return;
-      }
-
-      const attemptResults = (submission.attempts ?? []).map((attempt) =>
-        attempt?.is_correct === true ? true : attempt?.is_correct === false ? false : null
-      );
-
-      clearSessionTimer();
-      setIsExamModeEnabled(false);
-      setSessionQuestions(
-        questions,
-        submission.submission_id,
-        submission.attempts?.length ?? 0,
-        attemptResults
-      );
-      setSelectedSubmission(null);
-      navigate("/userpanel/question");
-    } catch (error) {
-      console.error("Error resuming submission:", error);
-      toast.error("Unable to resume the submission.");
-    } finally {
-      setIsRedirecting(false);
-    }
-  };
 
   return (
     <div className="space-y-8 p-6">
@@ -209,12 +168,10 @@ const HistoryPage = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {(selectedSubmission?.attempts ?? []).map((attempt, idx) => (
+              {(selectedSubmission?.attempts ?? []).map((attempt) => (
                 <TableRow
                   key={`${selectedSubmission?.submission_id}-${attempt.question_text}`}
-                  className={`hover:bg-muted transition-colors ${
-                    isRedirecting ? "pointer-events-none opacity-60" : ""
-                  }`}
+                  className="hover:bg-muted transition-colors"
                 >
                   <TableCell className="w-[38%] break-words whitespace-normal">
                     {attempt.question_text}

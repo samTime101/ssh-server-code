@@ -132,3 +132,14 @@ export const getQuestionsByIds = async (questionIds: string[]): Promise<Question
   const results = await Promise.all(questionIds.map((id) => getQuestionById(id)));
   return results.filter((question): question is Question => Boolean(question));
 };
+
+export const submitQuestionFeedback = async (
+  questionId: string,
+  feedback: string
+): Promise<any> => {
+  const response = await axiosInstance.post(`/questions/${questionId}/feedback/`, {
+    feedback,
+  });
+  return response.data;
+};
+
