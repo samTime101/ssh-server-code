@@ -1,5 +1,5 @@
 import { API_ENDPOINTS } from "@/config/apiConfig";
-import type { Category, CreateSubCategoryResponse, SubCategoryDetail } from "@/types/category";
+import type { Category, CreateSubCategoryResponse } from "@/types/category";
 import axiosInstance from "../axios";
 
 type RawSubcategory = {
