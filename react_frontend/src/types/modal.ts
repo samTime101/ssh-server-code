@@ -3,4 +3,5 @@ export interface ModalProps {
   onOpenChange: (open: boolean) => void;
   title?: string;
   children: React.ReactNode;
+  contentClassName?: string;
 }

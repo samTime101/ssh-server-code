@@ -1,5 +1,5 @@
-import { Minus, Plus, Search, SlidersHorizontal } from "lucide-react";
-import { useContext, useEffect, useState } from "react";
+import { Minus, Plus, Search, SlidersHorizontal, RefreshCw } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "../ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -13,8 +13,9 @@ import CategoryList from "./CategoryList";
 import type { Category, GetCategoriesResponse } from "@/types/category";
 import { getCategories, getQuestionsByIds } from "@/services/user/question-service";
 import { getSubmissionHistory } from "@/services/user/history-service";
-import { AuthContext } from "@/contexts/AuthContext";
-import { getAttemptStats } from "@/utils/attemptUtils";
+import { getQuestionBankAnalytics } from "@/services/user/analytics-service";
+import type { QuestionBankAnalytics } from "@/types/analytics";
+import { getQuestionBankProgress } from "@/utils/questionBankUtils";
 import {
   EXAM_MINUTES_STEP,
   EXAM_QUESTION_STEP,
@@ -49,11 +50,12 @@ const QuestionBankSection = () => {
     selectedSubCategoryId,
   } = useQuestions(); //selectedSubSubCategoryId,
   const navigate = useNavigate();
-  const { user } = useContext(AuthContext);
 
   const [categories, setCategories] = useState<GetCategoriesResponse>();
   const [reattemptWrongOnly, setReattemptWrongOnly] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [showRetryModal, setShowRetryModal] = useState(false);
+  const retryResolveRef = useRef<((val: boolean) => void) | null>(null);
 
   const timerMinutes = Math.floor(sessionTimerSeconds / 60);
 
@@ -63,7 +65,6 @@ const QuestionBankSection = () => {
       try {
         const categoryResponse = await getCategories();
 
-        console.log("The category response:", categoryResponse);
         setCategories(categoryResponse);
       } catch (error) {
         console.error("Failed to fetch categories:", error);
@@ -73,6 +74,12 @@ const QuestionBankSection = () => {
     };
     getCategoriesData();
   }, [token]);
+
+  const askRetryConfirm = (): Promise<boolean> =>
+    new Promise((resolve) => {
+      retryResolveRef.current = resolve;
+      setShowRetryModal(true);
+    });
 
   const handleStartSession = async (reattemptWrongOnly: boolean) => {
     if (isExamModeEnabled) {
@@ -87,9 +94,7 @@ const QuestionBankSection = () => {
     const startMode = await getQuestionBankStartMode();
 
     if (startMode === "retry") {
-      const wantsRetry = window.confirm(
-        "All questions are complete. Do you want to retry the same questions?"
-      );
+      const wantsRetry = await askRetryConfirm();
       if (!wantsRetry) {
         return;
       }
@@ -176,7 +181,24 @@ const QuestionBankSection = () => {
         })
         .filter((category): category is Category => category !== null);
 
-  const stats = getAttemptStats(user, categories);
+  const [analytics, setAnalytics] = useState<QuestionBankAnalytics | null>(null);
+
+  useEffect(() => {
+    if (!token) return;
+    const loadAnalytics = async () => {
+      try {
+        const data = await getQuestionBankAnalytics();
+        setAnalytics(data);
+      } catch (err) {
+        console.error("Failed to load question bank analytics:", err);
+        setAnalytics(null);
+      }
+    };
+
+    void loadAnalytics();
+  }, [token]);
+
+  const stats = getQuestionBankProgress(analytics);
 
   return (
     <section className="mx-auto flex min-h-full max-w-[1500px] flex-1 flex-col gap-8 p-8">
@@ -186,21 +208,25 @@ const QuestionBankSection = () => {
         <div className="space-y-3">
           <div className="text-muted-foreground flex items-center justify-between text-sm">
             <span>Overall Progress</span>
-            <span className="font-medium">{user?.completion_percent}% Complete</span>
+            <span className="font-medium">{Math.round(stats.percentComplete)}% Complete</span>
           </div>
           <div className="bg-muted h-3 overflow-hidden rounded-full">
-            <div
-              className="h-full rounded-full transition-all duration-500"
-              style={{
-                width: `${stats.progressPercent}%`,
-                background: `linear-gradient(to right, #22c55e 0%, #22c55e ${stats.correctPercent}%, #ef4444 ${stats.correctPercent}%, #ef4444 100%)`,
-              }}
-            ></div>
+            {stats.total > 0 ? (
+              <div
+                className="h-full rounded-full transition-all duration-500"
+                style={{
+                  width: `100%`,
+                  background: `linear-gradient(to right, #22c55e 0%, #22c55e ${stats.greenEnd}%, #ef4444 ${stats.greenEnd}%, #ef4444 ${stats.redEnd}%, #9ca3af ${stats.redEnd}%, #9ca3af 100%)`,
+                }}
+              />
+            ) : (
+              <div className="h-full rounded-full bg-slate-300/40" />
+            )}
           </div>
           <div className="flex items-center justify-between text-sm">
-            <span className="font-medium text-green-600">{stats.totalRight} Correct</span>
+            <span className="font-medium text-green-600">{stats.correct} Correct</span>
             <span className="text-muted-foreground">
-              {stats.totalAttempts} of {stats.totalQuestions} completed
+              {stats.attempted} of {stats.total} completed
             </span>
           </div>
         </div>
@@ -382,6 +408,57 @@ const QuestionBankSection = () => {
           )}
         </div>
       </div>
+
+      {/* All Questions Complete — Retry Modal */}
+      {showRetryModal && (
+        <div
+          className="animate-in fade-in fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm duration-150"
+          onClick={() => {
+            setShowRetryModal(false);
+            retryResolveRef.current?.(false);
+          }}
+        >
+          <div
+            className="bg-background animate-in slide-in-from-bottom-4 flex w-full max-w-sm flex-col items-center gap-3 rounded-2xl p-8 shadow-2xl duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Icon */}
+            <div className="mb-1 flex h-14 w-14 items-center justify-center rounded-full bg-blue-100">
+              <RefreshCw size={24} color="#4f6bff" />
+            </div>
+
+            {/* Title */}
+            <h2 className="text-foreground text-xl font-bold">All Questions Complete</h2>
+
+            {/* Message */}
+            <p className="text-muted-foreground my-1 mb-4 text-center text-sm leading-relaxed">
+              Do you want to retry the same questions?
+            </p>
+
+            {/* Buttons */}
+            <div className="flex w-full gap-3">
+              <button
+                onClick={() => {
+                  setShowRetryModal(false);
+                  retryResolveRef.current?.(false);
+                }}
+                className="border-border text-foreground hover:bg-muted flex-1 rounded-lg border-2 bg-transparent py-2.5 text-sm font-semibold transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  setShowRetryModal(false);
+                  retryResolveRef.current?.(true);
+                }}
+                className="bg-primary hover:bg-primary/90 flex-1 rounded-lg border-0 py-2.5 text-sm font-semibold text-white transition-colors"
+              >
+                Retry
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 };

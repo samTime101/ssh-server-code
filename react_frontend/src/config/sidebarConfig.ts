@@ -103,4 +103,10 @@ export const FEEDBACK_SUB_ITEMS: NavItem[] = [
     path: "/admin/feedback/application",
     allowedPermissions: ["application-feedback"],
   },
+  {
+    icon: MessageSquare,
+    text: "Question Feedback",
+    path: "/admin/feedback/question",
+    allowedPermissions: ["application-feedback"],
+  },
 ];

@@ -14,7 +14,8 @@ urlpatterns = [
     path('api/', include('api.constraint.urls')),
     path('api/', include('api.feedback.urls')),
     path('api/', include('api.notes.urls')),
-    path('api/', include('api.comments.urls')),
+    path('api/', include('api.analytics.urls')),
+
     
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     path('api/docs/swagger/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
@@ -22,4 +23,3 @@ urlpatterns = [
 
 ]
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-

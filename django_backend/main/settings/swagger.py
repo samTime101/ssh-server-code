@@ -4,12 +4,11 @@ SPECTACULAR_SETTINGS = {
     "DESCRIPTION": """
 
 ## June 2, 2026
-- Added threaded comments feature for questions.
-- Added `/api/comments/` (POST, PATCH, DELETE) for managing comments.
-- Added `/api/comments/tree/?question_id={id}` (GET) to fetch comments in a nested, threaded tree structure.
+- Added QuestionFeedback model to allow users to submit feedback for individual questions.
 
 ## May 29, 2026
 - added Notes for users to write notes for their questions
+- added /analytics/questionbank/ endpoint to provide analytics on question bank
 
 ## May 22, 2026 Ishan  Upadhyay
 - Added public feedback endpoint `/api/feedback/` (POST) to collect app feedback with email and message.
