@@ -9,6 +9,7 @@ import { getImageUrl } from "@/config/apiConfig";
 import QuestionReview from "@/components/user/QuestionReview";
 import { toast } from "sonner";
 import EditorRenderer from "@/components/EditorRenderer";
+import { ThreadedComments } from "@/components/user/ThreadedComments";
 
 const QuestionPage = () => {
   const {
@@ -343,6 +344,13 @@ const QuestionPage = () => {
             Cancel
           </Button> */}
         </div>
+
+        {/* Threaded Comments Section */}
+        {!isExamModeEnabled && currentQuestion && isAttempted && (
+          <div className="mt-8">
+            <ThreadedComments questionId={currentQuestion.id} />
+          </div>
+        )}
       </div>
     </div>
   );
