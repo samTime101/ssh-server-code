@@ -10,6 +10,7 @@ import QuestionReview from "@/components/user/QuestionReview";
 import { toast } from "sonner";
 import EditorRenderer from "@/components/EditorRenderer";
 import QuestionFeedbackWidget from "@/components/user/QuestionFeedbackWidget";
+import { ThreadedComments } from "@/components/user/ThreadedComments";
 
 const QuestionPage = () => {
   const {
