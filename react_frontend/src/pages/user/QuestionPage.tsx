@@ -10,6 +10,7 @@ import QuestionReview from "@/components/user/QuestionReview";
 import { toast } from "sonner";
 import EditorRenderer from "@/components/EditorRenderer";
 import QuestionProgress from "@/components/user/QuestionProgress";
+import QuestionFeedbackWidget from "@/components/user/QuestionFeedbackWidget";
 
 const QuestionPage = () => {
   const {
@@ -66,7 +67,7 @@ const QuestionPage = () => {
   }
 
   const questionCard = (
-    <Card className="shadow-lg">
+    <Card className="relative shadow-lg overflow-visible">
       <CardHeader className="pb-4">
         <h2 className="text-foreground text-xl leading-relaxed font-semibold">
           {currentQuestion.question_text}
@@ -92,7 +93,13 @@ const QuestionPage = () => {
                   handleOptionSelect={handleOptionSelect}
                   selectedOptions={selectedOptions}
                   disabled={isExamModeEnabled ? isSavingAnswer || isSubmittingSession : isAttempted}
-                  correctOptions={isExamModeEnabled ? [] : (currentAttempt?.correctOptions ?? [])}
+                  correctOptions={
+                    isExamModeEnabled
+                      ? []
+                      : currentAttempt?.isCorrect === false
+                        ? (currentAttempt?.actualAnswers ?? [])
+                        : (currentAttempt?.correctOptions ?? [])
+                  }
                   showResultStyles={!isExamModeEnabled}
                 />
               ))
@@ -103,12 +110,19 @@ const QuestionPage = () => {
                   handleOptionSelect={handleOptionSelect}
                   selectedOption={selectedOption}
                   disabled={isExamModeEnabled ? isSavingAnswer || isSubmittingSession : isAttempted}
-                  correctOptions={isExamModeEnabled ? [] : (currentAttempt?.correctOptions ?? [])}
+                  correctOptions={
+                    isExamModeEnabled
+                      ? []
+                      : currentAttempt?.isCorrect === false
+                        ? (currentAttempt?.actualAnswers ?? [])
+                        : (currentAttempt?.correctOptions ?? [])
+                  }
                   radioName={`question-${currentQuestion.id}`}
                   showResultStyles={!isExamModeEnabled}
                 />
               ))}
         </div>
+        <QuestionFeedbackWidget questionId={currentQuestion.id} />
 
         {!isExamModeEnabled && isAttempted && (
           <div className="border-primary bg-primary/5 rounded-lg border-l-4 p-5">

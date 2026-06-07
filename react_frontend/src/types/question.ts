@@ -5,7 +5,7 @@ export interface Question {
   question_text: string;
   description: string;
   option_type: string;
-  options: { label: string; text: string }[];
+  options: { label: string; text: string; is_true?: boolean }[];
   difficulty: string;
   category: string;
   sub_category: string[];
@@ -44,6 +44,7 @@ export interface AttemptQuestionResponse {
   incorrect_answers?: string[];
   correct_answers?: string[];
   selected_answers?: string[];
+  actual_answers?: string[];
 }
 
 export interface SubmitSubmissionResponse {
@@ -66,6 +67,7 @@ export interface QuestionAttemptState {
   isAttempted: boolean;
   feedback?: string;
   correctOptions?: string[];
+  actualAnswers?: string[];
   isCorrect?: boolean;
 }
 
