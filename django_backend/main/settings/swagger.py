@@ -3,6 +3,9 @@ SPECTACULAR_SETTINGS = {
     "TITLE": "MCQ API",
     "DESCRIPTION": """
 
+## June 8, 2026 Ishan Updhyay
+- Added end point for comments tree `/api/comments/tree/` to retrieve comments in a tree structure.
+- Added comment creation and deletion end points.
 ## June 2, 2026
 - Added QuestionFeedback model to allow users to submit feedback for individual questions.
 
