@@ -1,13 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
-import { useQuestions } from "@/hooks/useQuestions";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Bookmark as BookmarkIcon, Eye, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getBookmarks, removeBookmark, getQuestionById } from "@/services/user/bookmark-service";
 import { getSubmissionHistory } from "@/services/user/history-service";
-import axiosInstance from "@/services/axios";
-import { API_ENDPOINTS, getImageUrl } from "@/config/apiConfig";
+import { getImageUrl } from "@/config/apiConfig";
 import type { Attempt } from "@/types/history";
 import type { Question } from "@/types/question";
 import { toast } from "sonner";
@@ -22,8 +20,6 @@ interface BookmarkItem {
 }
 
 const BookmarksPage = () => {
-  const navigate = useNavigate();
-  const { setSessionQuestions } = useQuestions();
   const [bookmarks, setBookmarks] = useState<BookmarkItem[]>([]);
   const [isLoading, setLoading] = useState(true);
   const [pagination, setPagination] = useState({
@@ -136,28 +132,7 @@ const BookmarksPage = () => {
   const attemptSelectedOptionString =
     attemptSelectedOptions.length > 0 ? attemptSelectedOptions[0] : "";
 
-  const handleAttemptQuestionRedirect = async () => {
-    if (viewingQuestion) {
-      try {
-        // Since we need a valid submission ID from the backend to attempt the question,
-        // and we cannot change the backend endpoints, we generate an active session
-        // that encompasses this question by requesting a large page of questions.
-        const response = await axiosInstance.post(
-          `${API_ENDPOINTS.selectQuestions}?page_size=500`,
-          { category_ids: [], sub_category_ids: [] },
-          { params: { wrong_only: false, non_attempted: false } }
-        );
-        const submissionId = response?.data?.submission_id || null;
 
-        setSessionQuestions([viewingQuestion], submissionId);
-        navigate("/userpanel/question");
-        handleCloseModal();
-      } catch (error) {
-        console.error("Error creating session for bookmarked question:", error);
-        toast.error("Failed to start session for this question.");
-      }
-    }
-  };
 
   return (
     <div className="space-y-8 p-6">
@@ -273,9 +248,6 @@ const BookmarksPage = () => {
             <div className="bg-background sticky top-0 z-10 flex items-center justify-between border-b px-6 py-4">
               <h2 className="text-lg font-semibold">Question Preview</h2>
               <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm" onClick={handleAttemptQuestionRedirect}>
-                  Go to Question
-                </Button>
                 <Button variant="ghost" size="sm" onClick={handleCloseModal}>
                   <X className="h-5 w-5" />
                 </Button>
@@ -323,10 +295,45 @@ const BookmarksPage = () => {
                       )}
                     </div>
                   ))}
+                  {(viewingQuestion.description || viewingQuestion.description_image_url) && (
+                    <div className="mt-4 p-4 rounded bg-muted/50 border">
+                      <h4 className="font-semibold mb-2">Explanation</h4>
+                      {viewingQuestion.description && <p className="text-sm">{viewingQuestion.description}</p>}
+                      {viewingQuestion.description_image_url && (
+                        <div className="mt-3 flex justify-center">
+                          <img
+                            src={getImageUrl(viewingQuestion.description_image_url)}
+                            alt="Explanation"
+                            className="max-h-48 w-auto max-w-full rounded border object-contain shadow-sm"
+                          />
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               ) : (
-                <div className="flex flex-col items-center justify-center rounded-md border p-6 text-center shadow-sm">
-                  <p className="text-muted-foreground">This question has not been attempted yet.</p>
+                <div className="space-y-4">
+                  {viewingQuestion.options.map((option) => (
+                    <div key={option.label}>
+                      {viewingQuestion.option_type === "multiple" ? (
+                        <MultipleChoiceOption
+                          option={option}
+                          selectedOptions={[]}
+                          disabled={true}
+                          correctOptions={[]}
+                          handleOptionSelect={() => {}}
+                        />
+                      ) : (
+                        <SingleChoiceOption
+                          option={option}
+                          selectedOption={""}
+                          disabled={true}
+                          correctOptions={[]}
+                          handleOptionSelect={() => {}}
+                        />
+                      )}
+                    </div>
+                  ))}
                 </div>
               )}
 
