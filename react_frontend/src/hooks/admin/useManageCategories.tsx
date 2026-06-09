@@ -11,15 +11,26 @@ export const useManageCategories = () => {
   const [editStatus, setEditStatus] = useState<CategoryStatus>("pending");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [pagination, setPagination] = useState({
+    count: 0,
+    total_pages: 0,
+    current_page: 1,
+  });
+
   useEffect(() => {
     loadCategories();
-  }, []);
+  }, [currentPage, pageSize]);
 
   const loadCategories = async () => {
     setIsLoading(true);
     try {
-      const data = await fetchCategories();
+      const data = await fetchCategories(currentPage, pageSize);
       setCategories(data.categories);
+      if (data.pagination) {
+        setPagination(data.pagination);
+      }
     } catch {
       toast.error("Failed to load categories");
     } finally {
@@ -71,6 +82,15 @@ export const useManageCategories = () => {
     }
   };
 
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const handlePageSizeChange = (size: number) => {
+    setPageSize(size);
+    setCurrentPage(1);
+  };
+
   return {
     categories,
     isLoading,
@@ -84,5 +104,10 @@ export const useManageCategories = () => {
     closeEditModal,
     handleEditSubmit,
     handleDelete,
+    currentPage,
+    pageSize,
+    pagination,
+    handlePageChange,
+    handlePageSizeChange,
   };
 };

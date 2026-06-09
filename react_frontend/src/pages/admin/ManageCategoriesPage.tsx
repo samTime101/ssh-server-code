@@ -13,6 +13,7 @@ import { PenIcon, TrashIcon } from "lucide-react";
 import Modal from "@/components/Modal";
 import TableSkeletonLoader from "@/components/TableSkeletonLoader";
 import StatusBadge from "@/components/StatusBadge";
+import Paginator from "@/components/Paginator";
 import {
   Select,
   SelectContent,
@@ -37,6 +38,11 @@ const ManageCategoriesPage = () => {
     closeEditModal,
     handleEditSubmit,
     handleDelete,
+    currentPage,
+    pageSize,
+    pagination,
+    handlePageChange,
+    handlePageSizeChange,
   } = useManageCategories();
 
   return (
@@ -46,7 +52,7 @@ const ManageCategoriesPage = () => {
 
       <div className="border-border bg-card mt-4 rounded-md border p-4 shadow-md">
         <Table>
-          <TableCaption>{isLoading ? "" : `Total categories: ${categories.length}`}</TableCaption>
+          <TableCaption>{isLoading ? "" : `Total categories: ${pagination?.count || categories.length}`}</TableCaption>
           <TableHeader>
             <TableRow>
               <TableHead>Name</TableHead>
@@ -89,6 +95,18 @@ const ManageCategoriesPage = () => {
             )}
           </TableBody>
         </Table>
+
+        {pagination && pagination.total_pages > 1 && (
+          <Paginator
+            currentPage={currentPage}
+            totalPages={pagination.total_pages}
+            pageSize={pageSize}
+            totalCount={pagination.count}
+            onPageChange={handlePageChange}
+            onPageSizeChange={handlePageSizeChange}
+            isLoading={isLoading}
+          />
+        )}
       </div>
 
       <Modal

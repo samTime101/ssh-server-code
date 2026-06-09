@@ -6,12 +6,13 @@ migrations/
 *.log
 **/tests.py
 .venv/
+venv/
 django_backend/main/media/*
 
 # FOR REACT AND NODE
 react_frontend/node_modules/
 react_frontend/.pnp
-react_frontend.pnp.js
+react_frontend.pnp.jsz
 react_frontend/coverage
 react_frontend/build
 react_frontend.DS_Store

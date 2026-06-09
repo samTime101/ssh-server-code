@@ -89,18 +89,28 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         const userInfo = await fetchUserInfo(response.data.access);
 
         if (userInfo && !userInfo.is_email_verified) {
-          toast.error("Check your email to verify your account.");
+          toast.error("Please verify your email address to sign in.");
           logout();
-          return;
+          throw new Error("EMAIL_NOT_VERIFIED");
         }
 
         toast.success("Login successful! Welcome back.");
         handleAuthSuccess(response.data.access, userInfo);
       }
-    } catch (error) {
+    } catch (error: any) {
+      if (error.message === "EMAIL_NOT_VERIFIED") {
+        throw error;
+      }
+      
       console.error("Login failed:", error);
-      toast.error("Login failed. Please check your credentials.");
+      const detail = error.response?.data?.detail;
+      if (detail === "No active account found with the given credentials") {
+        toast.error("Account inactive or invalid credentials. Please verify your email address to sign in.");
+      } else {
+        toast.error(detail || "Login failed. Please check your credentials.");
+      }
       logout();
+      throw error;
     }
   };
 
@@ -148,11 +158,12 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         const messages = getAlreadyExistsErrors(error.response.data);
         if (messages.length > 0) {
           messages.forEach((msg) => toast.error(msg));
-          return;
+          throw error;
         }
       }
       // Fallback for other errors
       toast.error("Registration failed. Please try again.");
+      throw error;
     }
   };
   const refreshUserData = async () => {

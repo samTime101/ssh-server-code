@@ -7,8 +7,10 @@ import type { Category } from "@/types/category";
 const CategoryList: React.FC<{ category: Category }> = ({ category }) => {
   const {
     selectedCategoriesId,
+    setSelectedCategoriesId,
     handleCategorySelection,
     selectedSubCategoryId,
+    setSelectedSubCategoryId,
     handleSubCategorySelection,
     // selectedSubSubCategoryId,
     // handleSubSubCategorySelection,
@@ -23,18 +25,59 @@ const CategoryList: React.FC<{ category: Category }> = ({ category }) => {
     );
   };
 
-  // Subsub category is disabled for now, it will be implemented in future
-  // const toggleSubCategoryExpansion = (subCategoryId: number) => {
-  //   setExpandedSubCategories((prev) =>
-  //     prev.includes(subCategoryId)
-  //       ? prev.filter((id) => id !== subCategoryId)
-  //       : [...prev, subCategoryId]
-  //   );
-  // };
+  const onCategoryCheckChange = (checked: boolean) => {
+    if (checked) {
+      if (!selectedCategoriesId.includes(category.id)) {
+        setSelectedCategoriesId([...selectedCategoriesId, category.id]);
+      }
+      const subIds = category.sub_categories?.map(s => s.id) || [];
+      setSelectedSubCategoryId(selectedSubCategoryId.filter((id: string) => !subIds.includes(id)));
+      
+      if (!expandedCategories.includes(category.id)) {
+        toggleCategoryExpansion(category.id);
+      }
+    } else {
+      setSelectedCategoriesId(selectedCategoriesId.filter((id: string) => id !== category.id));
+      const subIds = category.sub_categories?.map(s => s.id) || [];
+      setSelectedSubCategoryId(selectedSubCategoryId.filter((id: string) => !subIds.includes(id)));
+    }
+  };
 
-  //   const progressData = getProgressData(category.id);
-  //   const completedPercentage = (progressData.completed / progressData.total) * 100;
+  const onSubCategoryCheckChange = (subCategoryId: string, checked: boolean) => {
+    const subIds = category.sub_categories?.map(s => s.id) || [];
+    if (checked) {
+      const newSubCatIds = [...selectedSubCategoryId, subCategoryId];
+      setSelectedSubCategoryId(newSubCatIds);
+      
+      const allSelected = subIds.every(id => newSubCatIds.includes(id));
+      if (allSelected && subIds.length > 0) {
+        if (!selectedCategoriesId.includes(category.id)) {
+          setSelectedCategoriesId([...selectedCategoriesId, category.id]);
+        }
+        setSelectedSubCategoryId(newSubCatIds.filter(id => !subIds.includes(id)));
+      }
+    } else {
+      if (selectedCategoriesId.includes(category.id)) {
+        setSelectedCategoriesId(selectedCategoriesId.filter((id: string) => id !== category.id));
+        const otherSubIds = subIds.filter(id => id !== subCategoryId);
+        const newSelectedSubs = new Set([...selectedSubCategoryId, ...otherSubIds]);
+        setSelectedSubCategoryId(Array.from(newSelectedSubs));
+      } else {
+        setSelectedSubCategoryId(selectedSubCategoryId.filter((id: string) => id !== subCategoryId));
+      }
+    }
+  };
+
+  // Calculate category progress percentage
+  const calculateProgress = (attempted: number = 0, total: number = 0): number => {
+    if (total === 0) return 0;
+    return Math.round((attempted / total) * 100);
+  };
+
+  const categoryProgress = calculateProgress(category.attempted_count, category.question_count);
   const isCategoryExpanded = expandedCategories.includes(category.id);
+  
+  const isCategoryChecked = selectedCategoriesId.includes(category.id) || (category.sub_categories && category.sub_categories.length > 0 && category.sub_categories.every(sub => selectedSubCategoryId.includes(sub.id)));
 
   return (
     <li
@@ -55,14 +98,8 @@ const CategoryList: React.FC<{ category: Category }> = ({ category }) => {
             className="border-input appearance-none w-5 h-5 border-1 cursor-pointer"
               id={`category-${category.id}`}
               
-              checked={selectedCategoriesId.includes(category.id)}
-              onCheckedChange={() => {
-                handleCategorySelection(category.id);
-                // Auto-expand the category when it is being selected
-                if (!selectedCategoriesId.includes(category.id) && !expandedCategories.includes(category.id)) {
-                  toggleCategoryExpansion(category.id);
-                }
-              }}
+              checked={isCategoryChecked}
+              onCheckedChange={onCategoryCheckChange}
             />
             <label
               htmlFor={`category-${category.id}`}
@@ -74,19 +111,16 @@ const CategoryList: React.FC<{ category: Category }> = ({ category }) => {
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-3">
               <div className="bg-muted h-2 w-24 overflow-hidden rounded-full">
-                {/* <div
-                  className="bg-gradient-to-r from-green-400 to-green-600 h-full rounded-full transition-all duration-300"
-                  style={{ width: `${completedPercentage}%` }}
-                ></div> */}
+                <div
+                  className="bg-primary h-full rounded-full transition-all duration-300"
+                  style={{ width: `${categoryProgress}%` }}
+                ></div>
               </div>
               <div className="text-muted-foreground min-w-max text-sm">
-                {<span className="text-foreground font-medium">{category.attempted_count}</span>}
+                <span className="text-foreground font-medium">{category.attempted_count || 0}</span>
                 <span className="text-muted-foreground mx-1">/</span>
-                {<span>{category.question_count}</span>}
+                <span>{category.question_count || 0}</span>
               </div>
-            </div>
-            <div className="text-muted-foreground text-sm font-medium">
-              {/* {Math.round(completedPercentage)}% */}
             </div>
           </div>
         </div>
@@ -96,7 +130,11 @@ const CategoryList: React.FC<{ category: Category }> = ({ category }) => {
           <div className="border-border mt-4 border-t pt-4">
             <ul className="space-y-2 pl-8">
               {category.sub_categories?.map((subCategory) => {
-                // const isSubCategoryExpanded = expandedSubCategories.includes(subCategory.id);
+                // Calculate subcategory progress percentage
+                // const subCategoryProgress = calculateProgress(
+                //   subCategory.attempted_count,
+                //   subCategory.question_count
+                // );
 
                 return (
                   <li
@@ -122,7 +160,7 @@ const CategoryList: React.FC<{ category: Category }> = ({ category }) => {
                               selectedCategoriesId.includes(category.id) ||
                               selectedSubCategoryId.includes(subCategory.id)
                             }
-                            onCheckedChange={() => handleSubCategorySelection(subCategory.id)}
+                            onCheckedChange={(checked) => onSubCategoryCheckChange(subCategory.id, !!checked)}
                           />
                           <label
                             htmlFor={`subcategory-${subCategory.id}`}
@@ -132,15 +170,18 @@ const CategoryList: React.FC<{ category: Category }> = ({ category }) => {
                           </label>
                         </div>
                         <div className="flex items-center gap-3">
-                          <div className="bg-muted h-2 w-16 overflow-hidden rounded-full">
-                            {/* optional progress bar */}
-                          </div>
+                          {/* <div className="bg-background h-2 w-16 overflow-hidden rounded-full border border-border">
+                            <div
+                              className="bg-gradient-to-r from-blue-400 to-blue-600 h-full rounded-full transition-all duration-300"
+                              style={{ width: `${subCategoryProgress}%` }}
+                            ></div>
+                          </div> */}
                           <div className="text-muted-foreground min-w-max text-sm">
                             <span className="text-foreground font-medium">
-                              {subCategory.attempted_count}
+                              {subCategory.attempted_count || 0}
                             </span>
                             <span className="text-muted-foreground mx-1">/</span>
-                            <span>{subCategory.question_count}</span>
+                            <span>{subCategory.question_count || 0}</span>
                           </div>
                         </div>
                       </div>
