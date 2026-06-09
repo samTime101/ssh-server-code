@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import EditorRenderer from "@/components/EditorRenderer";
 import QuestionProgress from "@/components/user/QuestionProgress";
 import QuestionFeedbackWidget from "@/components/user/QuestionFeedbackWidget";
+import { ThreadedComments } from "@/components/user/ThreadedComments";
 
 const QuestionPage = () => {
   const {
@@ -311,6 +312,13 @@ const QuestionPage = () => {
             Cancel
           </Button> */}
         </div>
+
+        {/* Threaded Comments Section */}
+        {!isExamModeEnabled && currentQuestion && isAttempted && (
+          <div className="mt-8">
+            <ThreadedComments questionId={currentQuestion.id} />
+          </div>
+        )}
       </div>
     </div>
   );

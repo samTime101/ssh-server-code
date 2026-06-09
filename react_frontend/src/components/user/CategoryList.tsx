@@ -7,8 +7,10 @@ import type { Category } from "@/types/category";
 const CategoryList: React.FC<{ category: Category }> = ({ category }) => {
   const {
     selectedCategoriesId,
+    setSelectedCategoriesId,
     handleCategorySelection,
     selectedSubCategoryId,
+    setSelectedSubCategoryId,
     handleSubCategorySelection,
     // selectedSubSubCategoryId,
     // handleSubSubCategorySelection,
@@ -23,18 +25,54 @@ const CategoryList: React.FC<{ category: Category }> = ({ category }) => {
     );
   };
 
-  // Subsub category is disabled for now, it will be implemented in future
-  // const toggleSubCategoryExpansion = (subCategoryId: number) => {
-  //   setExpandedSubCategories((prev) =>
-  //     prev.includes(subCategoryId)
-  //       ? prev.filter((id) => id !== subCategoryId)
-  //       : [...prev, subCategoryId]
-  //   );
-  // };
+  const onCategoryCheckChange = (checked: boolean) => {
+    if (checked) {
+      if (!selectedCategoriesId.includes(category.id)) {
+        setSelectedCategoriesId([...selectedCategoriesId, category.id]);
+      }
+      const subIds = category.sub_categories?.map(s => s.id) || [];
+      setSelectedSubCategoryId(selectedSubCategoryId.filter((id: string) => !subIds.includes(id)));
+      
+      if (!expandedCategories.includes(category.id)) {
+        toggleCategoryExpansion(category.id);
+      }
+    } else {
+      setSelectedCategoriesId(selectedCategoriesId.filter((id: string) => id !== category.id));
+      const subIds = category.sub_categories?.map(s => s.id) || [];
+      setSelectedSubCategoryId(selectedSubCategoryId.filter((id: string) => !subIds.includes(id)));
+    }
+  };
+
+  const onSubCategoryCheckChange = (subCategoryId: string, checked: boolean) => {
+    const subIds = category.sub_categories?.map(s => s.id) || [];
+    if (checked) {
+      const newSubCatIds = [...selectedSubCategoryId, subCategoryId];
+      setSelectedSubCategoryId(newSubCatIds);
+      
+      const allSelected = subIds.every(id => newSubCatIds.includes(id));
+      if (allSelected && subIds.length > 0) {
+        if (!selectedCategoriesId.includes(category.id)) {
+          setSelectedCategoriesId([...selectedCategoriesId, category.id]);
+        }
+        setSelectedSubCategoryId(newSubCatIds.filter(id => !subIds.includes(id)));
+      }
+    } else {
+      if (selectedCategoriesId.includes(category.id)) {
+        setSelectedCategoriesId(selectedCategoriesId.filter((id: string) => id !== category.id));
+        const otherSubIds = subIds.filter(id => id !== subCategoryId);
+        const newSelectedSubs = new Set([...selectedSubCategoryId, ...otherSubIds]);
+        setSelectedSubCategoryId(Array.from(newSelectedSubs));
+      } else {
+        setSelectedSubCategoryId(selectedSubCategoryId.filter((id: string) => id !== subCategoryId));
+      }
+    }
+  };
 
   //   const progressData = getProgressData(category.id);
   //   const completedPercentage = (progressData.completed / progressData.total) * 100;
   const isCategoryExpanded = expandedCategories.includes(category.id);
+  
+  const isCategoryChecked = selectedCategoriesId.includes(category.id) || (category.sub_categories && category.sub_categories.length > 0 && category.sub_categories.every(sub => selectedSubCategoryId.includes(sub.id)));
 
   return (
     <li
@@ -55,14 +93,8 @@ const CategoryList: React.FC<{ category: Category }> = ({ category }) => {
             className="border-input appearance-none w-5 h-5 border-1 cursor-pointer"
               id={`category-${category.id}`}
               
-              checked={selectedCategoriesId.includes(category.id)}
-              onCheckedChange={() => {
-                handleCategorySelection(category.id);
-                // Auto-expand the category when it is being selected
-                if (!selectedCategoriesId.includes(category.id) && !expandedCategories.includes(category.id)) {
-                  toggleCategoryExpansion(category.id);
-                }
-              }}
+              checked={isCategoryChecked}
+              onCheckedChange={onCategoryCheckChange}
             />
             <label
               htmlFor={`category-${category.id}`}
@@ -122,7 +154,7 @@ const CategoryList: React.FC<{ category: Category }> = ({ category }) => {
                               selectedCategoriesId.includes(category.id) ||
                               selectedSubCategoryId.includes(subCategory.id)
                             }
-                            onCheckedChange={() => handleSubCategorySelection(subCategory.id)}
+                            onCheckedChange={(checked) => onSubCategoryCheckChange(subCategory.id, !!checked)}
                           />
                           <label
                             htmlFor={`subcategory-${subCategory.id}`}
