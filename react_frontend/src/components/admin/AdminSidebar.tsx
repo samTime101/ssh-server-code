@@ -224,10 +224,25 @@ const AdminSidebar = ({ isOpen, onClose }: AdminSidebarProps) => {
 
         {/* Bottom Section */}
         <div className="border-sidebar-border flex-shrink-0 space-y-2 border-t px-4 py-4">
-          <div className="text-sidebar-foreground hover:bg-sidebar-accent flex cursor-pointer items-center gap-4 rounded-lg px-4 py-3 transition-all duration-200">
-            <Settings size={18} className="text-muted-foreground" />
+          <Link
+            to="/admin/settings"
+            onClick={onClose}
+            className={`flex items-center gap-4 rounded-lg px-4 py-3 transition-all duration-200 ${
+              isPathActive("/admin/settings")
+                ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-sm"
+                : "text-sidebar-foreground hover:bg-sidebar-accent"
+            }`}
+          >
+            <Settings
+              size={18}
+              className={
+                isPathActive("/admin/settings")
+                  ? "text-sidebar-primary-foreground"
+                  : "text-muted-foreground"
+              }
+            />
             <p className="text-sm font-medium">Settings</p>
-          </div>
+          </Link>
 
           <button
             onClick={() => setShowLogoutModal(true)}

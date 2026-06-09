@@ -5,6 +5,7 @@ import "./index.css";
 import App from "./App.tsx";
 import { BrowserRouter, useLocation } from "react-router-dom";
 import AuthProvider from "@/contexts/AuthContext.tsx";
+import { ThemeProvider } from "@/contexts/ThemeContext.tsx";
 import { Toaster } from "@/components/ui/sonner";
 import Header from "@/components/user/Header";
 
@@ -23,10 +24,12 @@ const AppShell = () => {
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <BrowserRouter>
-      <AuthProvider>
-        <AppShell />
-        <Toaster />
-      </AuthProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <AppShell />
+          <Toaster />
+        </AuthProvider>
+      </ThemeProvider>
     </BrowserRouter>
   </StrictMode>
 );

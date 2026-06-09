@@ -28,6 +28,11 @@ export interface SubSubCategory {
 export interface GetCategoriesResponse {
   total_questions?: number;
   categories: Category[];
+  pagination?: {
+    count: number;
+    total_pages: number;
+    current_page: number;
+  };
 }
 
 export interface CreateCategoryResponse {
@@ -57,4 +62,13 @@ export interface SubCategoryDetail {
   categoryName: string;
   status?: CategoryStatus;
   question_count?: number;
+}
+
+export interface GetSubCategoriesResponse {
+  subcategories: SubCategoryDetail[];
+  pagination?: {
+    count: number;
+    total_pages: number;
+    current_page: number;
+  };
 }
