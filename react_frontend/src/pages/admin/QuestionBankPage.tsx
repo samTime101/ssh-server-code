@@ -61,7 +61,7 @@ const QuestionBankPage = () => {
   };
 
   return (
-    <div>
+    <div className="min-w-0">
       <div className="manage-questions-header">
         <h1 className="manage-questions-title text-foreground text-2xl font-bold">
           Manage Questions
@@ -70,8 +70,8 @@ const QuestionBankPage = () => {
       <div className="manage-questions-content text-muted-foreground mt-1">
         <p>This is where admin can manage questions.</p>
       </div>
-      <div className="manage-questions-main-content border-border bg-card mt-4 rounded-md border p-4 shadow-md">
-        <div className="questions-search-section flex gap-3">
+      <div className="manage-questions-main-content border-border bg-card mt-4 min-w-0 overflow-hidden rounded-md border p-4 shadow-md">
+        <div className="questions-search-section flex flex-wrap gap-3">
           <Input
             placeholder="Search by question text or description"
             value={searchQuery}
@@ -106,17 +106,17 @@ const QuestionBankPage = () => {
             </Select>
           )}
         </div>
-        <div className="questions-list-section mt-4">
-          <Table>
+        <div className="questions-list-section mt-4 min-w-0 overflow-x-auto">
+          <Table className="table-fixed">
             <TableCaption>{isLoading ? "" : `Total Questions: ${pagination.count}`}</TableCaption>
             <TableHeader>
               <TableRow>
-                <TableHead>Question Text</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Created At</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead>Subcategory</TableHead>
-                <TableHead>Actions</TableHead>
+                <TableHead className="w-[35%]">Question Text</TableHead>
+                <TableHead className="w-[10%]">Status</TableHead>
+                <TableHead className="w-[15%]">Created At</TableHead>
+                <TableHead className="w-[15%]">Category</TableHead>
+                <TableHead className="w-[15%]">Subcategory</TableHead>
+                <TableHead className="w-[10%]">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -134,8 +134,8 @@ const QuestionBankPage = () => {
                     className="text-muted-foreground"
                     key={question.id || question.question_text}
                   >
-                    <TableCell className="max-w-md whitespace-normal">
-                      <p className="font-normal">{question.question_text}</p>
+                    <TableCell className="max-w-0 break-words whitespace-normal">
+                      <p className="line-clamp-3 font-normal">{question.question_text}</p>
                     </TableCell>
                     <TableCell>
                       <StatusBadge status={question.status} />
@@ -143,7 +143,7 @@ const QuestionBankPage = () => {
                     <TableCell>
                       {convertToLocalDateTime(question.created_at).toLocaleString(LOCALE)}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="whitespace-normal">
                       <div className="flex flex-wrap gap-2">
                         {question.category_names.map((cat: string) => (
                           <Badge
@@ -155,7 +155,7 @@ const QuestionBankPage = () => {
                         ))}
                       </div>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="whitespace-normal">
                       <div className="flex flex-wrap gap-2">
                         {question.subcategory_names.map((subcat: string) => (
                           <Badge
@@ -167,19 +167,21 @@ const QuestionBankPage = () => {
                         ))}
                       </div>
                     </TableCell>
-                    <TableCell className="flex gap-2">
-                      <Button
-                        className="btn-edit bg-primary text-primary-foreground cursor-pointer rounded"
-                        onClick={() => handleEditClick(question)}
-                      >
-                        <PenIcon size={12} />
-                      </Button>
-                      <Button
-                        className="btn-delete bg-destructive text-primary-foreground cursor-pointer rounded"
-                        onClick={() => handleDeleteClick(question)}
-                      >
-                        <TrashIcon size={12} />
-                      </Button>
+                    <TableCell className="whitespace-nowrap">
+                      <div className="flex gap-2">
+                        <Button
+                          className="btn-edit bg-primary text-primary-foreground cursor-pointer rounded"
+                          onClick={() => handleEditClick(question)}
+                        >
+                          <PenIcon size={12} />
+                        </Button>
+                        <Button
+                          className="btn-delete bg-destructive text-primary-foreground cursor-pointer rounded"
+                          onClick={() => handleDeleteClick(question)}
+                        >
+                          <TrashIcon size={12} />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))

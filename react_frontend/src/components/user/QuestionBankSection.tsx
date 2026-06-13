@@ -13,6 +13,7 @@ import CategoryList from "./CategoryList";
 import type { Category, GetCategoriesResponse } from "@/types/category";
 import { getCategories, getQuestionsByIds } from "@/services/user/question-service";
 import { getSubmissionHistory } from "@/services/user/history-service";
+import { SUBMISSION_PAGE_SIZE } from "@/utils/historyUtils";
 import { getQuestionBankAnalytics } from "@/services/user/analytics-service";
 import type { QuestionBankAnalytics } from "@/types/analytics";
 import { getQuestionBankProgress } from "@/utils/questionBankUtils";
@@ -112,7 +113,10 @@ const QuestionBankSection = () => {
 
   const getQuestionBankStartMode = async (): Promise<"resume" | "retry" | "new"> => {
     try {
-      const submissions = await getSubmissionHistory("question_bank");
+      const submissions = await getSubmissionHistory("question_bank", {
+        pageSize: SUBMISSION_PAGE_SIZE,
+        maxPages: 5,
+      });
       const activeSubmission = submissions.find((submission) => {
         return submission.status === "in_progress";
       });

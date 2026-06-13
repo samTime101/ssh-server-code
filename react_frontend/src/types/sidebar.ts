@@ -3,6 +3,8 @@ import { Plus } from "lucide-react";
 export interface AdminSidebarProps {
   isOpen: boolean;
   onClose: () => void;
+  isCollapsed: boolean;
+  onToggleCollapse: () => void;
 }
 
 export interface NavItem {
@@ -18,6 +20,7 @@ export interface CollapsibleNavGroupProps {
   items: NavItem[];
   isGroupActive: boolean;
   isOpen: boolean;
+  isCollapsed: boolean;
   onToggle: () => void;
   onNavClick: () => void;
   isPathActive: (path: string) => boolean;
