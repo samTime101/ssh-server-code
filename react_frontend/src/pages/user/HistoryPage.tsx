@@ -11,13 +11,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import Loader from "@/components/ui/Loader";
 import type { SubmissionHistoryItem } from "@/types/history";
 import {
   formatHistoryDateTime,
   getSubmissionMetrics,
   getSubmissionOverview,
 } from "@/utils/historyUtils";
-
 
 const HistoryPage = () => {
   const [submissionHistory, setSubmissionHistory] = useState<SubmissionHistoryItem[]>([]);
@@ -43,7 +43,9 @@ const HistoryPage = () => {
   const { totalSubmissions, totalAttempts, correctAttempts, incorrectAttempts } =
     getSubmissionOverview(submissionHistory);
 
-
+  if (isLoading) {
+    return <Loader />;
+  }
 
   return (
     <div className="space-y-8 p-6">

@@ -24,6 +24,7 @@ import {
   MIN_EXAM_MINUTES,
   MIN_EXAM_QUESTIONS,
 } from "@/utils/examModeUtils";
+import { Skeleton } from "@/components/ui/skeleton";
 
 /*
     Please note that the implementation of sub-sub-categories is currently on hold
@@ -199,7 +200,6 @@ const QuestionBankSection = () => {
   }, [token]);
 
   const stats = getQuestionBankProgress(analytics);
-
   return (
     <section className="mx-auto flex min-h-full max-w-[1500px] flex-1 flex-col gap-8 p-8">
       {/* Header Section */}
@@ -260,7 +260,26 @@ const QuestionBankSection = () => {
         <div className="space-y-4">
           <h3 className="text-foreground mb-4 text-lg font-medium">Select Categories</h3>
           <div className="scrollbar-thin max-h-[250px] overflow-y-auto p-1 pr-2 md:max-h-[350px]">
-            {filteredCategories.length === 0 ? (
+            {categories === undefined ? (
+              <div className="space-y-3">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} className="border-border overflow-hidden rounded-lg border p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <Skeleton className="h-5 w-5" />
+                        <Skeleton className="h-5 w-48" />
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <Skeleton className="h-4 w-16" />
+                      </div>
+                    </div>
+                    <div className="border-border mt-4 border-t pt-4">
+                      <Skeleton className="h-6 w-full" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : filteredCategories.length === 0 ? (
               <p className="text-muted-foreground text-sm">
                 No matching topics found for your search.
               </p>

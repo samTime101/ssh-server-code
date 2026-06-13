@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import SingleChoiceOption from "@/components/user/SingleChoiceOption";
 import MultipleChoiceOption from "@/components/user/MultipleChoiceOption";
 import Paginator from "@/components/Paginator";
+import Loader from "@/components/ui/Loader";
 
 interface BookmarkItem {
   question_id: string;
@@ -133,6 +134,8 @@ const BookmarksPage = () => {
     attemptSelectedOptions.length > 0 ? attemptSelectedOptions[0] : "";
 
 
+
+  if (isLoading) return <Loader />;
 
   return (
     <div className="space-y-8 p-6">
