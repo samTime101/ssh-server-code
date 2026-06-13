@@ -8,10 +8,10 @@ const CategoryList: React.FC<{ category: Category }> = ({ category }) => {
   const {
     selectedCategoriesId,
     setSelectedCategoriesId,
-    handleCategorySelection,
+    // handleCategorySelection,
     selectedSubCategoryId,
     setSelectedSubCategoryId,
-    handleSubCategorySelection,
+    // handleSubCategorySelection,
     // selectedSubSubCategoryId,
     // handleSubSubCategorySelection,
   } = useQuestions();
@@ -110,7 +110,7 @@ const CategoryList: React.FC<{ category: Category }> = ({ category }) => {
           </div>
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-3">
-              <div className="bg-muted h-2 w-24 overflow-hidden rounded-full">
+              <div className="bg-gray-300 h-2 w-24 overflow-hidden rounded-full">
                 <div
                   className="bg-primary h-full rounded-full transition-all duration-300"
                   style={{ width: `${categoryProgress}%` }}

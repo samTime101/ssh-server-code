@@ -252,11 +252,11 @@ const QuestionBankSection = () => {
           <div className="mt-4 flex justify-end">
             <label className="flex items-center space-x-2">
               <Checkbox
-                className="h-5 w-5 cursor-pointer appearance-none border-1 border-black"
+                className="h-5 w-5 cursor-pointer appearance-none border-1 border-border"
                 checked={reattemptWrongOnly}
                 onCheckedChange={() => setReattemptWrongOnly(!reattemptWrongOnly)}
               />
-              <span className="text-muted-foreground hero-text">Re-attempt Wrong Only</span>
+              <span className="text-muted-foreground">Re-attempt Wrong Only</span>
             </label>
           </div>
         </div>

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Bookmark as BookmarkIcon, Eye, Trash2, X } from "lucide-react";
+import { Bookmark as BookmarkIcon, Eye, Lightbulb, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getBookmarks, removeBookmark, getQuestionById } from "@/services/user/bookmark-service";
 import { findAttemptForQuestion } from "@/services/user/history-service";
@@ -13,6 +13,7 @@ import SingleChoiceOption from "@/components/user/SingleChoiceOption";
 import MultipleChoiceOption from "@/components/user/MultipleChoiceOption";
 import Paginator from "@/components/Paginator";
 import Loader from "@/components/ui/Loader";
+import EditorRenderer from "@/components/EditorRenderer";
 
 interface BookmarkItem {
   question_id: string;
@@ -316,20 +317,34 @@ const BookmarksPage = () => {
                     </div>
                   ))}
                   {(viewingQuestion.description || viewingQuestion.description_image_url) && (
-                    <div className="bg-muted/50 mt-4 rounded border p-4">
-                      <h4 className="mb-2 font-semibold">Explanation</h4>
-                      {viewingQuestion.description && (
-                        <p className="text-sm">{viewingQuestion.description}</p>
-                      )}
-                      {viewingQuestion.description_image_url && (
-                        <div className="mt-3 flex justify-center">
-                          <img
-                            src={getImageUrl(viewingQuestion.description_image_url)}
-                            alt="Explanation"
-                            className="max-h-48 w-auto max-w-full rounded border object-contain shadow-sm"
-                          />
+                    <div className="border-primary bg-primary/5 rounded-lg border-l-4 p-5">
+                      <div className="flex items-start gap-3">
+                        <div className="mt-1 flex-shrink-0">
+                          <div className="bg-primary flex h-8 w-8 items-center justify-center rounded-full">
+                            <Lightbulb size={18} className="text-primary-foreground" />
+                          </div>
                         </div>
-                      )}
+                        <div className="flex-1 space-y-2">
+                          <h3 className="text-primary flex items-center text-xl font-bold">
+                            Explanation
+                          </h3>
+                          {viewingQuestion.description && (
+                            <EditorRenderer
+                              data={viewingQuestion.description}
+                              className="text-foreground"
+                            />
+                          )}
+                          {viewingQuestion.description_image_url && (
+                            <div className="flex justify-center">
+                              <img
+                                src={getImageUrl(viewingQuestion.description_image_url)}
+                                alt="Question explanation"
+                                className="max-h-72 w-auto max-w-full rounded-lg object-contain shadow-md"
+                              />
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   )}
                 </div>

@@ -24,7 +24,7 @@ const MultipleChoiceOption = ({
   let statusClass = "";
   if (disabled && showResultStyles) {
     if (isCorrect) {
-      statusClass = "border-green-500 bg-green-50";
+      statusClass = "border-green-500 bg-green-500";
     } else if (isSelected) {
       statusClass = "border-destructive/50 bg-destructive/10";
     } else {
