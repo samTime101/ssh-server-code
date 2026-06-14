@@ -1,10 +1,14 @@
 import type {
   Attempt,
+  PaginatedSubmissionHistory,
+  PaginatedSubmissionHistoryResult,
   SubmissionHistoryItem,
   SubmissionHistoryResponse,
   SubmissionMetrics,
   SubmissionOverview,
 } from "@/types/history";
+
+export const SUBMISSION_PAGE_SIZE = 25;
 
 const isAttemptArray = (value: unknown): value is Attempt[] => {
   if (!Array.isArray(value)) return false;
@@ -46,6 +50,36 @@ export const getSubmissionItems = (
   }
 
   return [];
+};
+
+export const parsePaginatedSubmissionHistory = (
+  data: unknown,
+  page = 1
+): PaginatedSubmissionHistoryResult => {
+  const paginated = (data ?? {}) as PaginatedSubmissionHistory;
+
+  return {
+    count: paginated.count ?? 0,
+    next: paginated.next ?? null,
+    previous: paginated.previous ?? null,
+    results: getSubmissionItems(data as SubmissionHistoryResponse),
+    total_pages: paginated.total_pages ?? 1,
+    current_page: paginated.current_page ?? page,
+  };
+};
+
+export const findAttemptInSubmissions = (
+  submissions: SubmissionHistoryItem[],
+  questionText: string
+): Attempt | null => {
+  for (const submission of submissions) {
+    const attempt = submission.attempts?.find((item) => item.question_text === questionText);
+    if (attempt) {
+      return attempt;
+    }
+  }
+
+  return null;
 };
 
 export const formatHistoryDateTime = (value?: string | null): string => {

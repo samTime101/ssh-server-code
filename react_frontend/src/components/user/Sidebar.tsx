@@ -9,38 +9,35 @@ import {
   LogOut,
   X,
   Bookmark,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 
 interface SidebarProps {
   isOpen: boolean;
   onClose: () => void;
+  isCollapsed: boolean;
+  onToggleCollapse: () => void;
 }
 
 const menuItems = [
   { icon: Book, text: "Question Bank", path: "/userpanel/question-bank" },
   { icon: Stethoscope, text: "CEE Practice", path: "/userpanel/cee-practice" },
-  // { icon: Folder, text: "Case Studies", path: "/userpanel/case-studies" },
   { icon: FileText, text: "Mock Exams", path: "/userpanel/mock-exams" },
 ];
 
 const otherItems = [
-  { icon: User, text: "Profile", path: "/userpanel/profile", type: "link" },
-  { icon: User, text: "History", path: "/userpanel/history", type: "link" },
-  { icon: Bookmark, text: "Bookmarks", path: "/userpanel/bookmarks", type: "link" },
-  { icon: Settings, text: "Settings", path: "/userpanel/settings", type: "link" },
-  { icon: LogOut, text: "Logout", type: "button" },
+  { icon: User, text: "Profile", path: "/userpanel/profile", type: "link" as const },
+  { icon: User, text: "History", path: "/userpanel/history", type: "link" as const },
+  { icon: Bookmark, text: "Bookmarks", path: "/userpanel/bookmarks", type: "link" as const },
+  { icon: Settings, text: "Settings", path: "/userpanel/settings", type: "link" as const },
+  { icon: LogOut, text: "Logout", type: "button" as const },
 ];
 
-const baseItemClass =
-  "flex items-center gap-4 rounded-lg px-6 py-3 transition-all duration-200 cursor-pointer border border-transparent";
-const activeClass = "bg-sidebar-primary text-sidebar-primary-foreground shadow-md";
-const inactiveClass =
-  "text-sidebar-foreground hover:bg-background hover:shadow-sm hover:border-border";
-const iconActiveClass = "text-sidebar-primary-foreground";
-const iconInactiveClass = "text-muted-foreground group-hover:text-sidebar-primary";
-
-const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
+const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }: SidebarProps) => {
   const { logout } = useAuth();
   const location = useLocation();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
@@ -55,6 +52,96 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
     return location.pathname.startsWith(path);
   };
 
+  const baseItemClass = (active: boolean) =>
+    cn(
+      "flex items-center rounded-lg transition-all duration-200 cursor-pointer border border-transparent",
+      isCollapsed ? "justify-center px-2 py-3" : "gap-4 px-6 py-3",
+      active
+        ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-md"
+        : "text-sidebar-foreground hover:bg-background hover:shadow-sm hover:border-border"
+    );
+
+  const renderNavLink = (item: (typeof menuItems)[number]) => {
+    const IconComponent = item.icon;
+    const active = isActive(item.path);
+
+    const link = (
+      <Link key={item.path} to={item.path} onClick={onClose} className={baseItemClass(active)}>
+        <IconComponent
+          size={20}
+          className={cn(
+            "transition-colors duration-200",
+            active ? "text-sidebar-primary-foreground" : "text-muted-foreground"
+          )}
+        />
+        {!isCollapsed && <p className="text-sm font-medium">{item.text}</p>}
+      </Link>
+    );
+
+    if (!isCollapsed) return link;
+
+    return (
+      <Tooltip key={item.path}>
+        <TooltipTrigger asChild>{link}</TooltipTrigger>
+        <TooltipContent side="right">{item.text}</TooltipContent>
+      </Tooltip>
+    );
+  };
+
+  const renderBottomItem = (item: (typeof otherItems)[number]) => {
+    const IconComponent = item.icon;
+
+    if (item.type === "link" && item.path) {
+      const active = isActive(item.path);
+      const link = (
+        <Link
+          key={item.path}
+          to={item.path}
+          onClick={onClose}
+          className={cn("mt-2", baseItemClass(active))}
+        >
+          <IconComponent
+            size={20}
+            className={active ? "text-sidebar-primary-foreground" : "text-muted-foreground"}
+          />
+          {!isCollapsed && <p className="text-sm font-medium">{item.text}</p>}
+        </Link>
+      );
+
+      if (!isCollapsed) return link;
+
+      return (
+        <Tooltip key={item.path}>
+          <TooltipTrigger asChild>{link}</TooltipTrigger>
+          <TooltipContent side="right">{item.text}</TooltipContent>
+        </Tooltip>
+      );
+    }
+
+    const logoutButton = (
+      <button
+        key={item.text}
+        onClick={() => setShowLogoutModal(true)}
+        className={cn(
+          "text-destructive hover:border-destructive/20 hover:bg-destructive/10 mt-2 flex w-full items-center rounded-lg border border-transparent transition-all duration-200 hover:shadow-sm",
+          isCollapsed ? "justify-center px-2 py-3" : "gap-4 px-6 py-3"
+        )}
+      >
+        <IconComponent size={20} className="text-destructive" />
+        {!isCollapsed && <p className="text-sm font-medium">{item.text}</p>}
+      </button>
+    );
+
+    if (!isCollapsed) return logoutButton;
+
+    return (
+      <Tooltip key={item.text}>
+        <TooltipTrigger asChild>{logoutButton}</TooltipTrigger>
+        <TooltipContent side="right">{item.text}</TooltipContent>
+      </Tooltip>
+    );
+  };
+
   return (
     <>
       {isOpen && (
@@ -62,9 +149,13 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
       )}
 
       <aside
-        className={`border-sidebar-border bg-sidebar fixed top-[64px] left-0 z-40 flex h-[calc(100vh-64px)] w-64 flex-col border-r transition-transform duration-300 ease-in-out ${isOpen ? "translate-x-0" : "-translate-x-full"} md:z-10 md:translate-x-0`}
+        className={cn(
+          "border-sidebar-border bg-sidebar fixed top-[64px] left-0 z-40 flex h-[calc(100vh-64px)] flex-col border-r transition-all duration-300 ease-in-out",
+          isCollapsed ? "w-16" : "w-64",
+          isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+        )}
       >
-        <div>
+        {!isCollapsed && (
           <div className="mb-4 flex justify-end md:hidden">
             <button
               onClick={onClose}
@@ -74,66 +165,41 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
               <X size={20} className="text-muted-foreground" />
             </button>
           </div>
-        </div>
+        )}
 
         <nav className="flex-1 overflow-y-auto py-6">
-          <ul className="flex flex-col gap-2 px-3">
-            {menuItems.map((item) => {
-              const IconComponent = item.icon;
-              const active = isActive(item.path);
-              return (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  onClick={onClose}
-                  className={`${baseItemClass} ${active ? activeClass : inactiveClass}`}
-                >
-                  <IconComponent
-                    size={20}
-                    className={`${active ? iconActiveClass : iconInactiveClass} transition-colors duration-200`}
-                  />
-                  <p className="text-sm font-medium">{item.text}</p>
-                </Link>
-              );
-            })}
+          <ul className={cn("flex flex-col gap-2", isCollapsed ? "px-2" : "px-3")}>
+            {menuItems.map((item) => (
+              <li key={item.path}>{renderNavLink(item)}</li>
+            ))}
           </ul>
         </nav>
 
-        <div className="border-sidebar-border bg-sidebar flex-shrink-0 border-t px-3 py-6">
-          {otherItems.map((item) => {
-            const IconComponent = item.icon;
-            if (item.type === "link" && item.path) {
-              const active = isActive(item.path);
-              return (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  onClick={onClose}
-                  className={`mt-2 ${baseItemClass} ${active ? activeClass : inactiveClass}`}
-                >
-                  <IconComponent
-                    size={20}
-                    className={active ? iconActiveClass : iconInactiveClass}
-                  />
-                  <p className="text-sm font-medium">{item.text}</p>
-                </Link>
-              );
-            }
-            // Logout button
-            return (
+        <div
+          className={cn(
+            "border-sidebar-border bg-sidebar flex-shrink-0 border-t py-4",
+            isCollapsed ? "px-2" : "px-3"
+          )}
+        >
+          {otherItems.map((item) => renderBottomItem(item))}
+
+          <Tooltip>
+            <TooltipTrigger asChild>
               <button
-                key={item.text}
-                onClick={() => setShowLogoutModal(true)}
-                className="text-destructive hover:border-destructive/20 hover:bg-destructive/10 mt-2 flex w-full items-center gap-4 rounded-lg border border-transparent px-6 py-3 transition-all duration-200 hover:shadow-sm"
+                onClick={onToggleCollapse}
+                className="text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-foreground mt-2 flex w-full items-center justify-center rounded-lg px-2 py-2 transition-all duration-200"
+                aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
               >
-                <IconComponent size={20} className="text-destructive" />
-                <p className="text-sm font-medium">{item.text}</p>
+                {isCollapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}
               </button>
-            );
-          })}
+            </TooltipTrigger>
+            <TooltipContent side="right">
+              {isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            </TooltipContent>
+          </Tooltip>
         </div>
       </aside>
-      {/* Logout Confirmation Modal */}
+
       {showLogoutModal && (
         <div
           style={{
@@ -165,7 +231,6 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Icon */}
             <div
               style={{
                 width: 56,
@@ -181,7 +246,6 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
               <LogOut size={24} color="#ef4444" />
             </div>
 
-            {/* Title */}
             <h2
               style={{
                 margin: 0,
@@ -193,7 +257,6 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
               Log Out
             </h2>
 
-            {/* Message */}
             <p
               style={{
                 margin: "4px 0 16px",
@@ -206,7 +269,6 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
               Are you sure you want to log out?
             </p>
 
-            {/* Buttons */}
             <div style={{ display: "flex", gap: 12, width: "100%" }}>
               <button
                 onClick={() => setShowLogoutModal(false)}

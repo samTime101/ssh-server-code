@@ -1,8 +1,9 @@
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { verifyEmailService } from "@/services/auth";
-import { CheckCircle2, XCircle, Loader2 } from "lucide-react";
+import { CheckCircle2, XCircle } from "lucide-react";
 import { useEffect, useState } from "react";
+import Loader from "@/components/ui/Loader";
 import { useNavigate, useParams } from "react-router-dom";
 
 const EmailVerified = () => {
@@ -36,6 +37,8 @@ const EmailVerified = () => {
     verifyEmail();
   }, [token, navigate]);
 
+  if (isLoading) return <Loader />;
+
   return (
     <div className="bg-background flex min-h-screen items-center justify-center p-4">
       <Card className="w-full max-w-md">
@@ -44,12 +47,7 @@ const EmailVerified = () => {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-col items-center justify-center gap-4">
-            {isLoading ? (
-              <>
-                <Loader2 className="text-primary h-16 w-16 animate-spin" />
-                <p className="text-muted-foreground text-center">Verifying your email...</p>
-              </>
-            ) : isSuccess ? (
+            {isSuccess ? (
               <>
                 <CheckCircle2 className="h-16 w-16 text-green-500" />
                 <p className="text-center font-medium text-green-700">{message}</p>

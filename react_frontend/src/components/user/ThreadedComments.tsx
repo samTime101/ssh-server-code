@@ -45,8 +45,8 @@ const CommentItem: React.FC<CommentItemProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Maximum visual nesting depth to prevent layout breaking
-  const maxDepth = 5;
-  const paddingLeft = depth > maxDepth ? 0 : 24;
+  // const maxDepth = 5;
+  // const paddingLeft = depth > maxDepth ? 0 : 24;
 
   const handleReplySubmit = async () => {
     if (!replyText.trim()) return;

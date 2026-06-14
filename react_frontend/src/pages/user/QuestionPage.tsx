@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { ArrowLeft, ArrowRight, Bookmark, Lightbulb, Loader2, Share2 } from "lucide-react";
+import Loader from "@/components/ui/Loader";
 import { useQuestionPageController } from "@/hooks/user/useQuestionPage";
 import QuestionNotePanel from "@/components/user/QuestionNotePanel";
 import MultipleChoiceOption from "@/components/user/MultipleChoiceOption";
@@ -50,12 +51,7 @@ const QuestionPage = () => {
 
   if (!currentQuestion) {
     if (isFetchingNextPage) {
-      return (
-        <div className="flex min-h-screen items-center justify-center gap-3">
-          <Loader2 className="text-primary h-6 w-6 animate-spin" />
-          <p className="text-muted-foreground text-lg">Loading next questions...</p>
-        </div>
-      );
+      return <Loader />;
     }
 
     return (
@@ -68,7 +64,7 @@ const QuestionPage = () => {
   }
 
   const questionCard = (
-    <Card className="relative shadow-lg overflow-visible">
+    <Card className="relative overflow-visible shadow-lg">
       <CardHeader className="pb-4">
         <h2 className="text-foreground text-xl leading-relaxed font-semibold">
           {currentQuestion.question_text}

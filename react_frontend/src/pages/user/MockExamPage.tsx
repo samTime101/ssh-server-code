@@ -12,6 +12,7 @@ import MultipleChoiceOption from "@/components/user/MultipleChoiceOption";
 import SingleChoiceOption from "@/components/user/SingleChoiceOption";
 import { getImageUrl } from "@/config/apiConfig";
 import QuestionReview from "@/components/user/QuestionReview";
+import Loader from "@/components/ui/Loader";
 import ExamResultSummary from "@/components/user/ExamResultSummary";
 
 const MockExamPage = () => {
@@ -181,13 +182,7 @@ const MockExamPage = () => {
     return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
   };
 
-  if (isLoading) {
-    return (
-      <div className="bg-background flex min-h-screen items-center justify-center">
-        <p className="text-foreground text-xl font-semibold">Loading your mock exam...</p>
-      </div>
-    );
-  }
+  if (isLoading) return <Loader />;
 
   if (!currentQuestion) {
     return (

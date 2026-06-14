@@ -1,10 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Bookmark as BookmarkIcon, Eye, Trash2, X } from "lucide-react";
+import { Bookmark as BookmarkIcon, Eye, Lightbulb, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getBookmarks, removeBookmark, getQuestionById } from "@/services/user/bookmark-service";
-import { getSubmissionHistory } from "@/services/user/history-service";
+import { findAttemptForQuestion } from "@/services/user/history-service";
 import { getImageUrl } from "@/config/apiConfig";
 import type { Attempt } from "@/types/history";
 import type { Question } from "@/types/question";
@@ -12,6 +12,8 @@ import { toast } from "sonner";
 import SingleChoiceOption from "@/components/user/SingleChoiceOption";
 import MultipleChoiceOption from "@/components/user/MultipleChoiceOption";
 import Paginator from "@/components/Paginator";
+import Loader from "@/components/ui/Loader";
+import EditorRenderer from "@/components/EditorRenderer";
 
 interface BookmarkItem {
   question_id: string;
@@ -32,6 +34,8 @@ const BookmarksPage = () => {
   const [pageSize, setPageSize] = useState(5);
 
   const [viewingQuestion, setViewingQuestion] = useState<Question | null>(null);
+  const [currentAttempt, setCurrentAttempt] = useState<Attempt | null>(null);
+  const [isLoadingAttempt, setIsLoadingAttempt] = useState(false);
 
   const fetchBookmarks = useCallback(async () => {
     setLoading(true);
@@ -65,24 +69,39 @@ const BookmarksPage = () => {
     }
   }, [currentPage, pageSize]);
 
-  const [historyAttempts, setHistoryAttempts] = useState<Attempt[]>([]);
-
   useEffect(() => {
     fetchBookmarks();
   }, [fetchBookmarks]);
 
   useEffect(() => {
-    const fetchHistory = async () => {
-      try {
-        const historyData = await getSubmissionHistory();
-        const allAttempts = historyData.flatMap((h) => h.attempts || []);
-        setHistoryAttempts(allAttempts);
-      } catch (error) {
-        console.error("Failed to load history:", error);
-      }
-    };
-    fetchHistory();
-  }, []);
+    if (!viewingQuestion) {
+      setCurrentAttempt(null);
+      return;
+    }
+
+    const controller = new AbortController();
+    setIsLoadingAttempt(true);
+    setCurrentAttempt(null);
+
+    findAttemptForQuestion(viewingQuestion.question_text, controller.signal)
+      .then((attempt) => {
+        if (!controller.signal.aborted) {
+          setCurrentAttempt(attempt);
+        }
+      })
+      .catch((error) => {
+        if (error?.name !== "CanceledError" && error?.code !== "ERR_CANCELED") {
+          console.error("Failed to load attempt for bookmark:", error);
+        }
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) {
+          setIsLoadingAttempt(false);
+        }
+      });
+
+    return () => controller.abort();
+  }, [viewingQuestion]);
 
   const handlePageChange = (page: number) => setCurrentPage(page);
 
@@ -114,11 +133,9 @@ const BookmarksPage = () => {
 
   const handleCloseModal = () => {
     setViewingQuestion(null);
+    setCurrentAttempt(null);
   };
 
-  const currentAttempt = viewingQuestion
-    ? historyAttempts.find((a) => a.question_text === viewingQuestion.question_text)
-    : null;
   const isAttempted = !!currentAttempt;
 
   // We assert any because `Question.options` does not explicitly list `is_true` in the current interface,
@@ -132,7 +149,7 @@ const BookmarksPage = () => {
   const attemptSelectedOptionString =
     attemptSelectedOptions.length > 0 ? attemptSelectedOptions[0] : "";
 
-
+  if (isLoading) return <Loader />;
 
   return (
     <div className="space-y-8 p-6">
@@ -272,7 +289,11 @@ const BookmarksPage = () => {
               </div>
 
               {/* Options */}
-              {isAttempted ? (
+              {isLoadingAttempt ? (
+                <div className="flex justify-center py-8">
+                  <Loader />
+                </div>
+              ) : isAttempted ? (
                 <div className="space-y-4">
                   {viewingQuestion.options.map((option) => (
                     <div key={option.label}>
@@ -296,18 +317,34 @@ const BookmarksPage = () => {
                     </div>
                   ))}
                   {(viewingQuestion.description || viewingQuestion.description_image_url) && (
-                    <div className="mt-4 p-4 rounded bg-muted/50 border">
-                      <h4 className="font-semibold mb-2">Explanation</h4>
-                      {viewingQuestion.description && <p className="text-sm">{viewingQuestion.description}</p>}
-                      {viewingQuestion.description_image_url && (
-                        <div className="mt-3 flex justify-center">
-                          <img
-                            src={getImageUrl(viewingQuestion.description_image_url)}
-                            alt="Explanation"
-                            className="max-h-48 w-auto max-w-full rounded border object-contain shadow-sm"
-                          />
+                    <div className="border-primary bg-primary/5 rounded-lg border-l-4 p-5">
+                      <div className="flex items-start gap-3">
+                        <div className="mt-1 flex-shrink-0">
+                          <div className="bg-primary flex h-8 w-8 items-center justify-center rounded-full">
+                            <Lightbulb size={18} className="text-primary-foreground" />
+                          </div>
                         </div>
-                      )}
+                        <div className="flex-1 space-y-2">
+                          <h3 className="text-primary flex items-center text-xl font-bold">
+                            Explanation
+                          </h3>
+                          {viewingQuestion.description && (
+                            <EditorRenderer
+                              data={viewingQuestion.description}
+                              className="text-foreground"
+                            />
+                          )}
+                          {viewingQuestion.description_image_url && (
+                            <div className="flex justify-center">
+                              <img
+                                src={getImageUrl(viewingQuestion.description_image_url)}
+                                alt="Question explanation"
+                                className="max-h-72 w-auto max-w-full rounded-lg object-contain shadow-md"
+                              />
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   )}
                 </div>
