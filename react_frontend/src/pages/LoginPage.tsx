@@ -145,7 +145,10 @@ const LoginPage = () => {
               type="button"
               variant="link"
               className="px-0 text-sm"
-              onClick={() => setForgotOpen(true)}
+              onClick={() => {
+                loginRecaptcha.hideRecaptcha();
+                setForgotOpen(true);
+              }}
             >
               Forgot password?
             </Button>
@@ -170,7 +173,12 @@ const LoginPage = () => {
           </Link>
         </p>
       </CardFooter>
-      <Modal open={forgotOpen} onOpenChange={setForgotOpen} title="Reset your password">
+      <Modal
+        open={forgotOpen}
+        onOpenChange={setForgotOpen}
+        title="Reset your password"
+        contentClassName="overflow-visible"
+      >
         <form className="space-y-4" onSubmit={handleSubmitForgot(onForgotSubmit)}>
           <div className="space-y-2">
             <Label htmlFor="forgot-email">Email</Label>
@@ -188,8 +196,9 @@ const LoginPage = () => {
             />
             {forgotErrors.email && <FormErrorMessage message={forgotErrors.email.message} />}
           </div>
-          {forgotRecaptcha.showRecaptcha && (
+          {forgotRecaptcha.showRecaptcha && forgotOpen && (
             <RecaptchaField
+              key="forgot-password-recaptcha"
               ref={forgotRecaptcha.recaptchaRef}
               onChange={forgotRecaptcha.handleRecaptchaChange}
               error={forgotRecaptcha.recaptchaError}

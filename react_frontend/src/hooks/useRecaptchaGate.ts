@@ -35,6 +35,12 @@ export function useRecaptchaGate() {
     setRecaptchaToken(null);
   };
 
+  const hideRecaptcha = () => {
+    setShowRecaptcha(false);
+    setRecaptchaToken(null);
+    setRecaptchaError(undefined);
+  };
+
   const handleRecaptchaApiError = () => {
     setShowRecaptcha(true);
     setRecaptchaError(RECAPTCHA_REQUIRED_MESSAGE);
@@ -49,6 +55,7 @@ export function useRecaptchaGate() {
     handleRecaptchaChange,
     requireRecaptcha,
     resetRecaptcha,
+    hideRecaptcha,
     handleRecaptchaApiError,
   };
 }

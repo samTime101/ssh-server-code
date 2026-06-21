@@ -3,9 +3,8 @@ import type { ModalProps } from "@/types/modal";
 
 const Modal = ({ open, onOpenChange, title, children, contentClassName }: ModalProps) => (
   <Dialog open={open} onOpenChange={onOpenChange}>
-    {open && <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" />}
     <DialogContent
-      className={`bg-card fixed top-1/2 left-1/2 max-h-[90vh] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-md p-8 sm:max-w-5xl ${contentClassName ?? ""}`.trim()}
+      className={`bg-card max-h-[90vh] rounded-md p-8 sm:max-w-5xl ${contentClassName ?? "overflow-y-auto"}`.trim()}
     >
       <DialogHeader>
         {title && <DialogTitle className="mb-4 text-xl font-semibold">{title}</DialogTitle>}
