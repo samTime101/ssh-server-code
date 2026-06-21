@@ -1,7 +1,7 @@
 // COPIED AS IT IS WITHOUT ANYCHANGES FROM
 // https://github.com/sisani9/sisani-eps/blob/dev/react_frontend/src/pages/SignupPage.tsx
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,6 +16,8 @@ import { cn } from "@/lib/utils";
 import { Command, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import type { SignupFormProps } from "@/types/signupform";
+import RecaptchaField, { type RecaptchaFieldHandle } from "@/components/RecaptchaField";
+import { isRecaptchaConfigured } from "@/config/recaptcha";
 
 const SignupForm: React.FC<SignupFormProps> = ({ onSuccess, addUser }) => {
   const { register } = useAuth();
@@ -26,6 +28,9 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSuccess, addUser }) => {
   const [searchInput, setSearchInput] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
+  const [recaptchaError, setRecaptchaError] = useState<string>();
+  const recaptchaRef = useRef<RecaptchaFieldHandle>(null);
 
   useEffect(() => {
     async function getColleges() {
@@ -63,6 +68,11 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSuccess, addUser }) => {
     ) {
       return;
     }
+    if (isRecaptchaConfigured && !recaptchaToken) {
+      setRecaptchaError("Please complete the reCAPTCHA verification.");
+      return;
+    }
+    setRecaptchaError(undefined);
     setLoading(true);
     try {
       await register({
@@ -74,10 +84,13 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSuccess, addUser }) => {
         last_name: data.last_name,
         phonenumber: data.phonenumber,
         college: data.college,
+        recaptcha: recaptchaToken ?? undefined,
       });
       onSuccess?.();
     } catch (error) {
       console.error("Registration failed:", error);
+      recaptchaRef.current?.reset();
+      setRecaptchaToken(null);
     } finally {
       setLoading(false);
     }
@@ -279,6 +292,19 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSuccess, addUser }) => {
         </Popover>
         {errors.college && <FormErrorMessage message={errors.college.message} />}
       </div>
+
+      {isRecaptchaConfigured && (
+        <RecaptchaField
+          ref={recaptchaRef}
+          onChange={(token) => {
+            setRecaptchaToken(token);
+            if (token) {
+              setRecaptchaError(undefined);
+            }
+          }}
+          error={recaptchaError}
+        />
+      )}
 
       <Button type="submit" className="w-full" disabled={loading}>
         {loading

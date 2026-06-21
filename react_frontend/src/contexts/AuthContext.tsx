@@ -6,6 +6,7 @@ import { createContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { getAlreadyExistsErrors } from "@/utils/errorUtils";
+import { resetLoginFailedAttempts, incrementLoginFailedAttempts } from "@/utils/loginAttempts";
 
 let globalLogout: (() => void) | null = null;
 export const getGlobalLogout = () => globalLogout;
@@ -81,9 +82,9 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     localStorage.setItem("accessToken", accessToken);
   };
 
-  const login = async ({ email, password }: LoginRequest) => {
+  const login = async ({ email, password, recaptcha }: LoginRequest) => {
     try {
-      const response = await loginService({ email, password });
+      const response = await loginService({ email, password, recaptcha });
       if (response) {
         // Check if email is verified
         const userInfo = await fetchUserInfo(response.data.access);
@@ -94,6 +95,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           throw new Error("EMAIL_NOT_VERIFIED");
         }
 
+        resetLoginFailedAttempts();
         toast.success("Login successful! Welcome back.");
         handleAuthSuccess(response.data.access, userInfo);
       }
@@ -101,11 +103,17 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (error.message === "EMAIL_NOT_VERIFIED") {
         throw error;
       }
-      
+
+      incrementLoginFailedAttempts();
       console.error("Login failed:", error);
       const detail = error.response?.data?.detail;
-      if (detail === "No active account found with the given credentials") {
-        toast.error("Account inactive or invalid credentials. Please verify your email address to sign in.");
+      const recaptchaError = error.response?.data?.recaptcha;
+      if (recaptchaError) {
+        toast.error(Array.isArray(recaptchaError) ? recaptchaError[0] : recaptchaError);
+      } else if (detail === "No active account found with the given credentials") {
+        toast.error(
+          "Account inactive or invalid credentials. Please verify your email address to sign in."
+        );
       } else {
         toast.error(detail || "Login failed. Please check your credentials.");
       }
@@ -133,6 +141,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     password,
     confirm_password,
     college,
+    recaptcha,
   }: SignupRequest) => {
     try {
       const response = await signupService({
@@ -144,6 +153,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         password,
         confirm_password,
         college,
+        recaptcha,
       });
       if (response) {
         toast.success("Registration successful! Check your email to verify your account.");
