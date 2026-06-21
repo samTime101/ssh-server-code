@@ -6,7 +6,6 @@ import { createContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { getAlreadyExistsErrors } from "@/utils/errorUtils";
-import { resetLoginFailedAttempts, incrementLoginFailedAttempts } from "@/utils/loginAttempts";
 
 let globalLogout: (() => void) | null = null;
 export const getGlobalLogout = () => globalLogout;
@@ -95,7 +94,6 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           throw new Error("EMAIL_NOT_VERIFIED");
         }
 
-        resetLoginFailedAttempts();
         toast.success("Login successful! Welcome back.");
         handleAuthSuccess(response.data.access, userInfo);
       }
@@ -104,17 +102,10 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         throw error;
       }
 
-      incrementLoginFailedAttempts();
       console.error("Login failed:", error);
       const detail = error.response?.data?.detail;
       const recaptchaError = error.response?.data?.recaptcha;
-      if (recaptchaError) {
-        toast.error(Array.isArray(recaptchaError) ? recaptchaError[0] : recaptchaError);
-      } else if (detail === "No active account found with the given credentials") {
-        toast.error(
-          "Account inactive or invalid credentials. Please verify your email address to sign in."
-        );
-      } else {
+      if (!recaptchaError) {
         toast.error(detail || "Login failed. Please check your credentials.");
       }
       logout();
@@ -164,6 +155,10 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     } catch (error: any) {
       console.error("Registration failed:", error);
+      if (error?.response?.data?.recaptcha) {
+        // Handled inline on the signup form
+        throw error;
+      }
       if (error?.response?.data && typeof error.response.data === "object") {
         const messages = getAlreadyExistsErrors(error.response.data);
         if (messages.length > 0) {
@@ -171,7 +166,6 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           throw error;
         }
       }
-      // Fallback for other errors
       toast.error("Registration failed. Please try again.");
       throw error;
     }

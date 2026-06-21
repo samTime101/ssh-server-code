@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,9 +13,8 @@ import { CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import Modal from "@/components/Modal";
 import { requestPasswordResetService } from "@/services/auth";
 import { toast } from "sonner";
-import RecaptchaField, { type RecaptchaFieldHandle } from "@/components/RecaptchaField";
-import { isRecaptchaConfigured } from "@/config/recaptcha";
-import { shouldShowLoginCaptcha } from "@/utils/loginAttempts";
+import RecaptchaField from "@/components/RecaptchaField";
+import { useRecaptchaGate } from "@/hooks/useRecaptchaGate";
 
 const LoginPage = () => {
   const { login } = useAuth();
@@ -23,15 +22,8 @@ const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [forgotOpen, setForgotOpen] = useState(false);
   const [forgotLoading, setForgotLoading] = useState(false);
-  const [loginRecaptchaToken, setLoginRecaptchaToken] = useState<string | null>(null);
-  const [loginRecaptchaError, setLoginRecaptchaError] = useState<string>();
-  const [showLoginCaptcha, setShowLoginCaptcha] = useState(
-    () => isRecaptchaConfigured && shouldShowLoginCaptcha()
-  );
-  const [forgotRecaptchaToken, setForgotRecaptchaToken] = useState<string | null>(null);
-  const [forgotRecaptchaError, setForgotRecaptchaError] = useState<string>();
-  const loginRecaptchaRef = useRef<RecaptchaFieldHandle>(null);
-  const forgotRecaptchaRef = useRef<RecaptchaFieldHandle>(null);
+  const loginRecaptcha = useRecaptchaGate();
+  const forgotRecaptcha = useRecaptchaGate();
   const {
     register: registerLogin,
     handleSubmit: handleSubmitLogin,
@@ -49,60 +41,50 @@ const LoginPage = () => {
     if (!data.email || !data.password) {
       return;
     }
-    if (showLoginCaptcha && !loginRecaptchaToken) {
-      setLoginRecaptchaError("Please complete the reCAPTCHA verification.");
+    if (!loginRecaptcha.requireRecaptcha()) {
       return;
     }
-    setLoginRecaptchaError(undefined);
     setLoading(true);
     try {
       await login({
         email: data.email,
         password: data.password,
-        recaptcha: loginRecaptchaToken ?? undefined,
+        recaptcha: loginRecaptcha.recaptchaToken ?? undefined,
       });
     } catch (error: any) {
       console.error("Login failed:", error);
-      const recaptchaError = error.response?.data?.recaptcha;
-      if (recaptchaError || shouldShowLoginCaptcha()) {
-        setShowLoginCaptcha(true);
+      if (error.response?.data?.recaptcha) {
+        loginRecaptcha.handleRecaptchaApiError();
       }
-      loginRecaptchaRef.current?.reset();
-      setLoginRecaptchaToken(null);
     } finally {
       setLoading(false);
     }
   };
+
   const onForgotSubmit = async (data: ForgotPasswordRequest) => {
     if (!data.email) {
       return;
     }
-    if (isRecaptchaConfigured && !forgotRecaptchaToken) {
-      setForgotRecaptchaError("Please complete the reCAPTCHA verification.");
+    if (!forgotRecaptcha.requireRecaptcha()) {
       return;
     }
-    setForgotRecaptchaError(undefined);
     setForgotLoading(true);
     try {
       await requestPasswordResetService({
         email: data.email,
-        recaptcha: forgotRecaptchaToken ?? undefined,
+        recaptcha: forgotRecaptcha.recaptchaToken ?? undefined,
       });
       toast.success("If the email exists, a reset link has been sent.");
       resetForgot();
-      forgotRecaptchaRef.current?.reset();
-      setForgotRecaptchaToken(null);
+      forgotRecaptcha.resetRecaptcha();
       setForgotOpen(false);
     } catch (error: any) {
-      const recaptchaError = error.response?.data?.recaptcha;
-      if (recaptchaError) {
-        toast.error(Array.isArray(recaptchaError) ? recaptchaError[0] : recaptchaError);
+      if (error.response?.data?.recaptcha) {
+        forgotRecaptcha.handleRecaptchaApiError();
       } else {
         const errorMessage = error.response?.data?.detail || "Failed to send reset link";
         toast.error(errorMessage);
       }
-      forgotRecaptchaRef.current?.reset();
-      setForgotRecaptchaToken(null);
     } finally {
       setForgotLoading(false);
     }
@@ -168,16 +150,11 @@ const LoginPage = () => {
               Forgot password?
             </Button>
           </div>
-          {showLoginCaptcha && (
+          {loginRecaptcha.showRecaptcha && (
             <RecaptchaField
-              ref={loginRecaptchaRef}
-              onChange={(token) => {
-                setLoginRecaptchaToken(token);
-                if (token) {
-                  setLoginRecaptchaError(undefined);
-                }
-              }}
-              error={loginRecaptchaError}
+              ref={loginRecaptcha.recaptchaRef}
+              onChange={loginRecaptcha.handleRecaptchaChange}
+              error={loginRecaptcha.recaptchaError}
             />
           )}
           <Button type="submit" className="w-full" disabled={loading}>
@@ -211,16 +188,11 @@ const LoginPage = () => {
             />
             {forgotErrors.email && <FormErrorMessage message={forgotErrors.email.message} />}
           </div>
-          {isRecaptchaConfigured && (
+          {forgotRecaptcha.showRecaptcha && (
             <RecaptchaField
-              ref={forgotRecaptchaRef}
-              onChange={(token) => {
-                setForgotRecaptchaToken(token);
-                if (token) {
-                  setForgotRecaptchaError(undefined);
-                }
-              }}
-              error={forgotRecaptchaError}
+              ref={forgotRecaptcha.recaptchaRef}
+              onChange={forgotRecaptcha.handleRecaptchaChange}
+              error={forgotRecaptcha.recaptchaError}
             />
           )}
           <div className="flex justify-end gap-2">
