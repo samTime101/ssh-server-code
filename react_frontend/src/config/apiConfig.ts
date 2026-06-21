@@ -17,6 +17,7 @@ export const API_ENDPOINTS = {
   verifyEmail: "/auth/verify-email/",
   resetPasswordRequest: "/auth/reset-password-request/",
   resetPasswordVerify: "/auth/reset-password-verify/",
+  resetPassword: "/auth/reset-password/",
   resetPhoneNumber: "/auth/reset-phonenumber/",
 
   // Categories

@@ -43,6 +43,12 @@ export interface ResetPhoneNumberForm {
   new_phonenumber: string;
 }
 
+export interface ResetPasswordForm {
+  old_password: string;
+  new_password: string;
+  confirm_password: string;
+}
+
 export interface ForgotPasswordRequest {
   email: string;
   recaptcha?: string;
