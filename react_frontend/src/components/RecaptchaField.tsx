@@ -28,7 +28,7 @@ const RecaptchaField = forwardRef<RecaptchaFieldHandle, RecaptchaFieldProps>(
     }
 
     return (
-      <div className="recaptcha-field relative isolate z-[110] space-y-2 [&_iframe]:pointer-events-auto [&_iframe]:h-[78px] [&_iframe]:w-[304px] [&_iframe]:max-w-none">
+      <div className="recaptcha-field relative isolate z-10 space-y-2 [&_iframe]:pointer-events-auto [&_iframe]:h-[78px] [&_iframe]:w-[304px] [&_iframe]:max-w-none">
         <ReCAPTCHA
           ref={recaptchaRef}
           sitekey={RECAPTCHA_SITE_KEY}
