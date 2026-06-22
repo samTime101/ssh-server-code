@@ -182,13 +182,14 @@ class QuestionViewSet(viewsets.ModelViewSet):
             raise NotFound("Cannot filter both wrong_only and non_attempted questions at the same time.")
 
         queryset = get_questions_by_selection(category_ids, sub_category_ids, wrong_only=wrong_only, user_guid=user_guid, non_attempted=not_attempted)
+        all_selected_questions = list(queryset)
         if not queryset:
             raise NotFound("No questions found for requested criteria.")
         
         page = self.paginate_queryset(queryset)
-        selected_questions = list(page) if page is not None else list(queryset)
+        selected_questions = list(page) if page is not None else all_selected_questions
         
-        submission = Submissions(user_guid=user_guid,selected_questions=selected_questions,attempts=[],status=IN_PROGRESS_STATUS,type="question_bank")
+        submission = Submissions(user_guid=user_guid,selected_questions=all_selected_questions,attempts=[],status=IN_PROGRESS_STATUS,type="question_bank")
         submission.save()
         self.paginator.submission_id = str(submission.id)
         serializer = QuestionPublicSerializer(selected_questions, many=True)
