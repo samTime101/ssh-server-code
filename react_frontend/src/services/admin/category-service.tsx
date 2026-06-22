@@ -29,10 +29,15 @@ export const createCategory = async (
   }
 };
 
-export const fetchCategories = async (page: number = 1, pageSize: number = 10): Promise<GetCategoriesResponse> => {
+export const fetchCategories = async (
+  page: number = 1,
+  pageSize: number = 10
+): Promise<GetCategoriesResponse> => {
   try {
-    const response = await axiosInstance.get(`${API_ENDPOINTS.getCategories}?page=${page}&page_size=${pageSize}`);
-    
+    const response = await axiosInstance.get(
+      `${API_ENDPOINTS.getCategories}?page=${page}&page_size=${pageSize}`
+    );
+
     let pagination = undefined;
     if (response.data && typeof response.data === "object" && "results" in response.data) {
       pagination = {
@@ -67,12 +72,25 @@ export const fetchCategoriesWithHierarchy = async (): Promise<GetCategoriesRespo
 export const updateCategory = async (
   id: string,
   name: string,
-  status?: "approved" | "pending" | "rejected"
-): Promise<{ id: string; name: string; status?: "approved" | "pending" | "rejected" }> => {
+  status?: "approved" | "pending" | "rejected",
+  icon?: string
+): Promise<{
+  id: string;
+  name: string;
+  status?: "approved" | "pending" | "rejected";
+  icon?: string;
+}> => {
   try {
-    const payload: { name: string; status?: "approved" | "pending" | "rejected" } = { name };
+    const payload: {
+      name: string;
+      status?: "approved" | "pending" | "rejected";
+      icon?: string;
+    } = { name };
     if (status) {
       payload.status = status;
+    }
+    if (icon) {
+      payload.icon = icon;
     }
     const response = await axiosInstance.put(`${API_ENDPOINTS.createCategory}${id}/`, payload);
     return response.data;

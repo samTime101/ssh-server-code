@@ -5,6 +5,7 @@ import axiosInstance from "../axios";
 type RawSubcategory = {
   id: string;
   name: string;
+  icon?: string;
   status?: "approved" | "pending" | "rejected";
   question_count?: number;
   category?: string | { id?: string; name?: string };
@@ -14,9 +15,16 @@ type RawSubcategory = {
 
 export async function createSubCategory(
   categoryId: string,
-  subCategoryName: string
+  subCategoryName: string,
+  icon?: string
 ): Promise<CreateSubCategoryResponse> {
-  const categoryData = { category: categoryId, name: subCategoryName };
+  const categoryData: { category: string; name: string; icon?: string } = {
+    category: categoryId,
+    name: subCategoryName,
+  };
+  if (icon) {
+    categoryData.icon = icon;
+  }
   console.log("The category data being sent is ", categoryData);
   try {
     const response = await axiosInstance.post(API_ENDPOINTS.createSubCategory, categoryData);
@@ -52,11 +60,14 @@ export async function getCategories(): Promise<{
   }
 }
 
-export async function fetchSubcategories(page: number = 1, pageSize: number = 10): Promise<import("@/types/category").GetSubCategoriesResponse> {
+export async function fetchSubcategories(
+  page: number = 1,
+  pageSize: number = 10
+): Promise<import("@/types/category").GetSubCategoriesResponse> {
   try {
     const [subcategoriesResponse, categoriesResponse] = await Promise.all([
       axiosInstance.get(`${API_ENDPOINTS.getSubcategories}?page=${page}&page_size=${pageSize}`),
-      axiosInstance.get(`${API_ENDPOINTS.getCategories}?page_size=1000`) // Try to get all categories for mapping
+      axiosInstance.get(`${API_ENDPOINTS.getCategories}?page_size=1000`), // Try to get all categories for mapping
     ]);
 
     const categoryList: Category[] = Array.isArray(categoriesResponse.data)
@@ -91,6 +102,7 @@ export async function fetchSubcategories(page: number = 1, pageSize: number = 10
       return {
         id: sub.id,
         name: sub.name,
+        icon: sub.icon,
         status: sub.status,
         categoryId,
         categoryName,
@@ -99,7 +111,11 @@ export async function fetchSubcategories(page: number = 1, pageSize: number = 10
     });
 
     let pagination = undefined;
-    if (subcategoriesResponse.data && typeof subcategoriesResponse.data === "object" && "results" in subcategoriesResponse.data) {
+    if (
+      subcategoriesResponse.data &&
+      typeof subcategoriesResponse.data === "object" &&
+      "results" in subcategoriesResponse.data
+    ) {
       pagination = {
         count: subcategoriesResponse.data.count,
         total_pages: subcategoriesResponse.data.total_pages,
@@ -121,19 +137,24 @@ export async function updateSubCategory(
   id: string,
   name: string,
   categoryId: string,
-  status?: "approved" | "pending" | "rejected"
+  status?: "approved" | "pending" | "rejected",
+  icon?: string
 ): Promise<any> {
   try {
     const payload: {
       name: string;
       category: string;
       status?: "approved" | "pending" | "rejected";
+      icon?: string;
     } = {
       name,
       category: categoryId,
     };
     if (status) {
       payload.status = status;
+    }
+    if (icon) {
+      payload.icon = icon;
     }
     const response = await axiosInstance.put(`${API_ENDPOINTS.createSubCategory}${id}/`, payload);
     return response.data;

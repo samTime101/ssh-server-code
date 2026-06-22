@@ -1,4 +1,5 @@
 import { Checkbox } from "@/components/ui/checkbox";
+import CategoryIcon from "@/components/CategoryIcon";
 import { useQuestions } from "@/hooks/useQuestions";
 import { ChevronRight } from "lucide-react";
 import { useState } from "react";
@@ -30,40 +31,42 @@ const CategoryList: React.FC<{ category: Category }> = ({ category }) => {
       if (!selectedCategoriesId.includes(category.id)) {
         setSelectedCategoriesId([...selectedCategoriesId, category.id]);
       }
-      const subIds = category.sub_categories?.map(s => s.id) || [];
+      const subIds = category.sub_categories?.map((s) => s.id) || [];
       setSelectedSubCategoryId(selectedSubCategoryId.filter((id: string) => !subIds.includes(id)));
-      
+
       if (!expandedCategories.includes(category.id)) {
         toggleCategoryExpansion(category.id);
       }
     } else {
       setSelectedCategoriesId(selectedCategoriesId.filter((id: string) => id !== category.id));
-      const subIds = category.sub_categories?.map(s => s.id) || [];
+      const subIds = category.sub_categories?.map((s) => s.id) || [];
       setSelectedSubCategoryId(selectedSubCategoryId.filter((id: string) => !subIds.includes(id)));
     }
   };
 
   const onSubCategoryCheckChange = (subCategoryId: string, checked: boolean) => {
-    const subIds = category.sub_categories?.map(s => s.id) || [];
+    const subIds = category.sub_categories?.map((s) => s.id) || [];
     if (checked) {
       const newSubCatIds = [...selectedSubCategoryId, subCategoryId];
       setSelectedSubCategoryId(newSubCatIds);
-      
-      const allSelected = subIds.every(id => newSubCatIds.includes(id));
+
+      const allSelected = subIds.every((id) => newSubCatIds.includes(id));
       if (allSelected && subIds.length > 0) {
         if (!selectedCategoriesId.includes(category.id)) {
           setSelectedCategoriesId([...selectedCategoriesId, category.id]);
         }
-        setSelectedSubCategoryId(newSubCatIds.filter(id => !subIds.includes(id)));
+        setSelectedSubCategoryId(newSubCatIds.filter((id) => !subIds.includes(id)));
       }
     } else {
       if (selectedCategoriesId.includes(category.id)) {
         setSelectedCategoriesId(selectedCategoriesId.filter((id: string) => id !== category.id));
-        const otherSubIds = subIds.filter(id => id !== subCategoryId);
+        const otherSubIds = subIds.filter((id) => id !== subCategoryId);
         const newSelectedSubs = new Set([...selectedSubCategoryId, ...otherSubIds]);
         setSelectedSubCategoryId(Array.from(newSelectedSubs));
       } else {
-        setSelectedSubCategoryId(selectedSubCategoryId.filter((id: string) => id !== subCategoryId));
+        setSelectedSubCategoryId(
+          selectedSubCategoryId.filter((id: string) => id !== subCategoryId)
+        );
       }
     }
   };
@@ -76,8 +79,12 @@ const CategoryList: React.FC<{ category: Category }> = ({ category }) => {
 
   const categoryProgress = calculateProgress(category.attempted_count, category.question_count);
   const isCategoryExpanded = expandedCategories.includes(category.id);
-  
-  const isCategoryChecked = selectedCategoriesId.includes(category.id) || (category.sub_categories && category.sub_categories.length > 0 && category.sub_categories.every(sub => selectedSubCategoryId.includes(sub.id)));
+
+  const isCategoryChecked =
+    selectedCategoriesId.includes(category.id) ||
+    (category.sub_categories &&
+      category.sub_categories.length > 0 &&
+      category.sub_categories.every((sub) => selectedSubCategoryId.includes(sub.id)));
 
   return (
     <li
@@ -95,22 +102,22 @@ const CategoryList: React.FC<{ category: Category }> = ({ category }) => {
               onClick={() => toggleCategoryExpansion(category.id)}
             />
             <Checkbox
-            className="border-input appearance-none w-5 h-5 border-1 cursor-pointer"
+              className="border-input h-5 w-5 cursor-pointer appearance-none border-1"
               id={`category-${category.id}`}
-              
               checked={isCategoryChecked}
               onCheckedChange={onCategoryCheckChange}
             />
             <label
               htmlFor={`category-${category.id}`}
-              className="text-foreground cursor-pointer text-lg font-medium"
+              className="text-foreground flex cursor-pointer items-center gap-2 text-lg font-medium"
             >
+              <CategoryIcon icon={category.icon} />
               {category.name}
             </label>
           </div>
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-3">
-              <div className="bg-gray-300 h-2 w-24 overflow-hidden rounded-full">
+              <div className="h-2 w-24 overflow-hidden rounded-full bg-gray-300">
                 <div
                   className="bg-primary h-full rounded-full transition-all duration-300"
                   style={{ width: `${categoryProgress}%` }}
@@ -153,19 +160,21 @@ const CategoryList: React.FC<{ category: Category }> = ({ category }) => {
                           />
                         )} */}
                           <Checkbox
-                          className="border-input appearance-none w-5 h-5 border-1 cursor-pointer"
+                            className="border-input h-5 w-5 cursor-pointer appearance-none border-1"
                             id={`subcategory-${subCategory.id}`}
-                            
                             checked={
                               selectedCategoriesId.includes(category.id) ||
                               selectedSubCategoryId.includes(subCategory.id)
                             }
-                            onCheckedChange={(checked) => onSubCategoryCheckChange(subCategory.id, !!checked)}
+                            onCheckedChange={(checked) =>
+                              onSubCategoryCheckChange(subCategory.id, !!checked)
+                            }
                           />
                           <label
                             htmlFor={`subcategory-${subCategory.id}`}
-                            className="text-foreground cursor-pointer font-medium"
+                            className="text-foreground flex cursor-pointer items-center gap-2 font-medium"
                           >
+                            <CategoryIcon icon={subCategory.icon} size="sm" />
                             {subCategory.name}
                           </label>
                         </div>

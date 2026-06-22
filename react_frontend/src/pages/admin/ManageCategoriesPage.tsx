@@ -11,6 +11,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PenIcon, TrashIcon } from "lucide-react";
 import Modal from "@/components/Modal";
+import CategoryIcon from "@/components/CategoryIcon";
+import IconPicker from "@/components/IconPicker";
 import TableSkeletonLoader from "@/components/TableSkeletonLoader";
 import StatusBadge from "@/components/StatusBadge";
 import Paginator from "@/components/Paginator";
@@ -31,6 +33,8 @@ const ManageCategoriesPage = () => {
     editTarget,
     editName,
     setEditName,
+    editIcon,
+    setEditIcon,
     editStatus,
     setEditStatus,
     isSubmitting,
@@ -52,9 +56,12 @@ const ManageCategoriesPage = () => {
 
       <div className="border-border bg-card mt-4 rounded-md border p-4 shadow-md">
         <Table>
-          <TableCaption>{isLoading ? "" : `Total categories: ${pagination?.count || categories.length}`}</TableCaption>
+          <TableCaption>
+            {isLoading ? "" : `Total categories: ${pagination?.count || categories.length}`}
+          </TableCaption>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-12">Icon</TableHead>
               <TableHead>Name</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Actions</TableHead>
@@ -62,16 +69,19 @@ const ManageCategoriesPage = () => {
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              <TableSkeletonLoader rows={4} columns={3} />
+              <TableSkeletonLoader rows={4} columns={4} />
             ) : categories.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={3} className="text-center">
+                <TableCell colSpan={4} className="text-center">
                   No categories found
                 </TableCell>
               </TableRow>
             ) : (
               categories.map((cat) => (
                 <TableRow key={cat.id} className="text-muted-foreground">
+                  <TableCell>
+                    <CategoryIcon icon={cat.icon} />
+                  </TableCell>
                   <TableCell className="font-semibold">{cat.name}</TableCell>
                   <TableCell>
                     <StatusBadge status={cat.status} />
@@ -122,6 +132,14 @@ const ManageCategoriesPage = () => {
             required
             autoFocus
           />
+          <div>
+            <p className="text-muted-foreground mb-2 text-sm">Icon</p>
+            <IconPicker
+              value={editIcon}
+              onChange={setEditIcon}
+              placeholder="Select category icon"
+            />
+          </div>
           <Select
             value={editStatus}
             onValueChange={(value) => setEditStatus(value as CategoryStatus)}

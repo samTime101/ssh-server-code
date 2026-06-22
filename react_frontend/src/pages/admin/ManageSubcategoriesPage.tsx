@@ -11,6 +11,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PenIcon, TrashIcon } from "lucide-react";
 import Modal from "@/components/Modal";
+import CategoryIcon from "@/components/CategoryIcon";
+import IconPicker from "@/components/IconPicker";
 import TableSkeletonLoader from "@/components/TableSkeletonLoader";
 import StatusBadge from "@/components/StatusBadge";
 import Paginator from "@/components/Paginator";
@@ -31,6 +33,8 @@ const ManageSubcategoriesPage = () => {
     editTarget,
     editName,
     setEditName,
+    editIcon,
+    setEditIcon,
     editStatus,
     setEditStatus,
     isSubmitting,
@@ -57,6 +61,7 @@ const ManageSubcategoriesPage = () => {
           </TableCaption>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-12">Icon</TableHead>
               <TableHead>Name</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Category</TableHead>
@@ -65,16 +70,19 @@ const ManageSubcategoriesPage = () => {
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              <TableSkeletonLoader rows={5} columns={4} />
+              <TableSkeletonLoader rows={5} columns={5} />
             ) : subcategories.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={4} className="text-center">
+                <TableCell colSpan={5} className="text-center">
                   No subcategories found
                 </TableCell>
               </TableRow>
             ) : (
               subcategories.map((sub) => (
                 <TableRow key={sub.id} className="text-muted-foreground">
+                  <TableCell>
+                    <CategoryIcon icon={sub.icon} />
+                  </TableCell>
                   <TableCell className="font-semibold">{sub.name}</TableCell>
                   <TableCell>
                     <StatusBadge status={sub.status} />
@@ -131,6 +139,14 @@ const ManageSubcategoriesPage = () => {
             required
             autoFocus
           />
+          <div>
+            <p className="text-muted-foreground mb-2 text-sm">Icon</p>
+            <IconPicker
+              value={editIcon}
+              onChange={setEditIcon}
+              placeholder="Select subcategory icon"
+            />
+          </div>
           <Select
             value={editStatus}
             onValueChange={(value) => setEditStatus(value as CategoryStatus)}

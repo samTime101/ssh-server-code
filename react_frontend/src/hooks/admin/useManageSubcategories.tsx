@@ -12,6 +12,7 @@ export const useManageSubcategories = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [editTarget, setEditTarget] = useState<SubCategoryDetail | null>(null);
   const [editName, setEditName] = useState("");
+  const [editIcon, setEditIcon] = useState("");
   const [editStatus, setEditStatus] = useState<CategoryStatus>("pending");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -45,12 +46,14 @@ export const useManageSubcategories = () => {
   const openEditModal = (subcategory: SubCategoryDetail) => {
     setEditTarget(subcategory);
     setEditName(subcategory.name);
+    setEditIcon(subcategory.icon ?? "");
     setEditStatus(subcategory.status ?? "pending");
   };
 
   const closeEditModal = () => {
     setEditTarget(null);
     setEditName("");
+    setEditIcon("");
     setEditStatus("pending");
   };
 
@@ -59,7 +62,13 @@ export const useManageSubcategories = () => {
     if (!editTarget || !editName.trim()) return;
     setIsSubmitting(true);
     try {
-      await updateSubCategory(editTarget.id, editName.trim(), editTarget.categoryId, editStatus);
+      await updateSubCategory(
+        editTarget.id,
+        editName.trim(),
+        editTarget.categoryId,
+        editStatus,
+        editIcon || undefined
+      );
       toast.success("Subcategory updated successfully");
       closeEditModal();
       await loadSubcategories();
@@ -101,6 +110,8 @@ export const useManageSubcategories = () => {
     editTarget,
     editName,
     setEditName,
+    editIcon,
+    setEditIcon,
     editStatus,
     setEditStatus,
     isSubmitting,

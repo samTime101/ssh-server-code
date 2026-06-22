@@ -8,6 +8,7 @@ export const useManageCategories = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [editTarget, setEditTarget] = useState<Category | null>(null);
   const [editName, setEditName] = useState("");
+  const [editIcon, setEditIcon] = useState("");
   const [editStatus, setEditStatus] = useState<CategoryStatus>("pending");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -41,12 +42,14 @@ export const useManageCategories = () => {
   const openEditModal = (category: Category) => {
     setEditTarget(category);
     setEditName(category.name);
+    setEditIcon(category.icon ?? "");
     setEditStatus(category.status ?? "pending");
   };
 
   const closeEditModal = () => {
     setEditTarget(null);
     setEditName("");
+    setEditIcon("");
     setEditStatus("pending");
   };
 
@@ -55,7 +58,7 @@ export const useManageCategories = () => {
     if (!editTarget || !editName.trim()) return;
     setIsSubmitting(true);
     try {
-      await updateCategory(editTarget.id, editName.trim(), editStatus);
+      await updateCategory(editTarget.id, editName.trim(), editStatus, editIcon || undefined);
       toast.success("Category updated successfully");
       closeEditModal();
       await loadCategories();
@@ -97,6 +100,8 @@ export const useManageCategories = () => {
     editTarget,
     editName,
     setEditName,
+    editIcon,
+    setEditIcon,
     editStatus,
     setEditStatus,
     isSubmitting,
