@@ -49,6 +49,10 @@ const EditUserPage = () => {
         <h1 className="mb-1 text-2xl font-semibold">Edit User</h1>
         <p className="text-muted-foreground text-sm">Manage user details and roles</p>
       </div>
+      <Button onClick={handleCancel} variant="outline" className="mb-4">
+        ← Back to Users
+      </Button>
+
 
       {/* User Details Form */}
       <form
