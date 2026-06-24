@@ -26,3 +26,14 @@ Mock Exams
 		Pass Mark: 50th percentile (50% or more)
 		Duration: 3 hours
 		Question Type: Four options (A, B, C, D)
+---------------------------------------------------------------------------------------------------------------------------------------
+Question Bank -> show all submissions with scrollable and pagination
+				when user clicks on the question from history just show question, options and description. 
+				
+CEE Practice Set {setNum} -> show all submission with scrollable and pagination
+-> when user clicks on the question from history just show question, options and description.
+-> Show user score with right answer count, wrong answer count, total score (1 mark for each correct answer, 0.25 marks will be deducted for each negative answer.)
+
+Mock Exam -> show all submission with scrollable and pagination
+-> when user clicks on the question from history just show question, options and description.
+-> Show user score with right answer count, wrong answer count, total score (1 mark for each correct answer, 0.25 marks will be deducted for each negative answer.)
