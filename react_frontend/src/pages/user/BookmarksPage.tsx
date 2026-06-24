@@ -1,19 +1,19 @@
 import { useState, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
-import { useQuestions } from "@/hooks/useQuestions";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Bookmark as BookmarkIcon, Eye, Trash2, X } from "lucide-react";
+import { Bookmark as BookmarkIcon, Eye, Lightbulb, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getBookmarks, removeBookmark, getQuestionById } from "@/services/user/bookmark-service";
-import { getSubmissionHistory } from "@/services/user/history-service";
-import axiosInstance from "@/services/axios";
-import { API_ENDPOINTS, getImageUrl } from "@/config/apiConfig";
+import { findAttemptForQuestion } from "@/services/user/history-service";
+import { getImageUrl } from "@/config/apiConfig";
 import type { Attempt } from "@/types/history";
 import type { Question } from "@/types/question";
 import { toast } from "sonner";
 import SingleChoiceOption from "@/components/user/SingleChoiceOption";
 import MultipleChoiceOption from "@/components/user/MultipleChoiceOption";
 import Paginator from "@/components/Paginator";
+import Loader from "@/components/ui/Loader";
+import EditorRenderer from "@/components/EditorRenderer";
 
 interface BookmarkItem {
   question_id: string;
@@ -22,8 +22,6 @@ interface BookmarkItem {
 }
 
 const BookmarksPage = () => {
-  const navigate = useNavigate();
-  const { setSessionQuestions } = useQuestions();
   const [bookmarks, setBookmarks] = useState<BookmarkItem[]>([]);
   const [isLoading, setLoading] = useState(true);
   const [pagination, setPagination] = useState({
@@ -36,6 +34,8 @@ const BookmarksPage = () => {
   const [pageSize, setPageSize] = useState(5);
 
   const [viewingQuestion, setViewingQuestion] = useState<Question | null>(null);
+  const [currentAttempt, setCurrentAttempt] = useState<Attempt | null>(null);
+  const [isLoadingAttempt, setIsLoadingAttempt] = useState(false);
 
   const fetchBookmarks = useCallback(async () => {
     setLoading(true);
@@ -69,24 +69,39 @@ const BookmarksPage = () => {
     }
   }, [currentPage, pageSize]);
 
-  const [historyAttempts, setHistoryAttempts] = useState<Attempt[]>([]);
-
   useEffect(() => {
     fetchBookmarks();
   }, [fetchBookmarks]);
 
   useEffect(() => {
-    const fetchHistory = async () => {
-      try {
-        const historyData = await getSubmissionHistory();
-        const allAttempts = historyData.flatMap((h) => h.attempts || []);
-        setHistoryAttempts(allAttempts);
-      } catch (error) {
-        console.error("Failed to load history:", error);
-      }
-    };
-    fetchHistory();
-  }, []);
+    if (!viewingQuestion) {
+      setCurrentAttempt(null);
+      return;
+    }
+
+    const controller = new AbortController();
+    setIsLoadingAttempt(true);
+    setCurrentAttempt(null);
+
+    findAttemptForQuestion(viewingQuestion.question_text, controller.signal)
+      .then((attempt) => {
+        if (!controller.signal.aborted) {
+          setCurrentAttempt(attempt);
+        }
+      })
+      .catch((error) => {
+        if (error?.name !== "CanceledError" && error?.code !== "ERR_CANCELED") {
+          console.error("Failed to load attempt for bookmark:", error);
+        }
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) {
+          setIsLoadingAttempt(false);
+        }
+      });
+
+    return () => controller.abort();
+  }, [viewingQuestion]);
 
   const handlePageChange = (page: number) => setCurrentPage(page);
 
@@ -118,11 +133,9 @@ const BookmarksPage = () => {
 
   const handleCloseModal = () => {
     setViewingQuestion(null);
+    setCurrentAttempt(null);
   };
 
-  const currentAttempt = viewingQuestion
-    ? historyAttempts.find((a) => a.question_text === viewingQuestion.question_text)
-    : null;
   const isAttempted = !!currentAttempt;
 
   // We assert any because `Question.options` does not explicitly list `is_true` in the current interface,
@@ -136,28 +149,7 @@ const BookmarksPage = () => {
   const attemptSelectedOptionString =
     attemptSelectedOptions.length > 0 ? attemptSelectedOptions[0] : "";
 
-  const handleAttemptQuestionRedirect = async () => {
-    if (viewingQuestion) {
-      try {
-        // Since we need a valid submission ID from the backend to attempt the question,
-        // and we cannot change the backend endpoints, we generate an active session
-        // that encompasses this question by requesting a large page of questions.
-        const response = await axiosInstance.post(
-          `${API_ENDPOINTS.selectQuestions}?page_size=500`,
-          { category_ids: [], sub_category_ids: [] },
-          { params: { wrong_only: false, non_attempted: false } }
-        );
-        const submissionId = response?.data?.submission_id || null;
-
-        setSessionQuestions([viewingQuestion], submissionId);
-        navigate("/userpanel/question");
-        handleCloseModal();
-      } catch (error) {
-        console.error("Error creating session for bookmarked question:", error);
-        toast.error("Failed to start session for this question.");
-      }
-    }
-  };
+  if (isLoading) return <Loader />;
 
   return (
     <div className="space-y-8 p-6">
@@ -273,9 +265,6 @@ const BookmarksPage = () => {
             <div className="bg-background sticky top-0 z-10 flex items-center justify-between border-b px-6 py-4">
               <h2 className="text-lg font-semibold">Question Preview</h2>
               <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm" onClick={handleAttemptQuestionRedirect}>
-                  Go to Question
-                </Button>
                 <Button variant="ghost" size="sm" onClick={handleCloseModal}>
                   <X className="h-5 w-5" />
                 </Button>
@@ -300,7 +289,11 @@ const BookmarksPage = () => {
               </div>
 
               {/* Options */}
-              {isAttempted ? (
+              {isLoadingAttempt ? (
+                <div className="flex justify-center py-8">
+                  <Loader />
+                </div>
+              ) : isAttempted ? (
                 <div className="space-y-4">
                   {viewingQuestion.options.map((option) => (
                     <div key={option.label}>
@@ -323,10 +316,61 @@ const BookmarksPage = () => {
                       )}
                     </div>
                   ))}
+                  {(viewingQuestion.description || viewingQuestion.description_image_url) && (
+                    <div className="border-primary bg-primary/5 rounded-lg border-l-4 p-5">
+                      <div className="flex items-start gap-3">
+                        <div className="mt-1 flex-shrink-0">
+                          <div className="bg-primary flex h-8 w-8 items-center justify-center rounded-full">
+                            <Lightbulb size={18} className="text-primary-foreground" />
+                          </div>
+                        </div>
+                        <div className="flex-1 space-y-2">
+                          <h3 className="text-primary flex items-center text-xl font-bold">
+                            Explanation
+                          </h3>
+                          {viewingQuestion.description && (
+                            <EditorRenderer
+                              data={viewingQuestion.description}
+                              className="text-foreground"
+                            />
+                          )}
+                          {viewingQuestion.description_image_url && (
+                            <div className="flex justify-center">
+                              <img
+                                src={getImageUrl(viewingQuestion.description_image_url)}
+                                alt="Question explanation"
+                                className="max-h-72 w-auto max-w-full rounded-lg object-contain shadow-md"
+                              />
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ) : (
-                <div className="flex flex-col items-center justify-center rounded-md border p-6 text-center shadow-sm">
-                  <p className="text-muted-foreground">This question has not been attempted yet.</p>
+                <div className="space-y-4">
+                  {viewingQuestion.options.map((option) => (
+                    <div key={option.label}>
+                      {viewingQuestion.option_type === "multiple" ? (
+                        <MultipleChoiceOption
+                          option={option}
+                          selectedOptions={[]}
+                          disabled={true}
+                          correctOptions={[]}
+                          handleOptionSelect={() => {}}
+                        />
+                      ) : (
+                        <SingleChoiceOption
+                          option={option}
+                          selectedOption={""}
+                          disabled={true}
+                          correctOptions={[]}
+                          handleOptionSelect={() => {}}
+                        />
+                      )}
+                    </div>
+                  ))}
                 </div>
               )}
 

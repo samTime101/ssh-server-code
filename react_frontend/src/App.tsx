@@ -23,6 +23,7 @@ import AddRolePage from "@/pages/admin/AddRolePage";
 import AddCollegePage from "@/pages/admin/AddCollegePage";
 import ManageQuestionSetsPage from "@/pages/admin/ManageQuestionSetsPage";
 import ApplicationFeedbackPage from "@/pages/admin/ApplicationFeedbackPage";
+import AdminSettingsPage from "@/pages/admin/AdminSettingsPage";
 import QuestionFeedbackPage from "@/pages/admin/QuestionFeedbackPage";
 import ProfilePage from "@/pages/user/ProfilePage";
 import MockExamPage from "@/pages/user/MockExamPage";
@@ -182,6 +183,8 @@ const App = () => {
             <Route path="feedback/application" element={<ApplicationFeedbackPage />} />
             <Route path="feedback/question" element={<QuestionFeedbackPage />} />
           </Route>
+
+          <Route path="settings" element={<AdminSettingsPage />} />
         </Route>
       </Route>
       <Route path="/" element={<RootRedirect />} />

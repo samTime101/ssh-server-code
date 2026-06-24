@@ -222,8 +222,10 @@ const QuestionProvider = ({ children }: { children: React.ReactNode }) => {
     <QuestionContext.Provider
       value={{
         selectedCategoriesId,
+        setSelectedCategoriesId,
         handleCategorySelection,
         selectedSubCategoryId,
+        setSelectedSubCategoryId,
         handleSubCategorySelection,
         selectedSubSubCategoryId,
         handleSubSubCategorySelection,

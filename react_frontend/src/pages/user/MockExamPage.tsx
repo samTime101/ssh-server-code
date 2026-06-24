@@ -12,6 +12,7 @@ import MultipleChoiceOption from "@/components/user/MultipleChoiceOption";
 import SingleChoiceOption from "@/components/user/SingleChoiceOption";
 import { getImageUrl } from "@/config/apiConfig";
 import QuestionReview from "@/components/user/QuestionReview";
+import Loader from "@/components/ui/Loader";
 import ExamResultSummary from "@/components/user/ExamResultSummary";
 
 const MockExamPage = () => {
@@ -95,16 +96,21 @@ const MockExamPage = () => {
     }
   }, [currentQuestion, attempts]);
 
-  const handleNextQuestion = () => {
+  const handleNextQuestion = async () => {
     if (!currentQuestion) return;
 
+    // Require at least one option to be selected before proceeding
     if (
-      !attempts[currentQuestion.id]?.isAttempted &&
-      ((currentQuestion.option_type === "multiple" && selectedOptions.length === 0) ||
-        (currentQuestion.option_type === "single" && selectedOption === ""))
+      (currentQuestion.option_type === "multiple" && selectedOptions.length === 0) ||
+      (currentQuestion.option_type === "single" && selectedOption === "")
     ) {
-      toast.error("Please answer the question before proceeding.");
+      toast.error("Please select at least one option before proceeding.");
       return;
+    }
+
+    // Save the answer before moving to next question
+    if (!attempts[currentQuestion.id]?.isAttempted) {
+      await handleAttemptQuestion(currentQuestion);
     }
 
     const nextIndex = currentIndex + 1;
@@ -128,18 +134,15 @@ const MockExamPage = () => {
           ? [selectedOption]
           : [];
 
-    if (!selected || selected.length === 0) {
-      toast.error("Please select an option before attempting.");
+    // Ensure at least one option is selected
+    if (selected.length === 0) {
+      toast.error("Please select at least one option.");
       return;
     }
 
     try {
       const result = await attemptQuestion(currentSubmissionId, question.id, selected);
-      if (!result) {
-        toast.error("Failed to submit your answer. Please try again.");
-        return;
-      }
-
+      
       setAttempts((prev) => ({
         ...prev,
         [question.id]: {
@@ -179,13 +182,7 @@ const MockExamPage = () => {
     return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
   };
 
-  if (isLoading) {
-    return (
-      <div className="bg-background flex min-h-screen items-center justify-center">
-        <p className="text-foreground text-xl font-semibold">Loading your mock exam...</p>
-      </div>
-    );
-  }
+  if (isLoading) return <Loader />;
 
   if (!currentQuestion) {
     return (
@@ -199,20 +196,26 @@ const MockExamPage = () => {
   }
 
   const totalQuestions = questionData.length;
-  const currentAttempt = attempts[currentQuestion.id];
-  const isAttempted = !!currentAttempt?.isAttempted;
 
   if (isExamFinished) {
-    const attemptedQuestionsCount = questionData.filter(
-      (q: Question) => attempts[q.id]?.isAttempted
-    ).length;
-    const correctCount = questionData.filter((q: Question) => attempts[q.id]?.isCorrect).length;
+    let correctCount = 0;
+    let attemptedCount = 0;
+
+    questionData.forEach((q: Question) => {
+      const attempt = attempts[q.id];
+      if (attempt?.isAttempted) {
+        attemptedCount++;
+        if (attempt?.isCorrect) {
+          correctCount++;
+        }
+      }
+    });
 
     return (
       <div className="bg-background min-h-screen pt-12">
         <ExamResultSummary
           totalQuestions={totalQuestions}
-          attemptedQuestionsCount={attemptedQuestionsCount}
+          attemptedQuestionsCount={attemptedCount}
           correctCount={correctCount}
         />
         <div className="mt-8">
@@ -235,11 +238,12 @@ const MockExamPage = () => {
               <div className="flex flex-wrap gap-2">
                 {questionData.map((q: Question, idx: number) => {
                   const isCurrent = currentIndex === idx;
-                  const isAttempted = !!attempts[q.id]?.isAttempted;
+                  const attempt = attempts[q.id];
+                  const isAnswered = attempt?.isAttempted;
                   return (
                     <Button
                       key={q.id}
-                      variant={isCurrent ? "default" : isAttempted ? "secondary" : "outline"}
+                      variant={isCurrent ? "default" : isAnswered ? "secondary" : "outline"}
                       className={`h-10 w-10 shrink-0 rounded-full p-0 font-medium ${
                         isCurrent ? "ring-ring ring-2 ring-offset-2" : ""
                       }`}
@@ -305,8 +309,8 @@ const MockExamPage = () => {
                         option={option}
                         handleOptionSelect={handleOptionSelect}
                         selectedOptions={selectedOptions}
-                        disabled={isAttempted}
-                        correctOptions={currentAttempt?.correctOptions ?? []}
+                        disabled={false}
+                        correctOptions={[]}
                       />
                     ))
                   : currentQuestion.options.map((option) => (
@@ -315,26 +319,20 @@ const MockExamPage = () => {
                         option={option}
                         handleOptionSelect={handleOptionSelect}
                         selectedOption={selectedOption}
-                        disabled={isAttempted}
-                        correctOptions={currentAttempt?.correctOptions ?? []}
+                        disabled={false}
+                        correctOptions={[]}
                       />
                     ))}
               </div>
 
-              <div className="flex justify-end gap-4 pt-6">
-                {!isAttempted ? (
-                  <Button onClick={() => handleAttemptQuestion(currentQuestion)}>
-                    Submit Answer
-                  </Button>
-                ) : (
-                  <Button
-                    onClick={handleNextQuestion}
-                    className="bg-primary text-primary-foreground"
-                  >
-                    {currentIndex + 1 === totalQuestions ? "Finish Exam" : "Next Question"}
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                )}
+              <div className="flex justify-end pt-6">
+                <Button
+                  onClick={handleNextQuestion}
+                  className="bg-primary text-primary-foreground"
+                >
+                  {currentIndex + 1 === totalQuestions ? "Finish Exam" : "Next Question"}
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
               </div>
             </CardContent>
           </Card>

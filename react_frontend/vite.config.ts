@@ -4,11 +4,16 @@ import react from "@vitejs/plugin-react"
 import { defineConfig } from "vite"
 
 // https://vite.dev/config/
-export default defineConfig({
-  plugins: [react(), tailwindcss()],
-  resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "./src"),
+export default defineConfig(({ mode }) => {
+  return {
+    plugins: [react(), tailwindcss()],
+    resolve: {
+      alias: {
+        "@": path.resolve(__dirname, "./src"),
+      },
     },
-  },
+    esbuild: {
+      drop: mode === "production" ? ["console", "debugger"] : [],
+    },
+  }
 })

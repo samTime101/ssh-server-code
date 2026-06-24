@@ -19,6 +19,32 @@ interface PaginatorProps {
   isLoading?: boolean;
 }
 
+const getVisiblePages = (currentPage: number, totalPages: number): (number | "ellipsis")[] => {
+  if (totalPages <= 7) {
+    return Array.from({ length: totalPages }, (_, i) => i + 1);
+  }
+
+  const pages: (number | "ellipsis")[] = [1];
+
+  const start = Math.max(2, currentPage - 1);
+  const end = Math.min(totalPages - 1, currentPage + 1);
+
+  if (start > 2) {
+    pages.push("ellipsis");
+  }
+
+  for (let i = start; i <= end; i++) {
+    pages.push(i);
+  }
+
+  if (end < totalPages - 1) {
+    pages.push("ellipsis");
+  }
+
+  pages.push(totalPages);
+  return pages;
+};
+
 const Paginator: React.FC<PaginatorProps> = ({
   currentPage,
   totalPages,
@@ -39,28 +65,10 @@ const Paginator: React.FC<PaginatorProps> = ({
     }
   };
 
-  const handlePageClick = (page: number) => {
-    onPageChange(page);
-  };
+  const visiblePages = getVisiblePages(currentPage, totalPages);
 
-  const renderPageNumbers = () => {
-    const pages = [];
-    for (let i = 1; i <= totalPages; i++) {
-      pages.push(
-        <Button
-          key={i}
-          variant={i === currentPage ? "default" : "outline"}
-          onClick={() => handlePageClick(i)}
-          disabled={isLoading}
-        >
-          {i}
-        </Button>
-      );
-    }
-    return pages;
-  };
   return (
-    <div className="flex items-center justify-between gap-4 p-4 text-muted-foreground">
+    <div className="text-muted-foreground flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex items-center gap-2 text-sm">
         <span>Show</span>
         <Select
@@ -78,10 +86,12 @@ const Paginator: React.FC<PaginatorProps> = ({
             <SelectItem value="50">50</SelectItem>
           </SelectContent>
         </Select>
-        <span>Page {currentPage}</span>
+        <span>
+          Page {currentPage} of {totalPages || 1}
+        </span>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <Button
           variant="outline"
           size="sm"
@@ -89,10 +99,29 @@ const Paginator: React.FC<PaginatorProps> = ({
           disabled={currentPage <= 1 || isLoading}
         >
           <ChevronLeft size={16} />
-          Previous
+          <span className="hidden sm:inline">Previous</span>
         </Button>
 
-        <div className="flex gap-1">{renderPageNumbers()}</div>
+        <div className="flex flex-wrap gap-1">
+          {visiblePages.map((page, index) =>
+            page === "ellipsis" ? (
+              <span key={`ellipsis-${index}`} className="text-muted-foreground px-2 py-1 text-sm">
+                …
+              </span>
+            ) : (
+              <Button
+                key={page}
+                variant={page === currentPage ? "default" : "outline"}
+                size="sm"
+                onClick={() => onPageChange(page)}
+                disabled={isLoading}
+                className="min-w-9"
+              >
+                {page}
+              </Button>
+            )
+          )}
+        </div>
 
         <Button
           variant="outline"
@@ -100,7 +129,7 @@ const Paginator: React.FC<PaginatorProps> = ({
           onClick={handleNext}
           disabled={currentPage >= totalPages || isLoading}
         >
-          Next
+          <span className="hidden sm:inline">Next</span>
           <ChevronRight size={16} />
         </Button>
       </div>

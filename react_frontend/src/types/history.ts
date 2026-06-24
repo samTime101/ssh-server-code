@@ -36,6 +36,24 @@ export interface PaginatedSubmissionHistory {
   next: string | null;
   previous: string | null;
   results: SubmissionHistoryItem[];
+  total_pages?: number;
+  current_page?: number;
+}
+
+export interface PaginatedSubmissionHistoryResult extends PaginatedSubmissionHistory {
+  total_pages: number;
+  current_page: number;
+}
+
+export interface FetchSubmissionHistoryPageOptions {
+  type?: string;
+  signal?: AbortSignal;
+}
+
+export interface GetSubmissionHistoryOptions {
+  pageSize?: number;
+  maxPages?: number;
+  signal?: AbortSignal;
 }
 
 export type SubmissionHistoryResponse = PaginatedSubmissionHistory | SubmissionHistoryItem[];

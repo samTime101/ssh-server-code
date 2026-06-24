@@ -1,8 +1,12 @@
-import { getSubmissionHistory } from "@/services/user/history-service";
-import { useState, useEffect } from "react";
+import { fetchSubmissionHistoryPage, getSubmissionHistory } from "@/services/user/history-service";
+import type { SubmissionHistoryItem, SubmissionOverview } from "@/types/history";
+import {
+  formatHistoryDateTime,
+  getSubmissionMetrics,
+  getSubmissionOverview,
+} from "@/utils/historyUtils";
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   Table,
   TableBody,
@@ -11,79 +15,127 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import type { SubmissionHistoryItem } from "@/types/history";
-import {
-  formatHistoryDateTime,
-  getSubmissionMetrics,
-  getSubmissionOverview,
-} from "@/utils/historyUtils";
-
+import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import TableSkeletonLoader from "@/components/TableSkeletonLoader";
+import Paginator from "@/components/Paginator";
+import { isAxiosError } from "axios";
 
 const HistoryPage = () => {
   const [submissionHistory, setSubmissionHistory] = useState<SubmissionHistoryItem[]>([]);
-  const [isLoading, setLoading] = useState(true);
+  const [overview, setOverview] = useState<SubmissionOverview>({
+    totalSubmissions: 0,
+    totalAttempts: 0,
+    correctAttempts: 0,
+    incorrectAttempts: 0,
+  });
   const [selectedSubmission, setSelectedSubmission] = useState<SubmissionHistoryItem | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [pagination, setPagination] = useState({ count: 0, total_pages: 0 });
 
   useEffect(() => {
-    async function fetchSubmissionHistory() {
+    const controller = new AbortController();
+
+    const fetchPage = async () => {
+      setIsLoading(true);
       try {
-        const data = await getSubmissionHistory();
-        // Filter submissions with at least one attempt
-        const filtered = data.filter((s) => (s.attempts?.length ?? 0) > 0);
-        setSubmissionHistory(filtered);
+        const data = await fetchSubmissionHistoryPage(currentPage, pageSize, {
+          signal: controller.signal,
+        });
+        setSubmissionHistory(data.results);
+        setPagination({ count: data.count, total_pages: data.total_pages });
       } catch (error) {
-        console.error("Error fetching submission history:", error);
+        if (
+          isAxiosError(error) &&
+          (error.code === "ERR_CANCELED" || error.name === "CanceledError")
+        ) {
+          return;
+        }
+        console.error("Failed to fetch submission history page:", error);
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
-    }
-    fetchSubmissionHistory();
+    };
+
+    fetchPage();
+    return () => controller.abort();
+  }, [currentPage, pageSize]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    const fetchOverview = async () => {
+      try {
+        const all = await getSubmissionHistory(undefined, {
+          pageSize: 50,
+          maxPages: 10,
+          signal: controller.signal,
+        });
+        const withAttempts = all.filter((submission) => submission.attempts.length > 0);
+        setOverview(getSubmissionOverview(withAttempts));
+      } catch (error) {
+        if (
+          isAxiosError(error) &&
+          (error.code === "ERR_CANCELED" || error.name === "CanceledError")
+        ) {
+          return;
+        }
+        console.error("Failed to fetch submission overview:", error);
+      }
+    };
+
+    fetchOverview();
+    return () => controller.abort();
   }, []);
 
-  const { totalSubmissions, totalAttempts, correctAttempts, incorrectAttempts } =
-    getSubmissionOverview(submissionHistory);
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
 
-
+  const handlePageSizeChange = (size: number) => {
+    setPageSize(size);
+    setCurrentPage(1);
+  };
 
   return (
-    <div className="space-y-8 p-6">
-      {/* Top Cards */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="space-y-6 p-6">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <Card>
-          <CardHeader>
-            <CardTitle>Total Submissions</CardTitle>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Total Submissions</CardTitle>
           </CardHeader>
           <CardContent>
-            <span className="text-2xl font-bold">{totalSubmissions}</span>
+            <p className="text-2xl font-bold">{overview.totalSubmissions}</p>
           </CardContent>
         </Card>
         <Card>
-          <CardHeader>
-            <CardTitle>Total Attempts</CardTitle>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Total Attempts</CardTitle>
           </CardHeader>
           <CardContent>
-            <span className="text-2xl font-bold">{totalAttempts}</span>
+            <p className="text-2xl font-bold">{overview.totalAttempts}</p>
           </CardContent>
         </Card>
         <Card>
-          <CardHeader>
-            <CardTitle>Correct</CardTitle>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Correct Attempts</CardTitle>
           </CardHeader>
           <CardContent>
-            <span className="text-2xl font-bold text-green-600">{correctAttempts}</span>
+            <p className="text-2xl font-bold text-green-600">{overview.correctAttempts}</p>
           </CardContent>
         </Card>
         <Card>
-          <CardHeader>
-            <CardTitle>Incorrect</CardTitle>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Incorrect Attempts</CardTitle>
           </CardHeader>
           <CardContent>
-            <span className="text-destructive text-2xl font-bold">{incorrectAttempts}</span>
+            <p className="text-destructive text-2xl font-bold">{overview.incorrectAttempts}</p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Submission Table */}
       <Card>
         <CardHeader>
           <CardTitle>Submission History</CardTitle>
@@ -92,7 +144,7 @@ const HistoryPage = () => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Submission ID</TableHead>
+                <TableHead>#</TableHead>
                 <TableHead>Type</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Started At</TableHead>
@@ -103,50 +155,60 @@ const HistoryPage = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {submissionHistory.map((submission, index) => {
-                const metrics = getSubmissionMetrics(submission);
-                return (
-                  <TableRow
-                    key={submission.submission_id}
-                    className="cursor-pointer"
-                    onClick={() => setSelectedSubmission(submission)}
-                  >
-                    {/* <TableCell className="font-medium">{submission.submission_id}</TableCell> */}
-                    <TableCell className="font-medium">{index + 1}</TableCell>
-                    <TableCell>
-                      <Badge variant="outline">{submission.type || "question_bank"}</Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={submission.status === "submitted" ? "default" : "secondary"}
-                        className={
-                          submission.status === "submitted"
-                            ? "bg-green-100 text-green-700"
-                            : "bg-amber-100 text-amber-700"
-                        }
-                      >
-                        {submission.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{formatHistoryDateTime(submission.started_at)}</TableCell>
-                    <TableCell>{formatHistoryDateTime(submission.submitted_at)}</TableCell>
-                    <TableCell>{metrics.total}</TableCell>
-                    <TableCell className="text-green-600">{metrics.correct}</TableCell>
-                    <TableCell className="text-destructive">{metrics.incorrect}</TableCell>
-                  </TableRow>
-                );
-              })}
+              {isLoading ? (
+                <TableSkeletonLoader rows={6} columns={8} />
+              ) : (
+                submissionHistory.map((submission, index) => {
+                  const metrics = getSubmissionMetrics(submission);
+                  const rowNumber = (currentPage - 1) * pageSize + index + 1;
+                  return (
+                    <TableRow
+                      key={submission.submission_id}
+                      className="cursor-pointer"
+                      onClick={() => setSelectedSubmission(submission)}
+                    >
+                      <TableCell className="font-medium">{rowNumber}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline">{submission.type || "question_bank"}</Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={submission.status === "submitted" ? "default" : "secondary"}
+                          className={
+                            submission.status === "submitted"
+                              ? "bg-green-100 text-green-700"
+                              : "bg-amber-100 text-amber-700"
+                          }
+                        >
+                          {submission.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{formatHistoryDateTime(submission.started_at)}</TableCell>
+                      <TableCell>{formatHistoryDateTime(submission.submitted_at)}</TableCell>
+                      <TableCell>{metrics.total}</TableCell>
+                      <TableCell className="text-green-600">{metrics.correct}</TableCell>
+                      <TableCell className="text-destructive">{metrics.incorrect}</TableCell>
+                    </TableRow>
+                  );
+                })
+              )}
             </TableBody>
           </Table>
-          {isLoading && (
-            <div className="text-muted-foreground py-8 text-center">
-              Loading submission history...
-            </div>
-          )}
           {submissionHistory.length === 0 && !isLoading && (
             <div className="text-muted-foreground py-8 text-center">
               No submission history found.
             </div>
+          )}
+          {!isLoading && pagination.total_pages > 0 && (
+            <Paginator
+              currentPage={currentPage}
+              totalPages={pagination.total_pages}
+              pageSize={pageSize}
+              totalCount={pagination.count}
+              onPageChange={handlePageChange}
+              onPageSizeChange={handlePageSizeChange}
+              isLoading={isLoading}
+            />
           )}
         </CardContent>
       </Card>

@@ -13,6 +13,7 @@ import CategoryList from "./CategoryList";
 import type { Category, GetCategoriesResponse } from "@/types/category";
 import { getCategories, getQuestionsByIds } from "@/services/user/question-service";
 import { getSubmissionHistory } from "@/services/user/history-service";
+import { SUBMISSION_PAGE_SIZE } from "@/utils/historyUtils";
 import { getQuestionBankAnalytics } from "@/services/user/analytics-service";
 import type { QuestionBankAnalytics } from "@/types/analytics";
 import { getQuestionBankProgress } from "@/utils/questionBankUtils";
@@ -24,6 +25,7 @@ import {
   MIN_EXAM_MINUTES,
   MIN_EXAM_QUESTIONS,
 } from "@/utils/examModeUtils";
+import { Skeleton } from "@/components/ui/skeleton";
 
 /*
     Please note that the implementation of sub-sub-categories is currently on hold
@@ -111,7 +113,10 @@ const QuestionBankSection = () => {
 
   const getQuestionBankStartMode = async (): Promise<"resume" | "retry" | "new"> => {
     try {
-      const submissions = await getSubmissionHistory("question_bank");
+      const submissions = await getSubmissionHistory("question_bank", {
+        pageSize: SUBMISSION_PAGE_SIZE,
+        maxPages: 5,
+      });
       const activeSubmission = submissions.find((submission) => {
         return submission.status === "in_progress";
       });
@@ -199,7 +204,6 @@ const QuestionBankSection = () => {
   }, [token]);
 
   const stats = getQuestionBankProgress(analytics);
-
   return (
     <section className="mx-auto flex min-h-full max-w-[1500px] flex-1 flex-col gap-8 p-8">
       {/* Header Section */}
@@ -248,11 +252,11 @@ const QuestionBankSection = () => {
           <div className="mt-4 flex justify-end">
             <label className="flex items-center space-x-2">
               <Checkbox
-                className="h-5 w-5 cursor-pointer appearance-none border-1 border-black"
+                className="h-5 w-5 cursor-pointer appearance-none border-1 border-border"
                 checked={reattemptWrongOnly}
                 onCheckedChange={() => setReattemptWrongOnly(!reattemptWrongOnly)}
               />
-              <span className="text-muted-foreground hero-text">Re-attempt Wrong Only</span>
+              <span className="text-muted-foreground">Re-attempt Wrong Only</span>
             </label>
           </div>
         </div>
@@ -260,7 +264,26 @@ const QuestionBankSection = () => {
         <div className="space-y-4">
           <h3 className="text-foreground mb-4 text-lg font-medium">Select Categories</h3>
           <div className="scrollbar-thin max-h-[250px] overflow-y-auto p-1 pr-2 md:max-h-[350px]">
-            {filteredCategories.length === 0 ? (
+            {categories === undefined ? (
+              <div className="space-y-3">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} className="border-border overflow-hidden rounded-lg border p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <Skeleton className="h-5 w-5" />
+                        <Skeleton className="h-5 w-48" />
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <Skeleton className="h-4 w-16" />
+                      </div>
+                    </div>
+                    <div className="border-border mt-4 border-t pt-4">
+                      <Skeleton className="h-6 w-full" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : filteredCategories.length === 0 ? (
               <p className="text-muted-foreground text-sm">
                 No matching topics found for your search.
               </p>

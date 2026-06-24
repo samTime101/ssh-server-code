@@ -2,12 +2,13 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import axios from "axios";
 import { API_BASE_URL } from "@/config/apiConfig";
 import type { Question } from "@/types/question";
 import MultipleChoiceOption from "@/components/user/MultipleChoiceOption";
 import SingleChoiceOption from "@/components/user/SingleChoiceOption";
+import Loader from "@/components/ui/Loader";
 
 const SharedQuestionPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -47,11 +48,7 @@ const SharedQuestionPage = () => {
   };
 
   if (loading) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <Loader2 className="text-primary h-8 w-8 animate-spin" />
-      </div>
-    );
+    return <Loader />;
   }
 
   if (!question) {

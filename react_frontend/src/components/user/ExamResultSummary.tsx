@@ -1,18 +1,15 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Target, CheckCircle, HelpCircle, BarChart } from "lucide-react";
+import type { ExamResultSummaryProps } from "@/types/exam";
 
-interface ExamResultSummaryProps {
-  totalQuestions: number;
-  attemptedQuestionsCount: number;
-  correctCount: number;
-}
+
 
 const ExamResultSummary = ({
   totalQuestions,
   attemptedQuestionsCount,
   correctCount,
 }: ExamResultSummaryProps) => {
-  const percentage = totalQuestions > 0 ? Math.round((correctCount / totalQuestions) * 100) : 0;
+  const TotalPoints = correctCount + (attemptedQuestionsCount - correctCount) * -0.25;
 
   return (
     <div className="mx-auto max-w-4xl space-y-6 p-6">
@@ -67,8 +64,8 @@ const ExamResultSummary = ({
             <BarChart className="text-primary h-5 w-5" />
           </CardHeader>
           <CardContent>
-            <div className="text-primary text-3xl font-black">{percentage}%</div>
-            <div className="text-primary/70 mt-1 text-sm">Accuracy</div>
+            <div className="text-primary text-3xl font-black">{TotalPoints.toFixed(2)}</div>
+            <div className="text-primary/70 mt-1 text-sm">Total Points</div>
           </CardContent>
         </Card>
       </div>

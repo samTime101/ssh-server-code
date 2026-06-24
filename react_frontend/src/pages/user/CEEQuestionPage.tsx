@@ -3,7 +3,7 @@ import { useQuestions } from "@/hooks/useQuestions";
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { ArrowLeft, ArrowRight, Lightbulb } from "lucide-react";
-import { attemptQuestion } from "@/services/user/question-service";
+import { attemptQuestion, submitSubmission } from "@/services/user/question-service";
 import { toast } from "sonner";
 import type { Question, QuestionAttemptState } from "@/types/question";
 import MultipleChoiceOption from "@/components/user/MultipleChoiceOption";
@@ -12,6 +12,8 @@ import EditorRenderer from "@/components/EditorRenderer";
 import { useNavigate } from "react-router-dom";
 import { getImageUrl } from "@/config/apiConfig";
 import QuestionFeedbackWidget from "@/components/user/QuestionFeedbackWidget";
+import ScoreSummaryModal from "@/components/user/ScoreSummaryModal";
+import { calculateScore } from "@/utils/scoreCalculation";
 
 const CEEQuestionPage = () => {
   const { questionData, currentSubmissionId, resetQuestionSelection } = useQuestions();
@@ -21,6 +23,7 @@ const CEEQuestionPage = () => {
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
   const [selectedOption, setSelectedOption] = useState<string>("");
   const [attempts, setAttempts] = useState<{ [id: string]: QuestionAttemptState }>({});
+  const [showScoreModal, setShowScoreModal] = useState(false);
 
   const currentQuestion: Question | null =
     questionData && questionData.length > 0 ? questionData[currentIndex] || null : null;
@@ -61,9 +64,8 @@ const CEEQuestionPage = () => {
 
     const nextIndex = currentIndex + 1;
     if (!questionData || nextIndex >= questionData.length) {
-      toast.info("You've completed all questions!");
-      resetQuestionSelection();
-      navigate("/userpanel/cee-practice");
+      // All questions completed - submit and show score
+      await handleSubmitTest();
       return;
     }
     setCurrentIndex(nextIndex);
@@ -79,6 +81,47 @@ const CEEQuestionPage = () => {
     resetQuestionSelection();
     navigate("/userpanel/cee-practice");
   };
+
+  const handleSubmitTest = async () => {
+    if (!currentSubmissionId) {
+      toast.error("No active submission found.");
+      return;
+    }
+
+    // Check for unattempted questions
+    const attemptedCount = Object.values(attempts).filter((a) => a.isAttempted).length;
+    const totalQuestions = questionData?.length || 0;
+    
+    if (attemptedCount < totalQuestions) {
+      const unattemptedCount = totalQuestions - attemptedCount;
+      const confirmSubmit = window.confirm(
+        `You have ${unattemptedCount} unattempted question${unattemptedCount > 1 ? "s" : ""}. Are you sure you want to submit?`
+      );
+      if (!confirmSubmit) {
+        return;
+      }
+    }
+
+    try {
+      const result = await submitSubmission(currentSubmissionId);
+      if (result) {
+        toast.success("Test submitted successfully!");
+        setShowScoreModal(true);
+      } else {
+        toast.error("Failed to submit test. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error submitting test:", error);
+      toast.error("An error occurred while submitting the test.");
+    }
+  };
+
+  const handleReturnToHome = () => {
+    setShowScoreModal(false);
+    resetQuestionSelection();
+    navigate("/userpanel/cee-practice");
+  };
+
 
   const handleAttemptQuestion = async (question: Question) => {
     if (!currentSubmissionId) {
@@ -153,8 +196,20 @@ const CEEQuestionPage = () => {
   const currentAttempt = currentQuestion ? attempts[currentQuestion.id] : undefined;
   const isAttempted = !!currentAttempt?.isAttempted;
 
+  // Calculate score data for the modal
+  const scoreData = questionData ? calculateScore(attempts, questionData.length) : null;
+
   return (
     <div className="min-h-screen p-6">
+      {scoreData && (
+        <ScoreSummaryModal
+          isOpen={showScoreModal}
+          onClose={() => setShowScoreModal(false)}
+          scoreData={scoreData}
+          onReturnToHome={handleReturnToHome}
+          // onReviewAnswers={handleReviewAnswers}
+        />
+      )}
       <div className="mx-auto max-w-4xl space-y-6">
         <Button
           variant="outline"
@@ -164,7 +219,19 @@ const CEEQuestionPage = () => {
           <ArrowLeft />
           Back
         </Button>
-        <h1 className="text-foreground text-3xl font-bold">CEE Practice</h1>
+        
+        <div className="flex items-center justify-between">
+          <h1 className="text-foreground text-3xl font-bold">CEE Practice</h1>
+          <div className="flex items-center gap-4">
+            <div className="text-muted-foreground text-sm text-right">
+              <div>Question {currentIndex + 1} of {questionData?.length || 0}</div>
+              <div className="text-xs">
+                Attempted: {Object.values(attempts).filter((a) => a.isAttempted).length} /{" "}
+                {questionData?.length || 0}
+              </div>
+            </div>
+          </div>
+        </div>
 
         <Card className="relative shadow-lg overflow-visible">
           <CardHeader className="pb-4">
@@ -264,34 +331,42 @@ const CEEQuestionPage = () => {
             <p>Previous</p>
           </Button>
 
-          {!isAttempted ? (
-            <Button
-              className="bg-primary hover:bg-primary/90 text-primary-foreground mt-6"
-              onClick={() => handleAttemptQuestion(currentQuestion)}
-              disabled={
-                currentQuestion.option_type === "multiple"
-                  ? selectedOptions.length === 0
-                  : selectedOption === ""
-              }
-            >
-              Attempt
-            </Button>
-          ) : (
-            <Button
-              onClick={handleNextQuestion}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2"
-            >
-              <p>Next</p>
-              <ArrowRight />
-            </Button>
-          )}
+          <div className="flex gap-3">
+            {!isAttempted ? (
+              <Button
+                className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                onClick={() => handleAttemptQuestion(currentQuestion)}
+                disabled={
+                  currentQuestion.option_type === "multiple"
+                    ? selectedOptions.length === 0
+                    : selectedOption === ""
+                }
+              >
+                Attempt
+              </Button>
+            ) : (
+              <>
+                {currentIndex < questionData.length - 1 ? (
+                  <Button
+                    onClick={handleNextQuestion}
+                    className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2"
+                  >
+                    <p>Next</p>
+                    <ArrowRight />
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={handleSubmitTest}
+                    className="bg-green-600 hover:bg-green-700 text-white px-6 py-2"
+                  >
+                    Submit Test
+                  </Button>
+                )}
+              </>
+            )}
+          </div>
         </div>
 
-        <div className="text-center">
-          {/* <Button variant="destructive" size="lg" className="px-8 py-3" onClick={handleBack}>
-            Cancel
-          </Button> */}
-        </div>
       </div>
     </div>
   );
