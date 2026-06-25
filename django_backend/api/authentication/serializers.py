@@ -13,9 +13,10 @@ User = get_user_model()
 # Signup ma k liney
 class SignUpSerializer(serializers.ModelSerializer):
     confirm_password = serializers.CharField(write_only=True)
+    recaptcha = ReCaptchaV2Field(write_only=True)
     class Meta:
         model = User
-        fields = ('username', 'password', 'email', 'first_name', 'last_name','phonenumber', 'college', 'confirm_password')
+        fields = ('username', 'password', 'email', 'first_name', 'last_name','phonenumber', 'college', 'confirm_password', 'recaptcha')
         extra_kwargs = { 'password': {'write_only': True} }
     
     def validate(self, data):
@@ -25,6 +26,7 @@ class SignUpSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         validated_data.pop('confirm_password', None)
+        validated_data.pop('recaptcha', None)
         user = User.objects.create_user(**validated_data)
         return user
 
@@ -41,6 +43,7 @@ class EmailVerifySerializer(serializers.Serializer):
 
 class ResetPasswordSerializer(serializers.Serializer):
     email = serializers.EmailField(required=True)
+    recaptcha = ReCaptchaV2Field(write_only=True)
     
     def validate(self, data):
         if User.objects.filter(email=data['email']).first() is None:

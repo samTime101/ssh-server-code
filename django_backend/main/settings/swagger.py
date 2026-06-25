@@ -6,6 +6,19 @@ SPECTACULAR_SETTINGS = {
 ## June 8, 2026 Ishan Updhyay
 - Added end point for comments tree `/api/comments/tree/` to retrieve comments in a tree structure.
 - Added comment creation and deletion end points.
+
+## June 6, 2026
+- Captcha added to signin endpoint.
+    
+## June 5, 2026
+- Added `submission_label` field in SubmissionsSerializer to provide a human-readable label for the submission type, improving clarity in API responses.    
+- Not sending JWT tokens to unverified users
+- `auth/verify-email-request/` for sending email verification link to users who haven't verified their email yet.
+- Added pagination to subcategories and categories endpoints.
+
+## June 2, 2026
+- Added QuestionFeedback model to allow users to submit feedback for individual questions.
+
 ## June 2, 2026
 - Added QuestionFeedback model to allow users to submit feedback for individual questions.
 

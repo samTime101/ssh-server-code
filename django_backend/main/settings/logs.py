@@ -36,7 +36,7 @@ LOGGING = {
         "django.request": {
             "handlers": ["file", "console"],
             "level": "ERROR",
-            "propagate": False,
+            "propagate": True,
         },
     },
 }

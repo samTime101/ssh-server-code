@@ -14,12 +14,14 @@ connect(host=mongo_uri)
 class Category(TimeStampedDocument):
     name = StringField(required=True, unique=True)
     status = StringField(required=True, choices=QUESTION_STATUSES, default=APPROVED_STATUS)
+    icon_code = StringField(required=False)
     meta = {'collection': 'categories'}
 
 class SubCategory(TimeStampedDocument):
     name = StringField(required=True, unique=True)
     category = ReferenceField(Category, required=True, reverse_delete_rule=CASCADE)
     status = StringField(required=True, choices=QUESTION_STATUSES, default=APPROVED_STATUS)
+    icon_code = StringField(required=False)
     meta = {'collection': 'sub_categories','indexes': ['category']}
 
 class Option(EmbeddedDocument):
