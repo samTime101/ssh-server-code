@@ -61,6 +61,13 @@ const LoginPage = () => {
     }
   };
 
+  const completeForgotPassword = () => {
+    toast.success("A reset link has been sent to your email.");
+    resetForgot();
+    forgotRecaptcha.resetRecaptcha();
+    setForgotOpen(false);
+  };
+
   const onForgotSubmit = async (data: ForgotPasswordRequest) => {
     if (!data.email) {
       return;
@@ -74,16 +81,12 @@ const LoginPage = () => {
         email: data.email,
         recaptcha: forgotRecaptcha.recaptchaToken ?? undefined,
       });
-      toast.success("If the email exists, a reset link has been sent.");
-      resetForgot();
-      forgotRecaptcha.resetRecaptcha();
-      setForgotOpen(false);
+      completeForgotPassword();
     } catch (error: any) {
       if (error.response?.data?.recaptcha) {
         forgotRecaptcha.handleRecaptchaApiError();
       } else {
-        const errorMessage = error.response?.data?.detail || "Failed to send reset link";
-        toast.error(errorMessage);
+        completeForgotPassword();
       }
     } finally {
       setForgotLoading(false);
