@@ -73,7 +73,7 @@ export const updateCategory = async (
   id: string,
   name: string,
   status?: "approved" | "pending" | "rejected",
-  icon?: string
+  icon?: string | null
 ): Promise<{
   id: string;
   name: string;
@@ -84,13 +84,13 @@ export const updateCategory = async (
     const payload: {
       name: string;
       status?: "approved" | "pending" | "rejected";
-      icon?: string;
+      icon?: string | null;
     } = { name };
     if (status) {
       payload.status = status;
     }
-    if (icon) {
-      payload.icon = icon;
+    if (icon !== undefined) {
+      payload.icon = icon || null;
     }
     const response = await axiosInstance.put(`${API_ENDPOINTS.createCategory}${id}/`, payload);
     return response.data;

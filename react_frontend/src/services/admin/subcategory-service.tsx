@@ -138,14 +138,14 @@ export async function updateSubCategory(
   name: string,
   categoryId: string,
   status?: "approved" | "pending" | "rejected",
-  icon?: string
+  icon?: string | null
 ): Promise<any> {
   try {
     const payload: {
       name: string;
       category: string;
       status?: "approved" | "pending" | "rejected";
-      icon?: string;
+      icon?: string | null;
     } = {
       name,
       category: categoryId,
@@ -153,8 +153,8 @@ export async function updateSubCategory(
     if (status) {
       payload.status = status;
     }
-    if (icon) {
-      payload.icon = icon;
+    if (icon !== undefined) {
+      payload.icon = icon || null;
     }
     const response = await axiosInstance.put(`${API_ENDPOINTS.createSubCategory}${id}/`, payload);
     return response.data;

@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Check, ChevronsUpDown } from "lucide-react";
+import { Ban, Check, ChevronsUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Command,
@@ -13,6 +13,8 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { CATEGORY_ICON_OPTIONS } from "@/constants/categoryIcons";
 import { cn } from "@/lib/utils";
+
+const NONE_ICON_VALUE = "";
 
 interface IconPickerProps {
   value?: string;
@@ -36,6 +38,8 @@ const IconPicker = ({
     [value]
   );
 
+  const isNoneSelected = value === NONE_ICON_VALUE;
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -48,7 +52,12 @@ const IconPicker = ({
           className={cn("w-full justify-between", className)}
         >
           <span className="flex items-center gap-2 truncate">
-            {selectedOption ? (
+            {isNoneSelected ? (
+              <>
+                <Ban className="h-4 w-4 shrink-0" />
+                <span className="truncate">None</span>
+              </>
+            ) : selectedOption ? (
               <>
                 <FontAwesomeIcon icon={selectedOption.icon} className="h-4 w-4 shrink-0" />
                 <span className="truncate">{selectedOption.label}</span>
@@ -66,6 +75,19 @@ const IconPicker = ({
           <CommandList>
             <CommandEmpty>No icon found.</CommandEmpty>
             <CommandGroup>
+              <CommandItem
+                value="none"
+                onSelect={() => {
+                  onChange(NONE_ICON_VALUE);
+                  setOpen(false);
+                }}
+              >
+                <Check
+                  className={cn("h-4 w-4 shrink-0", isNoneSelected ? "opacity-100" : "opacity-0")}
+                />
+                <Ban className="h-4 w-4 shrink-0" />
+                <span className="truncate">None</span>
+              </CommandItem>
               {CATEGORY_ICON_OPTIONS.map((option) => (
                 <CommandItem
                   key={option.key}

@@ -67,7 +67,7 @@ export const useManageSubcategories = () => {
         editName.trim(),
         editTarget.categoryId,
         editStatus,
-        editIcon || undefined
+        editIcon
       );
       toast.success("Subcategory updated successfully");
       closeEditModal();

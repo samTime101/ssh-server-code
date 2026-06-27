@@ -58,7 +58,7 @@ export const useManageCategories = () => {
     if (!editTarget || !editName.trim()) return;
     setIsSubmitting(true);
     try {
-      await updateCategory(editTarget.id, editName.trim(), editStatus, editIcon || undefined);
+      await updateCategory(editTarget.id, editName.trim(), editStatus, editIcon);
       toast.success("Category updated successfully");
       closeEditModal();
       await loadCategories();

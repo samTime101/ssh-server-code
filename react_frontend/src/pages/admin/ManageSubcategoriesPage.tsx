@@ -61,7 +61,6 @@ const ManageSubcategoriesPage = () => {
           </TableCaption>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-12">Icon</TableHead>
               <TableHead>Name</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Category</TableHead>
@@ -70,20 +69,22 @@ const ManageSubcategoriesPage = () => {
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              <TableSkeletonLoader rows={5} columns={5} />
+              <TableSkeletonLoader rows={5} columns={4} />
             ) : subcategories.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center">
+                <TableCell colSpan={4} className="text-center">
                   No subcategories found
                 </TableCell>
               </TableRow>
             ) : (
               subcategories.map((sub) => (
                 <TableRow key={sub.id} className="text-muted-foreground">
-                  <TableCell>
-                    <CategoryIcon icon={sub.icon} />
+                  <TableCell className="font-semibold">
+                    <span className="flex items-center gap-2">
+                      <CategoryIcon icon={sub.icon} size="sm" />
+                      {sub.name}
+                    </span>
                   </TableCell>
-                  <TableCell className="font-semibold">{sub.name}</TableCell>
                   <TableCell>
                     <StatusBadge status={sub.status} />
                   </TableCell>

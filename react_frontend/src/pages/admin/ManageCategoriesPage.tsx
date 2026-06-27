@@ -61,7 +61,6 @@ const ManageCategoriesPage = () => {
           </TableCaption>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-12">Icon</TableHead>
               <TableHead>Name</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Actions</TableHead>
@@ -69,20 +68,22 @@ const ManageCategoriesPage = () => {
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              <TableSkeletonLoader rows={4} columns={4} />
+              <TableSkeletonLoader rows={4} columns={3} />
             ) : categories.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={4} className="text-center">
+                <TableCell colSpan={3} className="text-center">
                   No categories found
                 </TableCell>
               </TableRow>
             ) : (
               categories.map((cat) => (
                 <TableRow key={cat.id} className="text-muted-foreground">
-                  <TableCell>
-                    <CategoryIcon icon={cat.icon} />
+                  <TableCell className="font-semibold">
+                    <span className="flex items-center gap-2">
+                      <CategoryIcon icon={cat.icon} size="sm" />
+                      {cat.name}
+                    </span>
                   </TableCell>
-                  <TableCell className="font-semibold">{cat.name}</TableCell>
                   <TableCell>
                     <StatusBadge status={cat.status} />
                   </TableCell>
