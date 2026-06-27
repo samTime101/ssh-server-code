@@ -28,7 +28,7 @@ class SignupView(APIView):
     serializer_class = SignUpSerializer
     
     def post(self, request):
-        serializer = self.serializer_class(data = request.data)
+        serializer = self.serializer_class(data = request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
         token = create_email_verification_token(user.id)
@@ -72,7 +72,7 @@ class ResetPasswordView(APIView):
     permission_classes = [AllowAny]
     serializer_class = ResetPasswordSerializer
     def post(self, request):
-        serializer = ResetPasswordSerializer(data=request.data)
+        serializer = ResetPasswordSerializer(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
         user = User.objects.get(email=serializer.validated_data['email'])
         token = create_password_reset_token(user.id)
