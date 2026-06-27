@@ -1,19 +1,7 @@
 import axiosInstance from "../axios";
 import { API_ENDPOINTS } from "@/config/apiConfig";
 import type { CreateCategoryResponse, GetCategoriesResponse, Category } from "@/types/category";
-
-const toCategoryList = (raw: unknown): Category[] => {
-  if (Array.isArray(raw)) return raw as Category[];
-  if (raw && typeof raw === "object") {
-    if ("results" in raw && Array.isArray(raw.results)) {
-      return raw.results as Category[];
-    }
-    if ("categories" in raw && Array.isArray(raw.categories)) {
-      return raw.categories as Category[];
-    }
-  }
-  return [];
-};
+import { extractPagination, toCategoryList } from "@/utils/categoryUtils";
 
 export const createCategory = async (
   //TODO: Confirm the type of categoryName
@@ -38,18 +26,9 @@ export const fetchCategories = async (
       `${API_ENDPOINTS.getCategories}?page=${page}&page_size=${pageSize}`
     );
 
-    let pagination = undefined;
-    if (response.data && typeof response.data === "object" && "results" in response.data) {
-      pagination = {
-        count: response.data.count,
-        total_pages: response.data.total_pages,
-        current_page: response.data.current_page,
-      };
-    }
-
     return {
       categories: toCategoryList(response.data),
-      pagination,
+      pagination: extractPagination(response.data),
     };
   } catch (error) {
     console.error("Failed to fetch categories:", error);

@@ -1,14 +1,16 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { API_ENDPOINTS } from "@/config/apiConfig";
-import { getCategories, createSubCategory } from "@/services/admin/subcategory-service";
+import { fetchCategoriesWithHierarchy } from "@/services/admin/category-service";
+import { createSubCategory } from "@/services/admin/subcategory-service";
 import { createSubSubCategory } from "@/services/admin/subsubcategory-service";
+import type { Category } from "@/types/category";
 import axiosInstance from "@/services/axios";
 
 export const useCreateCategory = () => {
   const { token } = useAuth();
 
-  const [categories, setCategories] = useState<any[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [categoryName, setCategoryName] = useState("");
   const [categoryIcon, setCategoryIcon] = useState("");
   const [subCategoryName, setSubCategoryName] = useState("");
@@ -21,7 +23,7 @@ export const useCreateCategory = () => {
   const [messageType, setMessageType] = useState<"success" | "error" | "">("");
 
   const refreshCategories = async () => {
-    const data = await getCategories();
+    const data = await fetchCategoriesWithHierarchy();
     setCategories(data.categories);
   };
 

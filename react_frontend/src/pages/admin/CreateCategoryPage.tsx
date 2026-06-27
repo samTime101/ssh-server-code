@@ -155,8 +155,8 @@ const CreateCategoryPage = () => {
                 </SelectTrigger>
                 <SelectContent>
                   {categories.map((cat) => (
-                    <SelectItem key={cat.categoryId} value={cat.categoryId}>
-                      {cat.categoryName}
+                    <SelectItem key={cat.id} value={cat.id}>
+                      {cat.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -226,13 +226,13 @@ const CreateCategoryPage = () => {
                   <SelectValue placeholder="-- Select Subcategory --" />
                 </SelectTrigger>
                 <SelectContent>
-                  {categories
-                    .find((cat) => cat.categoryId === selectedCategoryId)
-                    ?.subCategories?.map((subcat: any) => (
-                      <SelectItem key={subcat.subCategoryId} value={subcat.subCategoryId}>
-                        {subcat.subCategoryName}
-                      </SelectItem>
-                    ))}
+                  {(
+                    categories.find((cat) => cat.id === selectedCategoryId)?.sub_categories ?? []
+                  ).map((subcat) => (
+                    <SelectItem key={subcat.id} value={subcat.id}>
+                      {subcat.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
