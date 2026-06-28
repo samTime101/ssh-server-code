@@ -145,7 +145,7 @@ const HistoryPage = () => {
             <TableHeader>
               <TableRow>
                 <TableHead>#</TableHead>
-                <TableHead>Type</TableHead>
+                <TableHead>Submission</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Started At</TableHead>
                 <TableHead>Submitted At</TableHead>
@@ -169,7 +169,7 @@ const HistoryPage = () => {
                     >
                       <TableCell className="font-medium">{rowNumber}</TableCell>
                       <TableCell>
-                        <Badge variant="outline">{submission.type || "question_bank"}</Badge>
+                        <Badge variant="outline">{submission.submission_label || "-"}</Badge>
                       </TableCell>
                       <TableCell>
                         <Badge
