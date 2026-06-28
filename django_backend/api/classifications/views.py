@@ -6,11 +6,13 @@ from core.permissions.permissions import IsAdminUser
 from core.filters.status import filter_status
 from core.filters.category import filter_status_category
 from drf_spectacular.utils import extend_schema_view, extend_schema
+from core.pagination import StandardResultsSetPagination
 
 @extend_schema_view(list=extend_schema(parameters=[FilterSerializer]))
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
+    pagination_class = StandardResultsSetPagination
     http_method_names = ['post', 'get', 'put', 'delete']
     permission_classes = [IsAdminUser]
     lookup_field = 'id'
@@ -24,6 +26,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
 class SubCategoryViewSet(viewsets.ModelViewSet):
     queryset = SubCategory.objects.all()
     serializer_class = SubCategorySerializer
+    pagination_class = StandardResultsSetPagination
     http_method_names = ['get', 'post', 'put', 'delete']
     permission_classes = [IsAdminUser]
     lookup_field = 'id'

@@ -48,6 +48,7 @@ def get_heirarchy(user_guid: str | None = None) -> dict:
                 "name": subcategory.name,
                 "question_count": question_count,
                 "attempted_count": attempted_count,
+                "icon": subcategory.icon,
             })
 
         category_list.append({
@@ -56,6 +57,7 @@ def get_heirarchy(user_guid: str | None = None) -> dict:
             "question_count": category_question_count,
             "attempted_count": category_attempted_count,
             "sub_categories": subcategory_list,
+            "icon": category.icon,
         })
 
     hierarchy = {

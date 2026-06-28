@@ -100,21 +100,26 @@ class SubmissionsSerializer(me_serializers.DocumentSerializer):
     submission_id = serializers.SerializerMethodField(read_only=True)
     selected_question_ids = serializers.SerializerMethodField(read_only=True)
     attempts = AttemptSerializer(many=True)
-    # type = serializers.SerializerMethodField(read_only=True)
+    submission_label = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Submissions
-        fields = ('submission_id','user_guid','selected_question_ids','attempts','status','started_at','submitted_at','type')
+        fields = ('submission_id','user_guid','selected_question_ids','attempts','status','started_at','submitted_at','type','submission_label',)
+        extra_kwargs = {'user_guid': {'read_only': True},'attempts': {'read_only': True},'status': {'read_only': True}, 'started_at': {'read_only': True}, 'submitted_at': {'read_only': True}, 'type': {'read_only': True}}
 
     def get_submission_id(self, obj):
         return str(obj.id)
 
     def get_selected_question_ids(self, obj):
         return [str(question.id) for question in obj.selected_questions if question]
-    
-    # method bata garda
-    # def get_type(self, obj):
-    #     return obj.type
+
+    def get_submission_label(self, obj):
+        if obj.type == "question_bank":
+            return "Question Bank"
+        if obj.type.startswith("set_"):
+            label = obj.type.removeprefix("set_").replace("_", " ").strip()
+            return label or "Question Set"
+        return obj.type.replace("_", " ").title()
 
 class SubmissionResponseSerializer(me_serializers.EmbeddedDocumentSerializer):
     detail = serializers.CharField(default="Submission recorded successfully")
