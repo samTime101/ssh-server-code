@@ -1,5 +1,5 @@
 from django.urls import path, include
-from .views import SignupView,EmailVerifyView,VerifyEmailRequestView,ResetPasswordView,ResetPhoneNumberView,PasswordResetVerifyView,VerifiedTokenObtainPairView
+from .views import *
 from rest_framework_simplejwt.views import TokenRefreshView
 
 urlpatterns = [
@@ -7,8 +7,9 @@ urlpatterns = [
     path('auth/signin/', VerifiedTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('auth/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('auth/verify-email/<str:token>/', EmailVerifyView.as_view(), name='email_verify'),
-    path('auth/verify-email-request/', VerifyEmailRequestView.as_view(), name='email_verify_request'),
-    path('auth/reset-password-request/', ResetPasswordView.as_view(), name='reset_password_request'),
-    path('auth/reset-password-verify/<str:token>/', PasswordResetVerifyView.as_view(), name='reset_password_verify'),
-    path('auth/reset-phonenumber/', ResetPhoneNumberView.as_view(), name='reset_phonenumber'),
+    path('auth/verify-email-request/', EmailVerifyRequestView.as_view(), name='email_verify_request'),
+    path('auth/forgot-password-request/', ForgotPasswordView.as_view(), name='forgot_password_request'),
+    path('auth/forgot-password-verify/<str:token>/', ForgotPasswordVerifyView.as_view(), name='reset_password_verify'),
+    path('auth/change-password/', PasswordChangeView.as_view(), name='change_password'),
+    path('auth/change-phonenumber/', PhoneNumberChangeView.as_view(), name='change_phonenumber'),
 ]

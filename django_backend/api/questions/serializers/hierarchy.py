@@ -8,7 +8,7 @@ class HierarchySubCategorySerializer(me_serializers.DocumentSerializer):
     id = serializers.CharField()
     class Meta:
         model = SubCategory
-        fields = ('id','question_count','attempted_count','name')
+        fields = ('id','question_count','attempted_count','name','icon')
         read_only_fields = fields
 
 class HierarchyCategorySerializer(me_serializers.DocumentSerializer):
@@ -18,7 +18,7 @@ class HierarchyCategorySerializer(me_serializers.DocumentSerializer):
     sub_categories = serializers.ListField(child=HierarchySubCategorySerializer())
     class Meta:
         model = Category
-        fields = ('id','question_count','attempted_count','sub_categories','name')
+        fields = ('id','question_count','attempted_count','sub_categories','name','icon')
         read_only_fields = fields
 
 class HierarchySerializer(serializers.Serializer):

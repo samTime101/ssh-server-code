@@ -3,6 +3,11 @@ SPECTACULAR_SETTINGS = {
     "TITLE": "MCQ API",
     "DESCRIPTION": """
 
+## June 28, 2026
+- changed the naming conventions of auth endpoints to be more intuitive and consistent. 
+- added icon fields in heirarchy endpoints for categories and subcategories.
+- added `change-password` and `change-phonenumber` endpoints for users to update their password and phone number respectively. 
+
 ## June 8, 2026 Ishan Updhyay
 - Added end point for comments tree `/api/comments/tree/` to retrieve comments in a tree structure.
 - Added comment creation and deletion end points.

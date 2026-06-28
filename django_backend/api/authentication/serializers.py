@@ -41,7 +41,7 @@ class SignupResponseSerializer(serializers.ModelSerializer):
 class EmailVerifySerializer(serializers.Serializer):
     token = serializers.CharField()
 
-class ResetPasswordSerializer(serializers.Serializer):
+class ForgotPasswordSerializer(serializers.Serializer):
     email = serializers.EmailField(required=True)
     recaptcha = ReCaptchaV2Field(write_only=True)
     
@@ -50,7 +50,7 @@ class ResetPasswordSerializer(serializers.Serializer):
             raise serializers.ValidationError("User not found.")
         return data
 
-class ResetPasswordVerifySerializer(serializers.Serializer):
+class ForgotPasswordVerifySerializer(serializers.Serializer):
     new_password = serializers.CharField(required=True)
     confirm_new_password = serializers.CharField(required=True)
 
@@ -59,10 +59,20 @@ class ResetPasswordVerifySerializer(serializers.Serializer):
             raise serializers.ValidationError("New passwords do not match.")
         return data
 
-class ResetPhoneNumberSerializer(serializers.Serializer):
+class PhoneNumberChangeSerializer(serializers.Serializer):
     new_phonenumber = serializers.CharField(required=True)
 
-class VerifyEmailRequestSerializer(serializers.Serializer):
+class PasswordChangeSerializer(serializers.Serializer):
+    old_password = serializers.CharField(required=True)
+    new_password = serializers.CharField(required=True)
+    confirm_new_password = serializers.CharField(required=True)
+
+    def validate(self, data):
+        if data['new_password'] != data['confirm_new_password']:
+            raise serializers.ValidationError("New passwords do not match.")
+        return data
+
+class EmailVerifyRequestSerializer(serializers.Serializer):
     email = serializers.EmailField(required=True)
     def validate_email(self, value):
         user = User.objects.filter(email=value).first()
