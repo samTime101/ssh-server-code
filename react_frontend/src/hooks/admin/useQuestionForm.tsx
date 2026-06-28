@@ -259,6 +259,11 @@ export const useQuestionForm = ({ mode, questionId, onSuccess, onError }: UseQue
     return errors;
   };
 
+  const resetForm = () => {
+    setQuestionFormData(defaultFormData);
+    setSelectedImages({ question: null, description: null });
+  };
+
   const handleCreateQuestionSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const errors = validateForm();
@@ -315,7 +320,7 @@ export const useQuestionForm = ({ mode, questionId, onSuccess, onError }: UseQue
       }
 
       onSuccess?.(response);
-      setQuestionFormData(defaultFormData);
+      resetForm();
     } catch (e: any) {
       console.error(`Failed to ${mode} question:`, e);
       const data = e?.response?.data;
@@ -360,5 +365,7 @@ export const useQuestionForm = ({ mode, questionId, onSuccess, onError }: UseQue
     isSubmitting,
     handleDescriptionChange,
     handleCreateQuestionSubmit,
+
+    resetForm,
   };
 };
