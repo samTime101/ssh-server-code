@@ -55,19 +55,19 @@ const SecuritySection: React.FC = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="confirm_password">Confirm New Password</Label>
+              <Label htmlFor="confirm_new_password">Confirm New Password</Label>
               <Input
-                id="confirm_password"
+                id="confirm_new_password"
                 type="password"
                 placeholder="Confirm your new password"
-                {...passwordReset.register("confirm_password", {
+                {...passwordReset.register("confirm_new_password", {
                   required: "Please confirm your new password",
                   validate: (value, formValues) =>
                     value === formValues.new_password || "Passwords do not match",
                 })}
               />
-              {passwordReset.errors.confirm_password && (
-                <FormErrorMessage message={passwordReset.errors.confirm_password.message} />
+              {passwordReset.errors.confirm_new_password && (
+                <FormErrorMessage message={passwordReset.errors.confirm_new_password.message} />
               )}
             </div>
 

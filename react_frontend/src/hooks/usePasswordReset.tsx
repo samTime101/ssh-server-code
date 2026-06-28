@@ -20,7 +20,7 @@ export const usePasswordReset = () => {
       await resetPasswordService({
         old_password: data.old_password,
         new_password: data.new_password,
-        confirm_password: data.confirm_password,
+        confirm_new_password: data.confirm_new_password,
       });
       toast.success("Password updated successfully!");
       reset();

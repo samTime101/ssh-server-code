@@ -8,7 +8,7 @@ export interface ResetPhoneNumberRequest {
 export interface ResetPasswordRequest {
   old_password: string;
   new_password: string;
-  confirm_password: string;
+  confirm_new_password: string;
 }
 
 export const resetPhoneNumberService = async (data: ResetPhoneNumberRequest) => {
