@@ -13,6 +13,8 @@ import { CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import Modal from "@/components/Modal";
 import { requestPasswordResetService } from "@/services/auth";
 import { toast } from "sonner";
+import RecaptchaField from "@/components/RecaptchaField";
+import { useRecaptchaGate } from "@/hooks/useRecaptchaGate";
 
 const LoginPage = () => {
   const { login } = useAuth();
@@ -20,6 +22,8 @@ const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [forgotOpen, setForgotOpen] = useState(false);
   const [forgotLoading, setForgotLoading] = useState(false);
+  const loginRecaptcha = useRecaptchaGate();
+  const forgotRecaptcha = useRecaptchaGate();
   const {
     register: registerLogin,
     handleSubmit: handleSubmitLogin,
@@ -37,31 +41,53 @@ const LoginPage = () => {
     if (!data.email || !data.password) {
       return;
     }
+    if (!loginRecaptcha.requireRecaptcha()) {
+      return;
+    }
     setLoading(true);
-    // await login({ email: data.email, password: data.password });
-
-    // reset garna ko lagi
     try {
-      await login({ email: data.email, password: data.password });
-    } catch (error) {
+      await login({
+        email: data.email,
+        password: data.password,
+        recaptcha: loginRecaptcha.recaptchaToken ?? undefined,
+      });
+    } catch (error: any) {
       console.error("Login failed:", error);
+      if (error.response?.data?.recaptcha) {
+        loginRecaptcha.handleRecaptchaApiError();
+      }
     } finally {
       setLoading(false);
     }
   };
+
+  const completeForgotPassword = () => {
+    toast.success("A reset link has been sent to your email.");
+    resetForgot();
+    forgotRecaptcha.resetRecaptcha();
+    setForgotOpen(false);
+  };
+
   const onForgotSubmit = async (data: ForgotPasswordRequest) => {
     if (!data.email) {
       return;
     }
+    if (!forgotRecaptcha.requireRecaptcha()) {
+      return;
+    }
     setForgotLoading(true);
     try {
-      await requestPasswordResetService({ email: data.email });
-      toast.success("If the email exists, a reset link has been sent.");
-      resetForgot();
-      setForgotOpen(false);
+      await requestPasswordResetService({
+        email: data.email,
+        recaptcha: forgotRecaptcha.recaptchaToken ?? undefined,
+      });
+      completeForgotPassword();
     } catch (error: any) {
-      const errorMessage = error.response?.data?.detail || "Failed to send reset link";
-      toast.error(errorMessage);
+      if (error.response?.data?.recaptcha) {
+        forgotRecaptcha.handleRecaptchaApiError();
+      } else {
+        completeForgotPassword();
+      }
     } finally {
       setForgotLoading(false);
     }
@@ -122,12 +148,21 @@ const LoginPage = () => {
               type="button"
               variant="link"
               className="px-0 text-sm"
-              onClick={() => setForgotOpen(true)}
+              onClick={() => {
+                loginRecaptcha.hideRecaptcha();
+                setForgotOpen(true);
+              }}
             >
               Forgot password?
             </Button>
           </div>
-          {/* TODO: Signup ma pani */}
+          {loginRecaptcha.showRecaptcha && (
+            <RecaptchaField
+              ref={loginRecaptcha.recaptchaRef}
+              onChange={loginRecaptcha.handleRecaptchaChange}
+              error={loginRecaptcha.recaptchaError}
+            />
+          )}
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? "Signing In..." : "Sign In"}
           </Button>
@@ -141,7 +176,12 @@ const LoginPage = () => {
           </Link>
         </p>
       </CardFooter>
-      <Modal open={forgotOpen} onOpenChange={setForgotOpen} title="Reset your password">
+      <Modal
+        open={forgotOpen}
+        onOpenChange={setForgotOpen}
+        title="Reset your password"
+        contentClassName="overflow-visible"
+      >
         <form className="space-y-4" onSubmit={handleSubmitForgot(onForgotSubmit)}>
           <div className="space-y-2">
             <Label htmlFor="forgot-email">Email</Label>
@@ -159,6 +199,14 @@ const LoginPage = () => {
             />
             {forgotErrors.email && <FormErrorMessage message={forgotErrors.email.message} />}
           </div>
+          {forgotRecaptcha.showRecaptcha && forgotOpen && (
+            <RecaptchaField
+              key="forgot-password-recaptcha"
+              ref={forgotRecaptcha.recaptchaRef}
+              onChange={forgotRecaptcha.handleRecaptchaChange}
+              error={forgotRecaptcha.recaptchaError}
+            />
+          )}
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={() => setForgotOpen(false)}>
               Cancel

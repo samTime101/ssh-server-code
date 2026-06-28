@@ -24,6 +24,7 @@ export interface AuthToken {
 export interface LoginRequest {
   email: string;
   password: string;
+  recaptcha?: string;
 }
 
 export interface SignupRequest {
@@ -35,14 +36,22 @@ export interface SignupRequest {
   password: string;
   confirm_password: string;
   college: string;
+  recaptcha?: string;
 }
 
 export interface ResetPhoneNumberForm {
   new_phonenumber: string;
 }
 
+export interface ResetPasswordForm {
+  old_password: string;
+  new_password: string;
+  confirm_new_password: string;
+}
+
 export interface ForgotPasswordRequest {
   email: string;
+  recaptcha?: string;
 }
 
 export interface ResetPasswordVerifyRequest {

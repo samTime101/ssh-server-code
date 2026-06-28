@@ -7,10 +7,11 @@ import type {
 } from "@/types/auth";
 import axiosInstance from "@/services/axios";
 
-export const loginService = async ({ email, password }: LoginRequest) => {
+export const loginService = async ({ email, password, recaptcha }: LoginRequest) => {
   return axiosInstance.post(API_ENDPOINTS.login, {
     email,
     password,
+    ...(recaptcha ? { recaptcha } : {}),
   });
 };
 
@@ -23,6 +24,7 @@ export const signupService = async ({
   password,
   confirm_password,
   college,
+  recaptcha,
 }: SignupRequest) => {
   return axiosInstance.post(API_ENDPOINTS.signup, {
     email,
@@ -33,6 +35,7 @@ export const signupService = async ({
     password,
     confirm_password,
     college,
+    ...(recaptcha ? { recaptcha } : {}),
   });
 };
 
@@ -40,9 +43,10 @@ export const verifyEmailService = async (token: string) => {
   return axiosInstance.get(`${API_ENDPOINTS.verifyEmail}${token}/`);
 };
 
-export const requestPasswordResetService = async ({ email }: ForgotPasswordRequest) => {
+export const requestPasswordResetService = async ({ email, recaptcha }: ForgotPasswordRequest) => {
   return axiosInstance.post(API_ENDPOINTS.resetPasswordRequest, {
     email,
+    ...(recaptcha ? { recaptcha } : {}),
   });
 };
 

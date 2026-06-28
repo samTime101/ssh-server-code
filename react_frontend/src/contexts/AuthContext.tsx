@@ -81,9 +81,9 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     localStorage.setItem("accessToken", accessToken);
   };
 
-  const login = async ({ email, password }: LoginRequest) => {
+  const login = async ({ email, password, recaptcha }: LoginRequest) => {
     try {
-      const response = await loginService({ email, password });
+      const response = await loginService({ email, password, recaptcha });
       if (response) {
         // Check if email is verified
         const userInfo = await fetchUserInfo(response.data.access);
@@ -101,12 +101,11 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (error.message === "EMAIL_NOT_VERIFIED") {
         throw error;
       }
-      
+
       console.error("Login failed:", error);
       const detail = error.response?.data?.detail;
-      if (detail === "No active account found with the given credentials") {
-        toast.error("Account inactive or invalid credentials. Please verify your email address to sign in.");
-      } else {
+      const recaptchaError = error.response?.data?.recaptcha;
+      if (!recaptchaError) {
         toast.error(detail || "Login failed. Please check your credentials.");
       }
       logout();
@@ -133,6 +132,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     password,
     confirm_password,
     college,
+    recaptcha,
   }: SignupRequest) => {
     try {
       const response = await signupService({
@@ -144,6 +144,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         password,
         confirm_password,
         college,
+        recaptcha,
       });
       if (response) {
         toast.success("Registration successful! Check your email to verify your account.");
@@ -154,6 +155,10 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     } catch (error: any) {
       console.error("Registration failed:", error);
+      if (error?.response?.data?.recaptcha) {
+        // Handled inline on the signup form
+        throw error;
+      }
       if (error?.response?.data && typeof error.response.data === "object") {
         const messages = getAlreadyExistsErrors(error.response.data);
         if (messages.length > 0) {
@@ -161,7 +166,6 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           throw error;
         }
       }
-      // Fallback for other errors
       toast.error("Registration failed. Please try again.");
       throw error;
     }

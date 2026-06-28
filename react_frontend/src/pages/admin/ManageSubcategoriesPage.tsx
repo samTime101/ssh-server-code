@@ -11,6 +11,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PenIcon, TrashIcon } from "lucide-react";
 import Modal from "@/components/Modal";
+import CategoryIcon from "@/components/CategoryIcon";
+import IconPicker from "@/components/IconPicker";
 import TableSkeletonLoader from "@/components/TableSkeletonLoader";
 import StatusBadge from "@/components/StatusBadge";
 import Paginator from "@/components/Paginator";
@@ -31,6 +33,8 @@ const ManageSubcategoriesPage = () => {
     editTarget,
     editName,
     setEditName,
+    editIcon,
+    setEditIcon,
     editStatus,
     setEditStatus,
     isSubmitting,
@@ -75,7 +79,12 @@ const ManageSubcategoriesPage = () => {
             ) : (
               subcategories.map((sub) => (
                 <TableRow key={sub.id} className="text-muted-foreground">
-                  <TableCell className="font-semibold">{sub.name}</TableCell>
+                  <TableCell className="font-semibold">
+                    <span className="flex items-center gap-2">
+                      <CategoryIcon icon={sub.icon} size="sm" />
+                      {sub.name}
+                    </span>
+                  </TableCell>
                   <TableCell>
                     <StatusBadge status={sub.status} />
                   </TableCell>
@@ -131,6 +140,14 @@ const ManageSubcategoriesPage = () => {
             required
             autoFocus
           />
+          <div>
+            <p className="text-muted-foreground mb-2 text-sm">Icon</p>
+            <IconPicker
+              value={editIcon}
+              onChange={setEditIcon}
+              placeholder="Select subcategory icon"
+            />
+          </div>
           <Select
             value={editStatus}
             onValueChange={(value) => setEditStatus(value as CategoryStatus)}

@@ -16,6 +16,8 @@ import { cn } from "@/lib/utils";
 import { Command, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import type { SignupFormProps } from "@/types/signupform";
+import RecaptchaField from "@/components/RecaptchaField";
+import { useRecaptchaGate } from "@/hooks/useRecaptchaGate";
 
 const SignupForm: React.FC<SignupFormProps> = ({ onSuccess, addUser }) => {
   const { register } = useAuth();
@@ -26,6 +28,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSuccess, addUser }) => {
   const [searchInput, setSearchInput] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const recaptcha = useRecaptchaGate();
 
   useEffect(() => {
     async function getColleges() {
@@ -63,6 +66,9 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSuccess, addUser }) => {
     ) {
       return;
     }
+    if (!recaptcha.requireRecaptcha()) {
+      return;
+    }
     setLoading(true);
     try {
       await register({
@@ -74,10 +80,14 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSuccess, addUser }) => {
         last_name: data.last_name,
         phonenumber: data.phonenumber,
         college: data.college,
+        recaptcha: recaptcha.recaptchaToken ?? undefined,
       });
       onSuccess?.();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Registration failed:", error);
+      if (error.response?.data?.recaptcha) {
+        recaptcha.handleRecaptchaApiError();
+      }
     } finally {
       setLoading(false);
     }
@@ -279,6 +289,14 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSuccess, addUser }) => {
         </Popover>
         {errors.college && <FormErrorMessage message={errors.college.message} />}
       </div>
+
+      {recaptcha.showRecaptcha && (
+        <RecaptchaField
+          ref={recaptcha.recaptchaRef}
+          onChange={recaptcha.handleRecaptchaChange}
+          error={recaptcha.recaptchaError}
+        />
+      )}
 
       <Button type="submit" className="w-full" disabled={loading}>
         {loading

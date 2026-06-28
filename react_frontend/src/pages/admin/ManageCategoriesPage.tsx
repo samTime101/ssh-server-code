@@ -11,6 +11,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PenIcon, TrashIcon } from "lucide-react";
 import Modal from "@/components/Modal";
+import CategoryIcon from "@/components/CategoryIcon";
+import IconPicker from "@/components/IconPicker";
 import TableSkeletonLoader from "@/components/TableSkeletonLoader";
 import StatusBadge from "@/components/StatusBadge";
 import Paginator from "@/components/Paginator";
@@ -31,6 +33,8 @@ const ManageCategoriesPage = () => {
     editTarget,
     editName,
     setEditName,
+    editIcon,
+    setEditIcon,
     editStatus,
     setEditStatus,
     isSubmitting,
@@ -52,7 +56,9 @@ const ManageCategoriesPage = () => {
 
       <div className="border-border bg-card mt-4 rounded-md border p-4 shadow-md">
         <Table>
-          <TableCaption>{isLoading ? "" : `Total categories: ${pagination?.count || categories.length}`}</TableCaption>
+          <TableCaption>
+            {isLoading ? "" : `Total categories: ${pagination?.count || categories.length}`}
+          </TableCaption>
           <TableHeader>
             <TableRow>
               <TableHead>Name</TableHead>
@@ -72,7 +78,12 @@ const ManageCategoriesPage = () => {
             ) : (
               categories.map((cat) => (
                 <TableRow key={cat.id} className="text-muted-foreground">
-                  <TableCell className="font-semibold">{cat.name}</TableCell>
+                  <TableCell className="font-semibold">
+                    <span className="flex items-center gap-2">
+                      <CategoryIcon icon={cat.icon} size="sm" />
+                      {cat.name}
+                    </span>
+                  </TableCell>
                   <TableCell>
                     <StatusBadge status={cat.status} />
                   </TableCell>
@@ -122,6 +133,14 @@ const ManageCategoriesPage = () => {
             required
             autoFocus
           />
+          <div>
+            <p className="text-muted-foreground mb-2 text-sm">Icon</p>
+            <IconPicker
+              value={editIcon}
+              onChange={setEditIcon}
+              placeholder="Select category icon"
+            />
+          </div>
           <Select
             value={editStatus}
             onValueChange={(value) => setEditStatus(value as CategoryStatus)}

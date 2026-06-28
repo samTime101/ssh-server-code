@@ -1,10 +1,12 @@
 import { API_ENDPOINTS } from "@/config/apiConfig";
-import type { Category, CreateSubCategoryResponse } from "@/types/category";
+import type { CreateSubCategoryResponse, GetSubCategoriesResponse } from "@/types/category";
+import { extractPagination, toCategoryList } from "@/utils/categoryUtils";
 import axiosInstance from "../axios";
 
 type RawSubcategory = {
   id: string;
   name: string;
+  icon?: string;
   status?: "approved" | "pending" | "rejected";
   question_count?: number;
   category?: string | { id?: string; name?: string };
@@ -14,10 +16,16 @@ type RawSubcategory = {
 
 export async function createSubCategory(
   categoryId: string,
-  subCategoryName: string
+  subCategoryName: string,
+  icon?: string
 ): Promise<CreateSubCategoryResponse> {
-  const categoryData = { category: categoryId, name: subCategoryName };
-  console.log("The category data being sent is ", categoryData);
+  const categoryData: { category: string; name: string; icon?: string } = {
+    category: categoryId,
+    name: subCategoryName,
+  };
+  if (icon) {
+    categoryData.icon = icon;
+  }
   try {
     const response = await axiosInstance.post(API_ENDPOINTS.createSubCategory, categoryData);
 
@@ -28,48 +36,33 @@ export async function createSubCategory(
   }
 }
 
-export async function getCategories(): Promise<{
-  total_question_count: number;
-  categories: Category[];
-}> {
-  try {
-    const response = await axiosInstance.get(`${API_ENDPOINTS.getCategories}`);
-
-    console.log("Raw response data:", response.data);
-
-    const transformedData = {
-      ...response.data,
-      categories: response.data.map((category: any) => ({
-        categoryId: category.id,
-        categoryName: category.name,
-      })),
-    };
-    console.log("The transformed data is ", transformedData);
-    return transformedData;
-  } catch (error) {
-    console.error(error);
-    throw new Error("Failed to fetch categories");
+const toSubcategoryResultList = (raw: unknown): RawSubcategory[] => {
+  if (Array.isArray(raw)) return raw as RawSubcategory[];
+  if (raw && typeof raw === "object") {
+    const data = raw as Record<string, unknown>;
+    if (Array.isArray(data.results)) return data.results as RawSubcategory[];
+    if (Array.isArray(data.subcategories)) return data.subcategories as RawSubcategory[];
   }
-}
+  return [];
+};
 
-export async function fetchSubcategories(page: number = 1, pageSize: number = 10): Promise<import("@/types/category").GetSubCategoriesResponse> {
+export async function fetchSubcategories(
+  page: number = 1,
+  pageSize: number = 10
+): Promise<GetSubCategoriesResponse> {
   try {
     const [subcategoriesResponse, categoriesResponse] = await Promise.all([
       axiosInstance.get(`${API_ENDPOINTS.getSubcategories}?page=${page}&page_size=${pageSize}`),
-      axiosInstance.get(`${API_ENDPOINTS.getCategories}?page_size=1000`) // Try to get all categories for mapping
+      axiosInstance.get(`${API_ENDPOINTS.getCategories}?page_size=1000`),
     ]);
 
-    const categoryList: Category[] = Array.isArray(categoriesResponse.data)
-      ? categoriesResponse.data
-      : (categoriesResponse.data?.categories ?? categoriesResponse.data?.results ?? []);
+    const categoryList = toCategoryList(categoriesResponse.data);
     const categoryNameById = new Map(categoryList.map((cat) => [cat.id, cat.name]));
     const categoryIdByName = new Map(
       categoryList.map((cat) => [cat.name.trim().toLowerCase(), cat.id])
     );
 
-    const rawSubcategories: RawSubcategory[] = Array.isArray(subcategoriesResponse.data)
-      ? subcategoriesResponse.data
-      : (subcategoriesResponse.data?.results ?? subcategoriesResponse.data?.subcategories ?? []);
+    const rawSubcategories = toSubcategoryResultList(subcategoriesResponse.data);
 
     const subcategories = rawSubcategories.map((sub) => {
       const normalizedCategoryName =
@@ -91,6 +84,7 @@ export async function fetchSubcategories(page: number = 1, pageSize: number = 10
       return {
         id: sub.id,
         name: sub.name,
+        icon: sub.icon,
         status: sub.status,
         categoryId,
         categoryName,
@@ -98,18 +92,9 @@ export async function fetchSubcategories(page: number = 1, pageSize: number = 10
       };
     });
 
-    let pagination = undefined;
-    if (subcategoriesResponse.data && typeof subcategoriesResponse.data === "object" && "results" in subcategoriesResponse.data) {
-      pagination = {
-        count: subcategoriesResponse.data.count,
-        total_pages: subcategoriesResponse.data.total_pages,
-        current_page: subcategoriesResponse.data.current_page,
-      };
-    }
-
     return {
       subcategories,
-      pagination,
+      pagination: extractPagination(subcategoriesResponse.data),
     };
   } catch (error) {
     console.error(error);
@@ -121,19 +106,24 @@ export async function updateSubCategory(
   id: string,
   name: string,
   categoryId: string,
-  status?: "approved" | "pending" | "rejected"
+  status?: "approved" | "pending" | "rejected",
+  icon?: string | null
 ): Promise<any> {
   try {
     const payload: {
       name: string;
       category: string;
       status?: "approved" | "pending" | "rejected";
+      icon?: string | null;
     } = {
       name,
       category: categoryId,
     };
     if (status) {
       payload.status = status;
+    }
+    if (icon !== undefined) {
+      payload.icon = icon || null;
     }
     const response = await axiosInstance.put(`${API_ENDPOINTS.createSubCategory}${id}/`, payload);
     return response.data;

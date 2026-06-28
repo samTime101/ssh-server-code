@@ -6,6 +6,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
+import IconPicker from "@/components/IconPicker";
 import { useCreateCategory } from "@/hooks/admin/useCreateCategory";
 
 const CreateCategoryPage = () => {
@@ -13,8 +14,12 @@ const CreateCategoryPage = () => {
     categories,
     categoryName,
     setCategoryName,
+    categoryIcon,
+    setCategoryIcon,
     subCategoryName,
     setSubCategoryName,
+    subCategoryIcon,
+    setSubCategoryIcon,
     subSubCategoryName,
     setSubSubCategoryName,
     selectedCategoryId,
@@ -102,6 +107,20 @@ const CreateCategoryPage = () => {
                 disabled={isLoading}
               />
             </div>
+            <div className="mb-6">
+              <label
+                htmlFor="categoryIcon"
+                className="text-foreground mb-2 block text-sm font-medium"
+              >
+                Icon
+              </label>
+              <IconPicker
+                value={categoryIcon}
+                onChange={setCategoryIcon}
+                disabled={isLoading}
+                placeholder="Select category icon"
+              />
+            </div>
             <div className="flex justify-end">
               <button
                 type="submit"
@@ -136,8 +155,8 @@ const CreateCategoryPage = () => {
                 </SelectTrigger>
                 <SelectContent>
                   {categories.map((cat) => (
-                    <SelectItem key={cat.categoryId} value={cat.categoryId}>
-                      {cat.categoryName}
+                    <SelectItem key={cat.id} value={cat.id}>
+                      {cat.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -158,6 +177,20 @@ const CreateCategoryPage = () => {
                 placeholder="Enter subcategory name"
                 required
                 disabled={isLoading}
+              />
+            </div>
+            <div className="mb-6">
+              <label
+                htmlFor="subCategoryIcon"
+                className="text-foreground mb-2 block text-sm font-medium"
+              >
+                Icon
+              </label>
+              <IconPicker
+                value={subCategoryIcon}
+                onChange={setSubCategoryIcon}
+                disabled={isLoading}
+                placeholder="Select subcategory icon"
               />
             </div>
             <div className="flex justify-end">
@@ -193,13 +226,13 @@ const CreateCategoryPage = () => {
                   <SelectValue placeholder="-- Select Subcategory --" />
                 </SelectTrigger>
                 <SelectContent>
-                  {categories
-                    .find((cat) => cat.categoryId === selectedCategoryId)
-                    ?.subCategories?.map((subcat: any) => (
-                      <SelectItem key={subcat.subCategoryId} value={subcat.subCategoryId}>
-                        {subcat.subCategoryName}
-                      </SelectItem>
-                    ))}
+                  {(
+                    categories.find((cat) => cat.id === selectedCategoryId)?.sub_categories ?? []
+                  ).map((subcat) => (
+                    <SelectItem key={subcat.id} value={subcat.id}>
+                      {subcat.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
