@@ -34,7 +34,7 @@ export const getSubmissionItems = (
         {
           submission_id: "legacy-submission",
           status: "submitted",
-          type: "legacy",
+          submission_label: "Legacy",
           attempts: data,
           started_at: null,
           submitted_at: null,

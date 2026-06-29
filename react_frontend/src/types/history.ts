@@ -9,7 +9,7 @@ export interface Attempt {
 }
 
 export interface SubmissionHistoryItem {
-  type: string;
+  submission_label: string;
   submission_id: string;
   status: string;
   attempts: Attempt[];
