@@ -34,6 +34,7 @@ const EditQuestionForm = ({ selectedQuestion, handleEditSuccess }: EditQuestionF
     handleOptionTypeChange,
     handleAddMoreAnswers,
     handleCorrectAnswerChange,
+    handleRemoveAnswerOption,
     handleOptionTextChange,
     isSubmitting,
     handleCreateQuestionSubmit,
@@ -362,23 +363,25 @@ const EditQuestionForm = ({ selectedQuestion, handleEditSuccess }: EditQuestionF
         <Label>Answer Options</Label>
         <div className="space-y-3">
           {questionFormData.options.map((option, index) => (
-            <div className="flex items-center gap-3" key={option.label}>
-              {questionFormData.optionType === "single" ? (
-                <input
-                  type="radio"
-                  name="correctAnswer"
-                  checked={option.isCorrect}
-                  onChange={(e) => handleCorrectAnswerChange(option.label, e.target.checked)}
-                  className="text-primary focus:ring-ring"
-                />
-              ) : (
-                <input
-                  type="checkbox"
-                  checked={option.isCorrect}
-                  onChange={(e) => handleCorrectAnswerChange(option.label, e.target.checked)}
-                  className="text-primary focus:ring-ring"
-                />
-              )}
+            <div className="flex items-start gap-3" key={option.label}>
+              <div className="mt-2">
+                {questionFormData.optionType === "single" ? (
+                  <input
+                    type="radio"
+                    name="correctAnswer"
+                    checked={option.isCorrect}
+                    onChange={(e) => handleCorrectAnswerChange(option.label, e.target.checked)}
+                    className="text-primary focus:ring-ring"
+                  />
+                ) : (
+                  <input
+                    type="checkbox"
+                    checked={option.isCorrect}
+                    onChange={(e) => handleCorrectAnswerChange(option.label, e.target.checked)}
+                    className="text-primary focus:ring-ring"
+                  />
+                )}
+              </div>
               <div className="text-foreground mt-2 w-8 font-medium">{option.label}</div>
               <Input
                 type="text"
@@ -387,6 +390,15 @@ const EditQuestionForm = ({ selectedQuestion, handleEditSuccess }: EditQuestionF
                 onChange={(e) => handleOptionTextChange(index, e.target.value)}
                 placeholder={`Enter option ${option.label}`}
               />
+              {questionFormData.options.length > 2 && (
+                <Button
+                  onClick={() => handleRemoveAnswerOption(index)}
+                  type="button"
+                  variant="destructive"
+                >
+                  <X />
+                </Button>
+              )}
             </div>
           ))}
         </div>

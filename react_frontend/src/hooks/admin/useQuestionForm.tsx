@@ -152,6 +152,26 @@ export const useQuestionForm = ({ mode, questionId, onSuccess, onError }: UseQue
     );
   };
 
+  const handleRemoveAnswerOption = (index: number) => {
+    if (!questionFormData || questionFormData.options.length <= 2) {
+      toast.error("A question must have at least 2 answer options");
+      return;
+    }
+
+    setQuestionFormData((prev) => {
+      if (!prev) return prev;
+      const updatedOptions = prev.options.filter((_, idx) => idx !== index);
+      const relabeledOptions = updatedOptions.map((option, idx) => ({
+        ...option,
+        label: String.fromCharCode(65 + idx),
+      }));
+      return {
+        ...prev,
+        options: relabeledOptions,
+      };
+    });
+  }
+
   const handleAddCategory = (categoryId: string) => {
     if (categoryId && !questionFormData?.categoryIds.includes(categoryId)) {
       setQuestionFormData((prev) =>
@@ -360,6 +380,7 @@ export const useQuestionForm = ({ mode, questionId, onSuccess, onError }: UseQue
     handleOptionTypeChange,
     handleAddMoreAnswers,
     handleCorrectAnswerChange,
+    handleRemoveAnswerOption,
     handleOptionTextChange,
 
     isSubmitting,

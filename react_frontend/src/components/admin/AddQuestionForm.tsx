@@ -32,6 +32,7 @@ const AddQuestionForm = () => {
     handleOptionTypeChange,
     handleAddMoreAnswers,
     handleCorrectAnswerChange,
+    handleRemoveAnswerOption,
     isSubmitting,
     handleCreateQuestionSubmit,
     handleOptionTextChange,
@@ -436,6 +437,15 @@ const AddQuestionForm = () => {
                     value={option.text}
                     onChange={(e) => handleOptionTextChange(index, e.target.value)}
                   />
+                  {questionFormData.options.length > 2 && (
+                    <Button
+                      onClick={() => handleRemoveAnswerOption(index)}
+                      type="button"
+                      variant="destructive"
+                    >
+                      <X />
+                    </Button>
+                  )}
                 </div>
               ))}
             </div>
