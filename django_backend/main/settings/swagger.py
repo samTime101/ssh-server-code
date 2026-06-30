@@ -3,6 +3,9 @@ SPECTACULAR_SETTINGS = {
     "TITLE": "MCQ API",
     "DESCRIPTION": """
 
+## June 30, 2026
+- Added `subscription` app to manage user subscriptions and related functionalities.    
+
 ## June 28, 2026
 - changed the naming conventions of auth endpoints to be more intuitive and consistent. 
 - added icon fields in heirarchy endpoints for categories and subcategories.

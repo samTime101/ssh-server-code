@@ -62,3 +62,23 @@ class UserRole(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.role.name}"
+
+
+class Subscription(models.Model):
+    plan_name = models.CharField(max_length=50)
+    description = models.TextField()
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    image_url = models.ImageField(upload_to='subscription_images/', null=True, blank=True)
+    number_of_months = models.PositiveIntegerField()
+    status = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ['plan_name']
+
+    def __str__(self):
+        return f"{self.plan_name}"
+    
+    def delete(self, *args, **kwargs):
+        if self.image:
+            self.image.delete(save=False)
+        super().delete(*args, **kwargs)
