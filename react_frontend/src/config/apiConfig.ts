@@ -53,6 +53,9 @@ export const API_ENDPOINTS = {
   // Submissions
   attemptQuestion: "/submissions/",
 
+  // Subscriptions
+  subscriptions: "/subscriptions/",
+
   // Users
   accountInfo: "/users/profile/",
   usersList: "/users/",
