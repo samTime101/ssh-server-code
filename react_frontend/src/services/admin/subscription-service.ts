@@ -1,24 +1,6 @@
-import { API_ENDPOINTS, getImageUrl } from "@/config/apiConfig";
+import { API_ENDPOINTS } from "@/config/apiConfig";
 import axiosInstance from "@/services/axios";
 import type { Subscription, SubscriptionPayload } from "@/types/subscription";
-
-const toSubscriptionList = (data: unknown): Subscription[] => {
-  if (Array.isArray(data)) return data;
-  if (data && typeof data === "object" && "results" in data) {
-    return (data as { results: Subscription[] }).results;
-  }
-  return [];
-};
-
-export const fetchSubscriptions = async (): Promise<Subscription[]> => {
-  try {
-    const response = await axiosInstance.get(API_ENDPOINTS.subscriptions);
-    return toSubscriptionList(response.data);
-  } catch (error) {
-    console.error("Failed to fetch subscriptions:", error);
-    throw new Error("Failed to fetch subscriptions");
-  }
-};
 
 const buildFormData = (payload: SubscriptionPayload, imageFile?: File | null): FormData => {
   const formData = new FormData();
@@ -68,5 +50,3 @@ export const deleteSubscription = async (id: number): Promise<void> => {
     throw new Error("Failed to delete subscription");
   }
 };
-
-export { getImageUrl };

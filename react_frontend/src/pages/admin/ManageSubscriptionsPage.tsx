@@ -15,7 +15,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import Modal from "@/components/Modal";
 import TableSkeletonLoader from "@/components/TableSkeletonLoader";
-import { getImageUrl } from "@/services/admin/subscription-service";
+import { getImageUrl } from "@/config/apiConfig";
 import { useManageSubscriptions } from "@/hooks/admin/useManageSubscriptions";
 import { PenIcon, PlusIcon, TrashIcon } from "lucide-react";
 

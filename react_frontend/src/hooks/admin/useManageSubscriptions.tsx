@@ -3,20 +3,12 @@ import { toast } from "sonner";
 import {
   createSubscription,
   deleteSubscription,
-  fetchSubscriptions,
   updateSubscription,
 } from "@/services/admin/subscription-service";
-import type { Subscription } from "@/types/subscription";
+import { fetchSubscriptions } from "@/services/subscription-service";
+import type { Subscription, SubscriptionFormState } from "@/types/subscription";
 
-type FormState = {
-  plan_name: string;
-  description: string;
-  price: string;
-  number_of_months: string;
-  status: boolean;
-};
-
-const emptyForm = (): FormState => ({
+const emptyForm = (): SubscriptionFormState => ({
   plan_name: "",
   description: "",
   price: "",
@@ -29,7 +21,7 @@ export const useManageSubscriptions = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingSubscription, setEditingSubscription] = useState<Subscription | null>(null);
-  const [form, setForm] = useState<FormState>(emptyForm());
+  const [form, setForm] = useState<SubscriptionFormState>(emptyForm());
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -77,7 +69,10 @@ export const useManageSubscriptions = () => {
     resetForm();
   };
 
-  const updateField = <K extends keyof FormState>(field: K, value: FormState[K]) => {
+  const updateField = <K extends keyof SubscriptionFormState>(
+    field: K,
+    value: SubscriptionFormState[K]
+  ) => {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
