@@ -329,6 +329,7 @@ export const useQuestionPageController = () => {
           isAttempted: true,
           feedback: result?.detail ?? "",
           correctOptions: result?.correct_answers ?? [],
+          actualAnswers: result?.actual_answers ?? [],
           isCorrect: result.is_correct,
         },
       }));

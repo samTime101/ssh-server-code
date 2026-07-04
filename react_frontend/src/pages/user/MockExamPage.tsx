@@ -142,7 +142,7 @@ const MockExamPage = () => {
 
     try {
       const result = await attemptQuestion(currentSubmissionId, question.id, selected);
-      
+
       setAttempts((prev) => ({
         ...prev,
         [question.id]: {
@@ -150,7 +150,8 @@ const MockExamPage = () => {
           selectedOption: question.option_type === "multiple" ? undefined : selected[0],
           isAttempted: true,
           feedback: result?.detail ?? "",
-          correctOptions: result?.correct_answers,
+          correctOptions: result?.correct_answers ?? [],
+          actualAnswers: result?.actual_answers ?? [],
           isCorrect: result?.is_correct,
         },
       }));
@@ -326,10 +327,7 @@ const MockExamPage = () => {
               </div>
 
               <div className="flex justify-end pt-6">
-                <Button
-                  onClick={handleNextQuestion}
-                  className="bg-primary text-primary-foreground"
-                >
+                <Button onClick={handleNextQuestion} className="bg-primary text-primary-foreground">
                   {currentIndex + 1 === totalQuestions ? "Finish Exam" : "Next Question"}
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
