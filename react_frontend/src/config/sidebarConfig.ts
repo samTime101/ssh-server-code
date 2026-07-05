@@ -9,6 +9,7 @@ import {
   List,
   SlidersHorizontal,
   MessageSquare,
+  CreditCard,
 } from "lucide-react";
 import type { NavItem } from "@/types/sidebar";
 
@@ -45,6 +46,12 @@ export const BOTTOM_MENU_ITEMS: NavItem[] = [
     text: "Manage Colleges",
     path: "/admin/add-college",
     allowedPermissions: ["add-college"],
+  },
+  {
+    icon: CreditCard,
+    text: "Subscriptions",
+    path: "/admin/manage-subscriptions",
+    allowedPermissions: ["manage-subscriptions"],
   },
 ];
 

@@ -12,6 +12,7 @@ const ROLE_CONFIG = {
     "question-bank",
     "manage-question-sets",
     "manage-constraints",
+    "manage-subscriptions",
     "application-feedback",
     "analytics",
   ],

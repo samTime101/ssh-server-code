@@ -1,5 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
+import RecaptchaField from "@/components/RecaptchaField";
+import { useRecaptchaGate } from "@/hooks/useRecaptchaGate";
 import { submitFeedbackForm } from "@/services/user/feedback-service";
 
 const LandingPage = () => {
@@ -10,6 +12,7 @@ const LandingPage = () => {
     "idle"
   );
   const [feedbackError, setFeedbackError] = useState("");
+  const feedbackRecaptcha = useRecaptchaGate();
 
   const openFeedbackModal = () => {
     setIsFeedbackOpen(true);
@@ -19,24 +22,33 @@ const LandingPage = () => {
 
   const closeFeedbackModal = () => {
     setIsFeedbackOpen(false);
+    feedbackRecaptcha.hideRecaptcha();
   };
 
   const handleFeedbackSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (!feedbackRecaptcha.requireRecaptcha()) {
+      return;
+    }
     try {
       setFeedbackStatus("submitting");
       setFeedbackError("");
       const result = await submitFeedbackForm({
         email: feedbackEmail,
         feedback: feedbackText,
+        recaptcha: feedbackRecaptcha.recaptchaToken ?? undefined,
       });
       if (!result.ok) {
         setFeedbackStatus("error");
         setFeedbackError(result.error);
+        if (result.recaptchaError) {
+          feedbackRecaptcha.handleRecaptchaApiError();
+        }
         return;
       }
       setFeedbackStatus("success");
       setFeedbackText("");
+      feedbackRecaptcha.resetRecaptcha();
     } catch (error) {
       setFeedbackStatus("error");
       setFeedbackError("We could not submit your feedback. Please try again.");
@@ -217,6 +229,14 @@ const LandingPage = () => {
                 <p className="feedback-message feedback-message-success">
                   Thanks for the feedback. We appreciate it.
                 </p>
+              )}
+
+              {feedbackRecaptcha.showRecaptcha && (
+                <RecaptchaField
+                  ref={feedbackRecaptcha.recaptchaRef}
+                  onChange={feedbackRecaptcha.handleRecaptchaChange}
+                  error={feedbackRecaptcha.recaptchaError}
+                />
               )}
 
               <div className="feedback-modal-footer">

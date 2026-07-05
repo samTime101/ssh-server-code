@@ -1,10 +1,32 @@
-import React from "react";
-import { Clock } from "lucide-react";
+import React, { useEffect, useState } from "react";
 import PlanCard from "@/components/PlanCard";
-import { Badge } from "@/components/ui/badge";
+import CoffeeCard from "@/components/CoffeeCard";
+import Loader from "@/components/ui/Loader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { fetchSubscriptions } from "@/services/subscription-service";
+import type { Subscription } from "@/types/subscription";
 
 const SubscriptionSection: React.FC = () => {
+  const [plans, setPlans] = useState<Subscription[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadPlans = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        setPlans(await fetchSubscriptions(true));
+      } catch {
+        setError("Failed to load subscription plans.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadPlans();
+  }, []);
+
   return (
     <Card className="max-w-4xl">
       <CardHeader className="border-b">
@@ -14,44 +36,21 @@ const SubscriptionSection: React.FC = () => {
         </p>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="bg-muted/50 flex items-center gap-3 rounded-lg border px-4 py-3">
-          <Clock className="text-primary h-5 w-5 shrink-0" />
-          <div>
-            <p className="text-sm font-medium">7-day free trial</p>
-            <p className="text-muted-foreground text-sm">Your trial is currently active</p>
+        {isLoading ? (
+          <div className="flex justify-center py-12">
+            <Loader />
           </div>
-          <Badge className="ml-auto shrink-0">Active</Badge>
-        </div>
-
-        <div className="grid gap-4 md:grid-cols-2">
-          <PlanCard
-            name="7-Day Free Trial"
-            price="Free"
-            period="for 7 days"
-            description="Try everything Vaidix has to offer at no cost."
-            features={[
-              "Full access to question bank",
-              "CEE practice sets",
-              "Mock exams",
-              "Bookmarks and history",
-            ]}
-            isActive
-            buttonLabel="Current plan"
-          />
-          <PlanCard
-            name="6 Months"
-            price="XXX"
-            period="one-time"
-            description="Extended access for serious exam preparation."
-            features={[
-              "Everything in free trial",
-              "6 months uninterrupted access",
-              "Priority support",
-              "All future updates included",
-            ]}
-            buttonLabel="Upgrade to 6 months"
-          />
-        </div>
+        ) : (
+          <>
+            {error && <p className="text-muted-foreground text-center text-sm">{error}</p>}
+            <div className="grid items-stretch gap-4 md:grid-cols-2">
+              {plans.map((plan) => (
+                <PlanCard key={plan.id} subscription={plan} />
+              ))}
+              <CoffeeCard />
+            </div>
+          </>
+        )}
       </CardContent>
     </Card>
   );
