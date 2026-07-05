@@ -1,6 +1,20 @@
 import { API_ENDPOINTS } from "@/config/apiConfig";
 import axiosInstance from "@/services/axios";
-import type { Subscription, SubscriptionPayload } from "@/types/subscription";
+import type {
+  Subscription,
+  SubscriptionListResponse,
+  SubscriptionPayload,
+} from "@/types/subscription";
+
+export const fetchAdminSubscriptions = async (
+  page: number,
+  pageSize: number
+): Promise<SubscriptionListResponse> => {
+  const response = await axiosInstance.get(API_ENDPOINTS.subscriptions, {
+    params: { page, page_size: pageSize },
+  });
+  return response.data as SubscriptionListResponse;
+};
 
 const buildFormData = (payload: SubscriptionPayload, imageFile?: File | null): FormData => {
   const formData = new FormData();

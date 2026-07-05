@@ -3,9 +3,9 @@ import { toast } from "sonner";
 import {
   createSubscription,
   deleteSubscription,
+  fetchAdminSubscriptions,
   updateSubscription,
 } from "@/services/admin/subscription-service";
-import { fetchSubscriptions } from "@/services/subscription-service";
 import type { Subscription, SubscriptionFormState } from "@/types/subscription";
 
 const emptyForm = (): SubscriptionFormState => ({
@@ -24,20 +24,42 @@ export const useManageSubscriptions = () => {
   const [form, setForm] = useState<SubscriptionFormState>(emptyForm());
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [pagination, setPagination] = useState({
+    count: 0,
+    total_pages: 0,
+    next: null as string | null,
+    previous: null as string | null,
+  });
 
   useEffect(() => {
     loadSubscriptions();
-  }, []);
+  }, [currentPage, pageSize]);
 
   const loadSubscriptions = async () => {
     setIsLoading(true);
     try {
-      setSubscriptions(await fetchSubscriptions());
+      const data = await fetchAdminSubscriptions(currentPage, pageSize);
+      setSubscriptions(data.results);
+      setPagination({
+        count: data.count,
+        total_pages: data.total_pages,
+        next: data.next,
+        previous: data.previous,
+      });
     } catch {
       toast.error("Failed to load subscriptions");
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handlePageChange = (page: number) => setCurrentPage(page);
+
+  const handlePageSizeChange = (newPageSize: number) => {
+    setPageSize(newPageSize);
+    setCurrentPage(1);
   };
 
   const resetForm = () => {
@@ -151,6 +173,9 @@ export const useManageSubscriptions = () => {
     form,
     imageFile,
     isSubmitting,
+    pagination,
+    currentPage,
+    pageSize,
     openCreateForm,
     openEditForm,
     closeForm,
@@ -158,5 +183,7 @@ export const useManageSubscriptions = () => {
     setImageFile,
     handleSubmit,
     handleDelete,
+    handlePageChange,
+    handlePageSizeChange,
   };
 };

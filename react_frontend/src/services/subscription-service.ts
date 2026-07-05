@@ -5,7 +5,7 @@ import { toSubscriptionList } from "@/utils/subscriptionUtils";
 
 export const fetchSubscriptions = async (activeOnly = false): Promise<Subscription[]> => {
   try {
-    const params = activeOnly ? { status: true } : undefined;
+    const params = activeOnly ? { status: true, page_size: 100 } : { page_size: 100 };
     const response = await axiosInstance.get(API_ENDPOINTS.subscriptions, { params });
     return toSubscriptionList(response.data);
   } catch (error) {

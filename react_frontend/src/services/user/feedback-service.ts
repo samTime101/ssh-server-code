@@ -6,11 +6,12 @@ const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
 export interface FeedbackPayload {
   email: string;
   feedback: string;
+  recaptcha?: string;
 }
 
 export type FeedbackSubmitResult =
   | { ok: true }
-  | { ok: false; error: string };
+  | { ok: false; error: string; recaptchaError?: boolean };
 
 const validateFeedbackPayload = ({ email, feedback }: FeedbackPayload): FeedbackSubmitResult => {
   const trimmedEmail = email.trim();
@@ -39,10 +40,13 @@ export const submitFeedbackForm = async (
     return validation;
   }
 
-  const trimmedPayload = {
+  const trimmedPayload: Record<string, string> = {
     email: payload.email.trim(),
     feedback: payload.feedback.trim(),
   };
+  if (payload.recaptcha) {
+    trimmedPayload.recaptcha = payload.recaptcha;
+  }
 
   try {
     await axios.post(`${API_BASE_URL}${API_ENDPOINTS.feedback}`, trimmedPayload);
@@ -50,10 +54,18 @@ export const submitFeedbackForm = async (
   } catch (error) {
     if (axios.isAxiosError(error)) {
       const responseData = error.response?.data;
+      if (responseData?.recaptcha) {
+        const recaptchaMessage = Array.isArray(responseData.recaptcha)
+          ? responseData.recaptcha[0]
+          : responseData.recaptcha;
+        return {
+          ok: false,
+          error: recaptchaMessage || "Please complete the verification below.",
+          recaptchaError: true,
+        };
+      }
       const firstError =
-        responseData?.detail ||
-        responseData?.email?.[0] ||
-        responseData?.feedback?.[0];
+        responseData?.detail || responseData?.email?.[0] || responseData?.feedback?.[0];
       if (firstError) {
         return { ok: false, error: firstError };
       }

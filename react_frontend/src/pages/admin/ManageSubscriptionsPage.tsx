@@ -15,6 +15,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import Modal from "@/components/Modal";
 import TableSkeletonLoader from "@/components/TableSkeletonLoader";
+import Paginator from "@/components/Paginator";
 import { getImageUrl } from "@/config/apiConfig";
 import { useManageSubscriptions } from "@/hooks/admin/useManageSubscriptions";
 import { PenIcon, PlusIcon, TrashIcon } from "lucide-react";
@@ -35,6 +36,11 @@ const ManageSubscriptionsPage = () => {
     setImageFile,
     handleSubmit,
     handleDelete,
+    pagination,
+    currentPage,
+    pageSize,
+    handlePageChange,
+    handlePageSizeChange,
   } = useManageSubscriptions();
 
   return (
@@ -53,7 +59,7 @@ const ManageSubscriptionsPage = () => {
 
       <div className="border-border bg-card mt-4 rounded-md border p-4 shadow-md">
         <Table>
-          <TableCaption>{isLoading ? "" : `Total plans: ${subscriptions.length}`}</TableCaption>
+          <TableCaption>{isLoading ? "" : `Total plans: ${pagination.count}`}</TableCaption>
           <TableHeader>
             <TableRow>
               <TableHead>Plan</TableHead>
@@ -113,6 +119,15 @@ const ManageSubscriptionsPage = () => {
             )}
           </TableBody>
         </Table>
+        <Paginator
+          currentPage={currentPage}
+          totalPages={pagination.total_pages}
+          pageSize={pageSize}
+          totalCount={pagination.count}
+          onPageChange={handlePageChange}
+          onPageSizeChange={handlePageSizeChange}
+          isLoading={isLoading}
+        />
       </div>
 
       <Modal

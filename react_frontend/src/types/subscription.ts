@@ -26,3 +26,12 @@ export interface SubscriptionCardProps {
   onSelect?: () => void;
   selectDisabled?: boolean;
 }
+
+export interface SubscriptionListResponse {
+  count: number;
+  total_pages: number;
+  current_page?: number;
+  next: string | null;
+  previous: string | null;
+  results: Subscription[];
+}
