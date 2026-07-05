@@ -2,7 +2,6 @@ from rest_framework import viewsets
 from rest_framework.permissions import AllowAny
 from sql.models import Subscription, SubscriptionOrder
 from .serializers import SubscriptionSerializer, SubscriptionOrderSerializer
-from drf_spectacular.utils import extend_schema, extend_schema_view
 from django_filters.rest_framework import DjangoFilterBackend
 from core.pagination import StandardResultsSetPagination
 from core.permissions.permissions import *
