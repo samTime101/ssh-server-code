@@ -91,16 +91,16 @@ export const useQuestionForm = ({ mode, questionId, onSuccess, onError }: UseQue
     setQuestionFormData((prev) =>
       prev
         ? {
-            ...prev,
-            options: [
-              ...prev.options,
-              {
-                label: String.fromCharCode(65 + prev.options.length),
-                text: "",
-                isCorrect: false,
-              },
-            ],
-          }
+          ...prev,
+          options: [
+            ...prev.options,
+            {
+              label: String.fromCharCode(65 + prev.options.length),
+              text: "",
+              isCorrect: false,
+            },
+          ],
+        }
         : { ...defaultFormData }
     );
   };
@@ -131,10 +131,10 @@ export const useQuestionForm = ({ mode, questionId, onSuccess, onError }: UseQue
     setQuestionFormData((prev) =>
       prev
         ? {
-            ...prev,
-            optionType: questionType,
-            options: prev.options.map((option) => ({ ...option, isCorrect: false })),
-          }
+          ...prev,
+          optionType: questionType,
+          options: prev.options.map((option) => ({ ...option, isCorrect: false })),
+        }
         : { ...defaultFormData }
     );
   };
@@ -143,23 +143,43 @@ export const useQuestionForm = ({ mode, questionId, onSuccess, onError }: UseQue
     setQuestionFormData((prev) =>
       prev
         ? {
-            ...prev,
-            options: prev.options.map((option, idx) =>
-              idx === index ? { ...option, text: newText } : option
-            ),
-          }
+          ...prev,
+          options: prev.options.map((option, idx) =>
+            idx === index ? { ...option, text: newText } : option
+          ),
+        }
         : { ...defaultFormData }
     );
   };
+
+  const handleRemoveAnswerOption = (index: number) => {
+    if (!questionFormData || questionFormData.options.length <= 2) {
+      toast.error("A question must have at least 2 answer options");
+      return;
+    }
+
+    setQuestionFormData((prev) => {
+      if (!prev) return prev;
+      const updatedOptions = prev.options.filter((_, idx) => idx !== index);
+      const relabeledOptions = updatedOptions.map((option, idx) => ({
+        ...option,
+        label: String.fromCharCode(65 + idx),
+      }));
+      return {
+        ...prev,
+        options: relabeledOptions,
+      };
+    });
+  }
 
   const handleAddCategory = (categoryId: string) => {
     if (categoryId && !questionFormData?.categoryIds.includes(categoryId)) {
       setQuestionFormData((prev) =>
         prev
           ? {
-              ...prev,
-              categoryIds: [...prev.categoryIds, categoryId],
-            }
+            ...prev,
+            categoryIds: [...prev.categoryIds, categoryId],
+          }
           : { ...defaultFormData, categoryIds: [categoryId] }
       );
     }
@@ -190,9 +210,9 @@ export const useQuestionForm = ({ mode, questionId, onSuccess, onError }: UseQue
       setQuestionFormData((prev) =>
         prev
           ? {
-              ...prev,
-              subCategories: [...prev.subCategories, subCategoryId],
-            }
+            ...prev,
+            subCategories: [...prev.subCategories, subCategoryId],
+          }
           : { ...defaultFormData, subCategories: [subCategoryId] }
       );
     }
@@ -202,11 +222,35 @@ export const useQuestionForm = ({ mode, questionId, onSuccess, onError }: UseQue
     setQuestionFormData((prev) =>
       prev
         ? {
-            ...prev,
-            subCategories: prev.subCategories.filter((id) => id !== subCategoryId),
-          }
+          ...prev,
+          subCategories: prev.subCategories.filter((id) => id !== subCategoryId),
+        }
         : { ...defaultFormData }
     );
+  };
+  
+  const validateCategories = (
+    categoryIds: string[],
+    subCategoryIds: string[]
+  ): string[] => {
+    const errors: string[] = [];
+
+    categoryIds.forEach((categoryId) => {
+      const category = categories.find((cat) => cat.id.toString() === categoryId);
+
+      if (
+        category &&
+        !category.sub_categories?.some((subCat) =>
+          subCategoryIds.includes(subCat.id.toString())
+        )
+      ) {
+        errors.push(
+          `Category "${category.name}" must have at least one subcategory selected`
+        );
+      }
+    });
+
+    return errors;
   };
 
   const handleDescriptionChange = (value: string) => {
@@ -242,6 +286,15 @@ export const useQuestionForm = ({ mode, questionId, onSuccess, onError }: UseQue
       (!questionFormData?.subCategories || questionFormData.subCategories.length === 0)
     ) {
       errors.push("At least one subcategory is required");
+    }
+
+    // Validate that each category has at least one subcategory
+    if (questionFormData?.categoryIds.length > 0) {
+      const categoryValidationErrors = validateCategories(
+        questionFormData.categoryIds,
+        questionFormData.subCategories
+      );
+      errors.push(...categoryValidationErrors);
     }
 
     if (!questionFormData?.difficulty) {
@@ -360,6 +413,7 @@ export const useQuestionForm = ({ mode, questionId, onSuccess, onError }: UseQue
     handleOptionTypeChange,
     handleAddMoreAnswers,
     handleCorrectAnswerChange,
+    handleRemoveAnswerOption,
     handleOptionTextChange,
 
     isSubmitting,
