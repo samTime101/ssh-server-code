@@ -34,6 +34,10 @@ class FeedbackCreateSerializer(me_serializers.DocumentSerializer):
         if not trimmed:
             raise serializers.ValidationError("Feedback is required.")
         return trimmed
+    
+    def create(self, validated_data):
+        validated_data.pop("recaptcha", None)
+        return Feedback.objects.create(**validated_data)
 
 
 class FeedbackAdminSerializer(me_serializers.DocumentSerializer):
