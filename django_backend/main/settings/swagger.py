@@ -3,6 +3,12 @@ SPECTACULAR_SETTINGS = {
     "TITLE": "MCQ API",
     "DESCRIPTION": """
 
+## July 5, 2026
+- Added reCAPTCHA validation to the feedback submission endpoint to prevent spam and automated submissions.
+- Added `subscription-orders` endpoint to allow users to request subscriptions, with admin-only access to view and manage these requests.
+- corrected the `FeedbackCreateSerializer` to use `EmailField` for the email field instead of `CharField`, ensuring proper email validation and formatting.    
+- Added sentry integration to capture and report errors and exceptions in the application for better monitoring and debugging.
+
 ## June 30, 2026
 - Added `subscription` app to manage user subscriptions and related functionalities.    
 
