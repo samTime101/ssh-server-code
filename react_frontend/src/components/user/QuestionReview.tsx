@@ -38,7 +38,10 @@ const QuestionReview = ({ questions, attempts, onDone }: QuestionReviewProps) =>
           const attempt = attempts[question.id];
           const selectedForSingle = attempt?.selectedOption ?? "";
           const selectedForMultiple = attempt?.selectedOptions ?? [];
-          const correctOptions = attempt?.correctOptions ?? [];
+          const correctOptions =
+            attempt?.isCorrect === false
+              ? (attempt?.actualAnswers ?? attempt?.correctOptions ?? [])
+              : (attempt?.correctOptions ?? attempt?.actualAnswers ?? []);
 
           return (
             <Card key={question.id} className="shadow-lg">
