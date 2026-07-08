@@ -211,9 +211,6 @@ const QuestionPage = () => {
                 Time Left: {formatRemainingTime(remainingMs)}
               </span>
             )}
-            <span className="text-muted-foreground text-sm font-medium">
-              {currentIndex + 1} / {totalCount}
-            </span>
           </div>
         </div>
 

@@ -17,7 +17,6 @@ const QuestionProgress = ({
   <div className="bg-card rounded-lg border p-4 shadow-sm">
     <div className="mb-3 flex items-center justify-between gap-2">
       <p className="text-sm font-semibold">Session Progress</p>
-      <p className="text-muted-foreground text-xs">Green = correct, Red = incorrect</p>
     </div>
 
     <div className="overflow-x-auto overflow-y-visible px-1 py-2">

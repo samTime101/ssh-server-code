@@ -11,6 +11,7 @@ import {
   Bookmark,
   PanelLeftClose,
   PanelLeftOpen,
+  History,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -40,7 +41,7 @@ const menuItems = [
 
 const otherItems = [
   { icon: User, text: "Profile", path: "/userpanel/profile", type: "link" as const },
-  { icon: User, text: "History", path: "/userpanel/history", type: "link" as const },
+  { icon: History, text: "History", path: "/userpanel/history", type: "link" as const },
   { icon: Bookmark, text: "Bookmarks", path: "/userpanel/bookmarks", type: "link" as const },
   { icon: Settings, text: "Settings", path: "/userpanel/settings", type: "link" as const },
   { icon: LogOut, text: "Logout", type: "button" as const },
