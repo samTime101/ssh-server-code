@@ -38,6 +38,30 @@ class QuestionSerializer(me_serializers.DocumentSerializer,OptionValidationMixin
     def validate_sub_categories(self, value):
         return validate_object_ids(value,SubCategory,'sub_categories',allow_empty=False)
     
+    def validate_question_text(self, value):
+        
+        # Check for existing question with the same text (case-insensitive)
+        # Use __iexact for case-insensitive exact match in MongoDB via MongoEngine
+        value = value.strip()
+
+        existing = Question.objects(
+            question_text__iexact=value
+        ).first()
+        
+        # If updating, allow the same text if it's the same question
+        if existing:
+            # Check if we're updating (instance exists) and it's the same question
+            instance = getattr(self, 'instance', None)
+            if instance and str(existing.id) == str(instance.id):
+                # Same question being updated, allow it
+                return value.strip()
+            # Different question with same text found
+            raise serializers.ValidationError(
+                "A question with this text already exists."
+            )
+        
+        return value.strip()
+    
     def validate_options(self, value):
         # extended the default method
         return super().validate_options(value)
