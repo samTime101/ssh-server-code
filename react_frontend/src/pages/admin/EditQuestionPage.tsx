@@ -81,7 +81,8 @@ const EditQuestionForm = ({ selectedQuestion, handleEditSuccess }: EditQuestionF
           isCorrect: opt.is_true,
         })) || [],
       contributor: selectedQuestion.contributor,
-      contributorSpecialization: selectedQuestion.contributor_specializations,
+      contributorSpecialization:
+        selectedQuestion.contributor_specialization,
     });
   }, [selectedQuestion, setQuestionFormData, categories]);
 
@@ -412,6 +413,33 @@ const EditQuestionForm = ({ selectedQuestion, handleEditSuccess }: EditQuestionF
         >
           + Add Another Answer
         </Button>
+      </div>
+
+      {/* Contributor */}
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <div className="space-y-2">
+          <Label htmlFor="contributor">Contributor (Optional)</Label>
+          <Input
+            id="contributor"
+            name="contributor"
+            type="text"
+            placeholder="Enter contributor name"
+            value={questionFormData?.contributor || ""}
+            onChange={handleInputChange}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="contributorSpecialization">Specialization (Optional)</Label>
+          <Input
+            id="contributorSpecialization"
+            name="contributorSpecialization"
+            type="text"
+            placeholder="Enter contributor specialization"
+            value={questionFormData?.contributorSpecialization || ""}
+            onChange={handleInputChange}
+          />
+        </div>
       </div>
 
       {/* Submit Button */}

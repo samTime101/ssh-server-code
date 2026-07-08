@@ -5,7 +5,6 @@ import { fetchCategoriesWithHierarchy } from "@/services/admin/category-service"
 import { toast } from "sonner";
 import {
   createQuestion,
-  searchQuestions,
   updateQuestion,
 } from "@/services/admin/addquestion-service";
 import type {
@@ -350,18 +349,6 @@ export const useQuestionForm = ({ mode, questionId, onSuccess, onError }: UseQue
       };
       let response;
       if (mode === "create") {
-        // Check for duplicate question text before submitting
-        const searchResult = await searchQuestions(questionFormData.questionText.trim());
-        const duplicate = searchResult?.results?.find(
-          (q: { question_text: string }) =>
-            q.question_text.trim().toLowerCase() ===
-            questionFormData.questionText.trim().toLowerCase()
-        );
-        if (duplicate) {
-          toast.error("A question with this text already exists.");
-          setIsSubmitting(false);
-          return;
-        }
         response = await createQuestion(apiData, selectedImages);
         toast.success("Question created successfully");
       } else {
