@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { ChevronDown, ChevronUp, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -10,7 +11,8 @@ import {
   listQuestionNotes,
   patchQuestionNote,
 } from "@/services/user/note-service";
-import { isEditorContentEmpty } from "@/utils/editorUtils";
+import { isEditorContentEmpty, isEditorContentLong } from "@/utils/editorUtils";
+import { cn } from "@/lib/utils";
 
 type QuestionNotePanelProps = {
   questionId: string;
@@ -24,6 +26,7 @@ const QuestionNotePanel = ({ questionId }: QuestionNotePanelProps) => {
   const [noteSaving, setNoteSaving] = useState(false);
   const [noteDeleting, setNoteDeleting] = useState(false);
   const [isEditingNote, setIsEditingNote] = useState(false);
+  const [expanded, setExpanded] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -45,7 +48,7 @@ const QuestionNotePanel = ({ questionId }: QuestionNotePanelProps) => {
           setNoteValue(note.note ?? "");
           setNoteDraft(note.note ?? "");
         }
-      } catch (error) {
+      } catch {
         if (!cancelled) toast.error("Failed to load notes");
       } finally {
         if (!cancelled) setNoteLoading(false);
@@ -82,7 +85,7 @@ const QuestionNotePanel = ({ questionId }: QuestionNotePanelProps) => {
         toast.success("Note saved");
       }
       setIsEditingNote(false);
-    } catch (error) {
+    } catch {
       toast.error("Failed to save note");
     } finally {
       setNoteSaving(false);
@@ -106,7 +109,7 @@ const QuestionNotePanel = ({ questionId }: QuestionNotePanelProps) => {
       setNoteDraft("");
       setIsEditingNote(false);
       toast.success("Note deleted");
-    } catch (error) {
+    } catch {
       toast.error("Failed to delete note");
     } finally {
       setNoteDeleting(false);
@@ -117,6 +120,12 @@ const QuestionNotePanel = ({ questionId }: QuestionNotePanelProps) => {
     setNoteDraft(noteValue);
     setIsEditingNote(false);
   };
+
+  useEffect(() => {
+    setExpanded(false);
+  }, [questionId]);
+
+  const noteTooLong = useMemo(() => isEditorContentLong(noteValue), [noteValue]);
 
   const showNoteEmptyState = !noteId && !isEditingNote;
   const showNoteEditor = isEditingNote;
@@ -180,20 +189,58 @@ const QuestionNotePanel = ({ questionId }: QuestionNotePanelProps) => {
 
             {showNoteViewer && (
               <div className="space-y-3">
-                <EditorRenderer data={noteValue} className="text-foreground" />
-                <div className="flex flex-wrap items-center gap-2">
-                  <Button size="sm" variant="outline" onClick={() => setIsEditingNote(true)}>
-                    Edit
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="text-destructive hover:bg-destructive hover:text-white"
-                    onClick={handleDeleteNote}
-                    disabled={noteDeleting}
-                  >
-                    {noteDeleting ? "Deleting..." : "Delete"}
-                  </Button>
+                <div className="relative">
+                  <div className={cn("overflow-hidden", expanded ? "max-h-none" : "max-h-40")}>
+                    <EditorRenderer data={noteValue} className="text-foreground" />
+                  </div>
+                  {!expanded && noteTooLong && (
+                    <div className="from-card absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t to-transparent" />
+                  )}
+                </div>
+
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <Button
+                      size="icon"
+                      variant="outline"
+                      aria-label="Edit note"
+                      onClick={() => setIsEditingNote(true)}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+
+                    <Button
+                      size="icon"
+                      variant="outline"
+                      aria-label="Delete note"
+                      className="text-destructive hover:bg-destructive hover:text-white"
+                      onClick={handleDeleteNote}
+                      disabled={noteDeleting}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+
+                  {noteTooLong && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-muted-foreground hover:text-foreground"
+                      onClick={() => setExpanded((prev) => !prev)}
+                    >
+                      {expanded ? (
+                        <>
+                          <ChevronUp className="mr-1 h-4 w-4" />
+                          Show less
+                        </>
+                      ) : (
+                        <>
+                          <ChevronDown className="mr-1 h-4 w-4" />
+                          Read more
+                        </>
+                      )}
+                    </Button>
+                  )}
                 </div>
               </div>
             )}

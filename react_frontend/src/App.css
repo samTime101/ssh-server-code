@@ -42,3 +42,15 @@ body > div:has(iframe[src*="recaptcha"]) {
   word-break: break-word;
   white-space: pre-wrap;
 }
+
+.dark .editor-field-holder .ce-toolbar__plus,
+.dark .editor-field-holder .ce-toolbar__plus-icon,
+.dark .editor-field-holder .ce-toolbar__drag,
+.dark .editor-field-holder .ce-toolbar__drag-icon,
+.dark .editor-field-holder .ce-toolbar__drag-handle,
+.dark .editor-field-holder .ce-toolbar__drag-handle-icon,
+.dark .editor-field-holder .ce-toolbar__actions svg {
+  color: #ffffff !important;
+  fill: #ffffff !important;
+  stroke: #ffffff !important;
+}
