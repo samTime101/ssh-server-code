@@ -54,6 +54,37 @@ def upload_question_image(image_file, question_id, image_type):
 
     return f"{settings.MEDIA_URL}{saved_path}"
 
+
+def upload_testimonial_image(image_file, testimonial_id):
+    folder_path = f"Testimonials/{testimonial_id}"
+    ext = os.path.splitext(image_file.name)[1]
+    filename = f"testimonial{ext}"
+    relative_path = os.path.join(folder_path, filename)
+
+    if default_storage.exists(relative_path):
+        default_storage.delete(relative_path)
+
+    saved_path = default_storage.save(
+        relative_path,
+        ContentFile(image_file.read())
+    )
+
+    return f"{settings.MEDIA_URL}{saved_path}"
+
+
+def delete_testimonial_image(testimonial_id):
+    folder_path = os.path.join(settings.MEDIA_ROOT, "Testimonials", str(testimonial_id))
+
+    if not os.path.exists(folder_path):
+        return
+
+    try:
+        for file in os.listdir(folder_path):
+            os.remove(os.path.join(folder_path, file))
+    except Exception as e:
+        print("local testimonial image delete error:", e)
+
+
 def delete_question_image(question_id, image_type):
     folder_path = os.path.join(settings.MEDIA_ROOT, "Images", str(question_id))
 

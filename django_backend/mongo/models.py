@@ -144,3 +144,10 @@ class QuestionFeedback(TimeStampedDocument):
     feedback = StringField(required=True)
 
     meta = {'collection': 'question_feedback','indexes': ['question', 'user_guid']}
+
+class Testimonial(TimeStampedDocument):
+    name = StringField(required=True)
+    message = StringField(required=True)
+    image_url = StringField(required=False)
+
+    meta = {'collection': 'testimonials', 'indexes': ['name', '-created_at']}

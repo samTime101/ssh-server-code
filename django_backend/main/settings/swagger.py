@@ -3,6 +3,10 @@ SPECTACULAR_SETTINGS = {
     "TITLE": "MCQ API",
     "DESCRIPTION": """
 
+## July 11, 2026
+- Added `testimonials` app to manage user testimonials and related functionalities.
+- added old_password validation in change password endpoint to ensure that users provide their current password before changing it, enhancing security and preventing unauthorized password changes.
+
 ## July 5, 2026
 - Added reCAPTCHA validation to the feedback submission endpoint to prevent spam and automated submissions.
 - Added `subscription-orders` endpoint to allow users to request subscriptions, with admin-only access to view and manage these requests.
