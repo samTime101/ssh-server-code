@@ -49,6 +49,18 @@ const QuestionReview = ({ questions, attempts, onDone }: QuestionReviewProps) =>
                 <div className="text-muted-foreground text-sm font-medium">
                   Question {index + 1}
                 </div>
+                {question.category_names && question.category_names.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {question.category_names.map((category, categoryIndex) => (
+                      <span
+                        key={categoryIndex}
+                        className="bg-primary/10 text-primary px-3 py-1 rounded-md text-sm font-medium"
+                      >
+                        {category}
+                      </span>
+                    ))}
+                  </div>
+                )}
                 <h2 className="text-foreground text-xl leading-relaxed font-semibold">
                   {question.question_text}
                 </h2>
