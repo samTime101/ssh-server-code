@@ -1,4 +1,4 @@
-from datetime import datetime
+from django.utils import timezone
 from sql.models import User, Role, UserRole
 from rest_framework.viewsets import ModelViewSet
 # from rest_framework.permissions import IsAuthenticated, IsAdminUser
@@ -6,9 +6,10 @@ from core.permissions.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 from rest_framework import status
 from .serializers import *
+from .services.user_statistics import UserStatisticsService
 from core.pagination import StandardResultsSetPagination
-from core.constants.status import IN_PROGRESS_STATUS, SUBMITTED_STATUS
-from mongo.models import Attempt, Submissions, Bookmarks
+from core.constants.status import IN_PROGRESS_STATUS, SUBMITTED_STATUS, APPROVED_STATUS
+from mongo.models import Attempt, Submissions, Bookmarks, Question
 from drf_spectacular.utils import extend_schema, extend_schema_view 
 from rest_framework.exceptions import MethodNotAllowed, NotFound
 from rest_framework.decorators import action
@@ -32,8 +33,24 @@ class UserViewSet(ModelViewSet):
         try:
             user = User.objects.get(user_guid=user_guid)
         except User.DoesNotExist:
-            return NotFound("User not found")
+            raise NotFound("User not found")
         serializer = self.get_serializer(user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated], url_path='profile/statistics')
+    def statistics(self, request, *args, **kwargs):
+        """
+        Get comprehensive user statistics.
+        All business logic is delegated to UserStatisticsService.
+        """
+        user_guid = getattr(request.user, "user_guid", None)
+        
+        # Use service to calculate statistics
+        statistics_service = UserStatisticsService(user_guid)
+        statistics_data = statistics_service.get_statistics()
+        
+        # Serialize and return
+        serializer = UserStatisticsSerializer(statistics_data)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
     @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated], url_path='bookmarks')
@@ -189,7 +206,7 @@ class SubmissionCollectionViewSet(ModelViewSet):
         if submission.status != IN_PROGRESS_STATUS:
             raise ValidationError("Submission is not in progress.")
         submission.status = SUBMITTED_STATUS
-        submission.submitted_at = datetime.utcnow()
+        submission.submitted_at = timezone.now()
         submission.save()
         serializer = SubmissionSerializer(submission)
         return Response(serializer.data, status=status.HTTP_200_OK)
