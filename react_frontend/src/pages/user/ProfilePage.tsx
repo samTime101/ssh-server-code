@@ -32,7 +32,7 @@ const ProfilePage = () => {
       case "profile":
         return <MyProfile user={user} />;
       case "statistics":
-        return <MyStatistics user={user} />;
+        return <MyStatistics />;
       case "questions":
         return <MySuggestedQuestions />;
       case "subscriptions":
