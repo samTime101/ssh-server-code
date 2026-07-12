@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import RecaptchaField from "@/components/RecaptchaField";
 import { useRecaptchaGate } from "@/hooks/useRecaptchaGate";
 import { submitFeedbackForm } from "@/services/user/feedback-service";
+import TestimonialsSection from "@/components/landing/TestimonialsSection";
 
 const LandingPage = () => {
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
@@ -49,7 +50,7 @@ const LandingPage = () => {
       setFeedbackStatus("success");
       setFeedbackText("");
       feedbackRecaptcha.resetRecaptcha();
-    } catch (error) {
+    } catch {
       setFeedbackStatus("error");
       setFeedbackError("We could not submit your feedback. Please try again.");
     }
@@ -181,6 +182,8 @@ const LandingPage = () => {
           </div>
         </div>
       </section>
+
+      <TestimonialsSection />
 
       {isFeedbackOpen && (
         <div className="feedback-modal-overlay">

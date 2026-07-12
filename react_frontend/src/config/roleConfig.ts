@@ -15,6 +15,7 @@ const ROLE_CONFIG = {
     "manage-subscriptions",
     "application-feedback",
     "analytics",
+    "manage-testimonials",
   ],
   CONTRIBUTOR: ["add-question"],
   DOCTOR: ["add-question", "question-bank"],

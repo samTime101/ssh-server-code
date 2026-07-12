@@ -63,4 +63,7 @@ export const API_ENDPOINTS = {
 
   // Notes
   notes: "/notes/",
+
+  // Testimonials
+  testimonials: "/testimonials/",
 };
