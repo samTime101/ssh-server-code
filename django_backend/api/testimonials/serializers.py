@@ -11,7 +11,7 @@ class TestimonialSerializer(me_serializers.DocumentSerializer):
 
     class Meta:
         model = Testimonial
-        fields = ["id", "name", "message", "image", "image_url", "created_at", "updated_at"]
+        fields = ["id", "name", "message", "image", "image_url", "created_at", "updated_at", "specialization"]
         extra_kwargs = {"created_at": {"read_only": True},"updated_at": {"read_only": True},"image_url": {"read_only": True},}
 
     def validate_name(self, value):
@@ -24,6 +24,12 @@ class TestimonialSerializer(me_serializers.DocumentSerializer):
         trimmed = value.strip()
         if not trimmed:
             raise serializers.ValidationError("Message is required.")
+        return trimmed
+
+    def validate_specialization(self, value):
+        trimmed = value.strip()
+        if not trimmed:
+            raise serializers.ValidationError("Specialization is required.")
         return trimmed
 
     def create(self, validated_data):

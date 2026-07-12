@@ -3,6 +3,10 @@ SPECTACULAR_SETTINGS = {
     "TITLE": "MCQ API",
     "DESCRIPTION": """
 
+## July 12, 2026
+- Added `response_time_seconds` field in AttemptSerializer to track the time taken by users to answer each question, providing insights into user performance and engagement.
+- Added specialization field in Testimonial model and serializer to allow users to specify their area of expertise or focus when submitting testimonials, enhancing the context and credibility of the feedback provided.
+
 ## July 11, 2026
 - Added `testimonials` app to manage user testimonials and related functionalities.
 - added old_password validation in change password endpoint to ensure that users provide their current password before changing it, enhancing security and preventing unauthorized password changes.

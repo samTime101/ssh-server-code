@@ -70,6 +70,7 @@ class Attempt(EmbeddedDocument):
     selected_answers = ListField(StringField())
     is_correct = BooleanField(required=True)
     attempted_at = DateTimeField(default=datetime.utcnow)
+    response_time_seconds = IntField(default=0)
 
 class Submissions(Document):
     user_guid = UUIDField(required=True, binary=False)
@@ -149,5 +150,6 @@ class Testimonial(TimeStampedDocument):
     name = StringField(required=True)
     message = StringField(required=True)
     image_url = StringField(required=False)
+    specialization = StringField(required=False)
 
     meta = {'collection': 'testimonials', 'indexes': ['name', '-created_at']}
