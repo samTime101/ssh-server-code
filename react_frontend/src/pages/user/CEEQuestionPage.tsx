@@ -14,6 +14,7 @@ import { getImageUrl } from "@/config/apiConfig";
 import QuestionFeedbackWidget from "@/components/user/QuestionFeedbackWidget";
 import ScoreSummaryModal from "@/components/user/ScoreSummaryModal";
 import { calculateScore } from "@/utils/scoreCalculation";
+import { useQuestionResponseTimer } from "@/hooks/user/useQuestionResponseTimer";
 
 const CEEQuestionPage = () => {
   const { questionData, currentSubmissionId, resetQuestionSelection } = useQuestions();
@@ -27,6 +28,8 @@ const CEEQuestionPage = () => {
 
   const currentQuestion: Question | null =
     questionData && questionData.length > 0 ? questionData[currentIndex] || null : null;
+
+  const { getResponseTimeSeconds, resetTimer } = useQuestionResponseTimer(currentQuestion?.id);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -91,7 +94,7 @@ const CEEQuestionPage = () => {
     // Check for unattempted questions
     const attemptedCount = Object.values(attempts).filter((a) => a.isAttempted).length;
     const totalQuestions = questionData?.length || 0;
-    
+
     if (attemptedCount < totalQuestions) {
       const unattemptedCount = totalQuestions - attemptedCount;
       const confirmSubmit = window.confirm(
@@ -122,7 +125,6 @@ const CEEQuestionPage = () => {
     navigate("/userpanel/cee-practice");
   };
 
-
   const handleAttemptQuestion = async (question: Question) => {
     if (!currentSubmissionId) {
       toast.error("No active submission found. Please start a new session.");
@@ -142,13 +144,20 @@ const CEEQuestionPage = () => {
     }
 
     try {
-      const result = await attemptQuestion(currentSubmissionId, question.id, selected);
+      const result = await attemptQuestion(
+        currentSubmissionId,
+        question.id,
+        selected,
+        getResponseTimeSeconds()
+      );
 
       if (!result) {
         toast.error("Something wrong occurred. Try again.");
         navigate("/");
         return;
       }
+
+      resetTimer();
 
       setAttempts((prev) => ({
         ...prev,
@@ -219,12 +228,14 @@ const CEEQuestionPage = () => {
           <ArrowLeft />
           Back
         </Button>
-        
+
         <div className="flex items-center justify-between">
           <h1 className="text-foreground text-3xl font-bold">CEE Practice</h1>
           <div className="flex items-center gap-4">
-            <div className="text-muted-foreground text-sm text-right">
-              <div>Question {currentIndex + 1} of {questionData?.length || 0}</div>
+            <div className="text-muted-foreground text-right text-sm">
+              <div>
+                Question {currentIndex + 1} of {questionData?.length || 0}
+              </div>
               <div className="text-xs">
                 Attempted: {Object.values(attempts).filter((a) => a.isAttempted).length} /{" "}
                 {questionData?.length || 0}
@@ -233,7 +244,7 @@ const CEEQuestionPage = () => {
           </div>
         </div>
 
-        <Card className="relative shadow-lg overflow-visible">
+        <Card className="relative overflow-visible shadow-lg">
           <CardHeader className="pb-4">
             <h2 className="text-foreground text-xl leading-relaxed font-semibold">
               {currentQuestion.question_text}
@@ -357,7 +368,7 @@ const CEEQuestionPage = () => {
                 ) : (
                   <Button
                     onClick={handleSubmitTest}
-                    className="bg-green-600 hover:bg-green-700 text-white px-6 py-2"
+                    className="bg-green-600 px-6 py-2 text-white hover:bg-green-700"
                   >
                     Submit Test
                   </Button>
@@ -366,7 +377,6 @@ const CEEQuestionPage = () => {
             )}
           </div>
         </div>
-
       </div>
     </div>
   );

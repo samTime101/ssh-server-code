@@ -6,6 +6,7 @@ import { attemptQuestion, submitSubmission } from "@/services/user/question-serv
 import type { Question, QuestionAttemptState } from "@/types/question";
 import { getEffectiveQuestionCount } from "@/utils/examModeUtils";
 import { bookmarkQuestion, removeBookmark } from "@/services/user/bookmark-service";
+import { useQuestionResponseTimer } from "@/hooks/user/useQuestionResponseTimer";
 
 export const useQuestionPageController = () => {
   const {
@@ -43,6 +44,8 @@ export const useQuestionPageController = () => {
 
   const currentQuestion: Question | null =
     questionData && questionData.length > 0 ? questionData[currentIndex] || null : null;
+
+  const { getResponseTimeSeconds, resetTimer } = useQuestionResponseTimer(currentQuestion?.id);
 
   const [isBookmarked, setIsBookmarked] = useState<boolean>(false);
 
@@ -256,12 +259,19 @@ export const useQuestionPageController = () => {
 
     try {
       setIsSavingAnswer(true);
-      const result = await attemptQuestion(currentSubmissionId, question.id, selected);
+      const result = await attemptQuestion(
+        currentSubmissionId,
+        question.id,
+        selected,
+        getResponseTimeSeconds()
+      );
 
       if (!result) {
         toast.error("Something wrong occurred. Try again.");
         return;
       }
+
+      resetTimer();
 
       setAttempts((prev) => ({
         ...prev,
@@ -314,12 +324,19 @@ export const useQuestionPageController = () => {
 
     try {
       setIsSavingAnswer(true);
-      const result = await attemptQuestion(currentSubmissionId, currentQuestion.id, selected);
+      const result = await attemptQuestion(
+        currentSubmissionId,
+        currentQuestion.id,
+        selected,
+        getResponseTimeSeconds()
+      );
 
       if (!result) {
         toast.error("Failed to save answer. Please try again.");
         return;
       }
+
+      resetTimer();
 
       setAttempts((prev) => ({
         ...prev,
