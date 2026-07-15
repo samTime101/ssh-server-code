@@ -1,11 +1,16 @@
+import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
 import Loader from "@/components/ui/Loader";
+import MyProfile from "@/components/profile/MyProfile";
+import MyStatistics from "@/components/profile/MyStatistics";
+import MySuggestedQuestions from "@/components/profile/MySuggestedQuestions";
+import MySubscriptions from "@/components/profile/MySubscriptions";
+
+type TabType = "profile" | "statistics" | "questions" | "subscriptions";
 
 const ProfilePage = () => {
   const { user } = useAuth();
+  const [activeTab, setActiveTab] = useState<TabType>("profile");
 
   if (!user) {
     return (
@@ -15,106 +20,54 @@ const ProfilePage = () => {
     );
   }
 
-  const profileFields = [
-    { label: "Username", value: user.username },
-    { label: "Email", value: user.email },
-    { label: "First Name", value: user.first_name },
-    { label: "Last Name", value: user.last_name },
-    { label: "Phone Number", value: user.phonenumber },
-    { label: "College", value: user.college },
+  const tabs = [
+    { id: "profile" as TabType, label: "My Profile" },
+    { id: "statistics" as TabType, label: "My Statistics" },
+    { id: "questions" as TabType, label: "My Suggested Questions" },
+    { id: "subscriptions" as TabType, label: "My Subscriptions" },
   ];
 
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case "profile":
+        return <MyProfile user={user} />;
+      case "statistics":
+        return <MyStatistics user={user} />;
+      case "questions":
+        return <MySuggestedQuestions />;
+      case "subscriptions":
+        return <MySubscriptions />;
+      default:
+        return <MyProfile user={user} />;
+    }
+  };
+
   return (
-    <div className="space-y-8 p-6">
-      <Card className="max-w-4xl">
-        <CardHeader className="border-b">
-          <div className="flex items-center gap-4">
-            <div className="bg-primary text-primary-foreground flex h-16 w-16 items-center justify-center rounded-full text-lg font-semibold">
-              {user?.first_name[0]}
-              {user?.last_name[0]}
-            </div>
-            <div>
-              <CardTitle className="text-2xl">
-                {user.first_name} {user.last_name}
-              </CardTitle>
-              <p className="text-muted-foreground text-sm">{user.username}</p>
-            </div>
+    <div className="space-y-6 p-6">
+      <div className="max-w-4xl">
+        <nav className="border-b">
+          <div className="flex flex-wrap gap-2 sm:gap-0">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`
+                  relative px-4 py-3 text-sm font-medium transition-colors
+                  hover:text-primary focus:outline-none
+                  ${
+                    activeTab === tab.id
+                      ? "text-primary border-b-2 border-primary"
+                      : "text-muted-foreground"
+                  }
+                `}
+              >
+                {tab.label}
+              </button>
+            ))}
           </div>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div>
-            <h3 className="mb-4 text-lg font-semibold">Personal Information</h3>
-            <div className="grid gap-6 md:grid-cols-2">
-              {profileFields.map((field) => (
-                <div key={field.label}>
-                  <Label className="text-muted-foreground text-xs font-semibold uppercase">
-                    {field.label}
-                  </Label>
-                  <p className="text-foreground">{field.value}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <h3 className="mb-4 text-lg font-semibold">Account Status</h3>
-            <div className="grid gap-6 md:grid-cols-2">
-              <div>
-                <Label className="text-muted-foreground text-xs font-semibold uppercase">
-                  Account Status
-                </Label>
-                <div className="mt-1">
-                  <Badge variant={user.is_active ? "default" : "destructive"}>
-                    {user.is_active ? "Active" : "Inactive"}
-                  </Badge>
-                </div>
-              </div>
-              <div>
-                <Label className="text-muted-foreground text-xs font-semibold uppercase">
-                  Email Verified
-                </Label>
-                <div className="mt-1">
-                  <Badge variant={user.is_email_verified ? "default" : "secondary"}>
-                    {user.is_email_verified ? "Verified" : "Not Verified"}
-                  </Badge>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div>
-            <h3 className="mb-4 text-lg font-semibold">Performance Statistics</h3>
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-              <div>
-                <Label className="text-muted-foreground text-xs font-semibold uppercase">
-                  Total Attempts
-                </Label>
-                <p className="text-foreground text-2xl font-bold">{user.total_attempts}</p>
-              </div>
-              <div>
-                <Label className="text-muted-foreground text-xs font-semibold uppercase">
-                  Correct Answers
-                </Label>
-                <p className="text-2xl font-bold text-green-600">{user.total_right_attempts}</p>
-              </div>
-              <div>
-                <Label className="text-muted-foreground text-xs font-semibold uppercase">
-                  Accuracy
-                </Label>
-                <p className="text-primary text-2xl font-bold">
-                  {parseFloat(user.accuracy_percent).toFixed(2)}%
-                </p>
-              </div>
-              <div>
-                <Label className="text-muted-foreground text-xs font-semibold uppercase">
-                  Completion
-                </Label>
-                <p className="text-2xl font-bold text-purple-600">{parseFloat(user.completion_percent).toFixed(2)}%</p>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+        </nav>
+      </div>
+      <div className="max-w-4xl">{renderTabContent()}</div>
     </div>
   );
 };

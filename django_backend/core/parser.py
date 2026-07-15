@@ -102,6 +102,12 @@ class QuestionCSVParser:
         if status not in QUESTION_STATUSES:
             raise ValueError(f"status must be one of {QUESTION_STATUSES}, got: {status}")
         
+        # Check for duplicate question (case-insensitive, ignoring leading/trailing whitespace)
+        question_text = question_text.strip()
+        existing_question = Question.objects(question_text__iexact=question_text).first()
+        if existing_question:
+            raise ValueError(f"A question with this text already exists (ID: {existing_question.id})")
+        
         question = Question(
             question_text=question_text,
             contributor=contributor,

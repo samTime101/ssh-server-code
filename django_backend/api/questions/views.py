@@ -9,7 +9,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from api.questions.serializers.csv_upload import CSVUploadSerializer
 from core.parser import QuestionCSVParser
-from core.constants.status import APPROVED_STATUS, IN_PROGRESS_STATUS
+from core.constants.status import APPROVED_STATUS, IN_PROGRESS_STATUS, PENDING_STATUS
 from mongo.models import Question, Bookmark, Bookmarks, Submissions
 from api.questions.serializers.question import *
 from api.questions.serializers.hierarchy import *
@@ -55,6 +55,8 @@ class QuestionViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         if self.action == 'retrieve':
             return [AllowAny()]
+        if self.action in ['create']:
+            return [IsAuthenticated()]
         return super().get_permissions()
 
     def get_queryset(self):
@@ -62,6 +64,13 @@ class QuestionViewSet(viewsets.ModelViewSet):
         qs = filter_questions_queryset(base_queryset, self.request.query_params)
         qs = filter_status(qs,self.request)
         return qs
+
+    def perform_create(self, serializer):
+        # Non-admin users can only create questions with pending status
+        if not self.request.user.has_role("ADMIN"):
+            serializer.save(status=PENDING_STATUS)
+        else:
+            serializer.save()
 
     # for get/questions/<id>, allow from any authenticated user, not just admin
     # https://github.com/users/sisani9/projects/2/views/1?pane=issue&itemId=159302989&issue=sisani9%7Csisani-eps%7C147
