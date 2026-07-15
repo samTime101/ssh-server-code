@@ -17,20 +17,9 @@ export const getQuestionProgressStatus = (
   return "pending";
 };
 
-export const getProgressClasses = (status: QuestionProgressStatus) => {
-  const bubbleClasses =
-    status === "correct"
-      ? "border-green-600 bg-green-500 text-white"
-      : status === "incorrect"
-        ? "border-red-600 bg-red-500 text-white"
-        : "border-border bg-muted text-muted-foreground";
-
-  const lineClasses =
-    status === "correct"
-      ? "bg-green-500/70"
-      : status === "incorrect"
-        ? "bg-red-500/70"
-        : "bg-border";
-
-  return { bubbleClasses, lineClasses };
-};
+export const getProgressClasses = (status: QuestionProgressStatus) =>
+  status === "correct"
+    ? "border-green-600 bg-green-100 text-green-700"
+    : status === "incorrect"
+      ? "border-destructive/30 bg-destructive/10 text-destructive"
+      : "border-border bg-muted text-muted-foreground";

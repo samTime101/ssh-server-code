@@ -157,7 +157,7 @@ const QuestionPage = () => {
 
   return (
     <div className="min-h-screen p-6">
-      <div className="mx-auto max-w-6xl space-y-6">
+      <div className="mx-auto space-y-6">
         <div className="flex items-center justify-between">
           <Button
             variant="outline"
@@ -211,28 +211,29 @@ const QuestionPage = () => {
                 Time Left: {formatRemainingTime(remainingMs)}
               </span>
             )}
-            <span className="text-muted-foreground text-sm font-medium">
-              {currentIndex + 1} / {totalCount}
-            </span>
           </div>
         </div>
 
         {isExamModeEnabled ? (
           questionCard
         ) : (
-          <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
-            <div className="space-y-6">
-              {totalCount > 0 && (
-                <QuestionProgress
-                  totalCount={totalCount}
-                  currentIndex={currentIndex}
-                  questionData={questionData}
-                  attempts={attempts}
-                />
-              )}
+          <div
+            className={`grid items-start gap-6 ${
+              totalCount > 0
+                ? "lg:grid-cols-[220px_minmax(0,1fr)_320px]"
+                : "lg:grid-cols-[minmax(0,1fr)_320px]"
+            }`}
+          >
+            {totalCount > 0 && (
+              <QuestionProgress
+                totalCount={totalCount}
+                currentIndex={currentIndex}
+                questionData={questionData}
+                attempts={attempts}
+              />
+            )}
 
-              {questionCard}
-            </div>
+            {questionCard}
 
             <QuestionNotePanel questionId={currentQuestion.id} />
           </div>

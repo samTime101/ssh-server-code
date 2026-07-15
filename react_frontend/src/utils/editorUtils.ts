@@ -12,6 +12,44 @@ const listHasContent = (items?: ListItem[]): boolean => {
   });
 };
 
+const listContentLength = (items?: ListItem[]): number => {
+  if (!items?.length) return 0;
+  return items.reduce((acc, item) => {
+    if (typeof item === "string") return acc + item.length;
+    return acc + (item.content?.length ?? 0) + listContentLength(item.items);
+  }, 0);
+};
+
+export const getEditorContentLength = (value: string): number => {
+  if (!value || !value.trim()) return 0;
+
+  try {
+    const parsed = JSON.parse(value) as OutputData;
+    const blocks = parsed?.blocks ?? [];
+
+    return blocks.reduce((total, block) => {
+      if (block.type === "paragraph" || block.type === "header") {
+        return total + ((block.data?.text as string | undefined)?.length ?? 0);
+      }
+
+      if (block.type === "list") {
+        return total + listContentLength(block.data?.items as ListItem[] | undefined);
+      }
+
+      if (block.data && typeof block.data === "object") {
+        return total + ((block.data as { text?: string }).text?.length ?? 0);
+      }
+
+      return total;
+    }, 0);
+  } catch {
+    return value.length;
+  }
+};
+
+export const isEditorContentLong = (value: string, threshold = 300): boolean =>
+  getEditorContentLength(value) > threshold;
+
 export const isEditorContentEmpty = (value: string): boolean => {
   if (!value || !value.trim()) return true;
 

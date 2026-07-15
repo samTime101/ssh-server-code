@@ -72,7 +72,8 @@ export const getNextPageQuestions = async (
 export const attemptQuestion = async (
   submissionId: string,
   questionId: string,
-  selectedOptions: string[]
+  selectedOptions: string[],
+  responseTimeSeconds = 0
 ): Promise<AttemptQuestionResponse | null> => {
   try {
     const response = await axiosInstance.post<AttemptQuestionResponse>(
@@ -80,6 +81,7 @@ export const attemptQuestion = async (
       {
         question: questionId,
         selected_answers: selectedOptions,
+        response_time_seconds: Math.max(0, Math.floor(responseTimeSeconds)),
       }
     );
 
@@ -142,4 +144,3 @@ export const submitQuestionFeedback = async (
   });
   return response.data;
 };
-

@@ -14,6 +14,7 @@ import { getImageUrl } from "@/config/apiConfig";
 import QuestionReview from "@/components/user/QuestionReview";
 import Loader from "@/components/ui/Loader";
 import ExamResultSummary from "@/components/user/ExamResultSummary";
+import { useQuestionResponseTimer } from "@/hooks/user/useQuestionResponseTimer";
 
 const MockExamPage = () => {
   const navigate = useNavigate();
@@ -83,6 +84,8 @@ const MockExamPage = () => {
   const currentQuestion: Question | null =
     questionData && questionData.length > 0 ? questionData[currentIndex] || null : null;
 
+  const { getResponseTimeSeconds, resetTimer } = useQuestionResponseTimer(currentQuestion?.id);
+
   useEffect(() => {
     window.scrollTo(0, 0);
     if (!currentQuestion) return;
@@ -141,7 +144,14 @@ const MockExamPage = () => {
     }
 
     try {
-      const result = await attemptQuestion(currentSubmissionId, question.id, selected);
+      const result = await attemptQuestion(
+        currentSubmissionId,
+        question.id,
+        selected,
+        getResponseTimeSeconds()
+      );
+
+      resetTimer();
 
       setAttempts((prev) => ({
         ...prev,

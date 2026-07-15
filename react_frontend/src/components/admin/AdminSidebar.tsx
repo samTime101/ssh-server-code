@@ -17,15 +17,24 @@ import { useAdminSidebar } from "@/hooks/useAdminSidebar";
 import type { AdminSidebarProps, CollapsibleNavGroupProps, NavItem } from "@/types/sidebar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const navButtonClass = (isActive: boolean, isCollapsed: boolean) =>
   cn(
-    "flex items-center rounded-lg transition-all duration-200",
+    "flex items-center rounded-lg border border-transparent transition-all duration-200 cursor-pointer",
     isCollapsed ? "justify-center px-2 py-3" : "gap-4 px-4 py-3",
     isActive
-      ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-sm"
-      : "text-sidebar-foreground hover:bg-sidebar-accent"
+      ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-md"
+      : "text-sidebar-foreground hover:bg-sidebar-accent hover:shadow-sm"
   );
 
 const CollapsedNavLink = ({
@@ -101,10 +110,10 @@ const CollapsibleNavGroup = ({
                       to={item.path}
                       onClick={onNavClick}
                       className={cn(
-                        "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
+                        "flex items-center gap-3 rounded-lg border border-transparent px-3 py-2 text-sm transition-all duration-200",
                         isActive
-                          ? "bg-sidebar-primary text-sidebar-primary-foreground"
-                          : "text-sidebar-foreground hover:bg-sidebar-accent"
+                          ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-md"
+                          : "text-sidebar-foreground hover:bg-sidebar-accent hover:shadow-sm"
                       )}
                     >
                       <ItemIcon size={15} />
@@ -147,10 +156,10 @@ const CollapsibleNavGroup = ({
                 to={item.path}
                 onClick={onNavClick}
                 className={cn(
-                  "flex items-center gap-3 rounded-lg px-4 py-2.5 text-sm transition-all duration-200",
+                  "flex items-center gap-3 rounded-lg border border-transparent px-4 py-2.5 text-sm transition-all duration-200",
                   isActive
-                    ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-sm"
-                    : "text-sidebar-foreground hover:bg-sidebar-accent"
+                    ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-md"
+                    : "text-sidebar-foreground hover:bg-sidebar-accent hover:shadow-sm"
                 )}
               >
                 <ItemIcon
@@ -341,7 +350,7 @@ const AdminSidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }: AdminS
                 <TooltipTrigger asChild>
                   <button
                     onClick={() => setShowLogoutModal(true)}
-                    className="text-destructive hover:bg-destructive/10 flex w-full items-center justify-center rounded-lg px-2 py-3 transition-all duration-200"
+                    className="text-destructive hover:border-destructive/20 hover:bg-destructive/10 flex w-full items-center justify-center rounded-lg border border-transparent px-2 py-3 transition-all duration-200 hover:shadow-sm"
                   >
                     <LogOut size={18} className="text-destructive" />
                   </button>
@@ -369,7 +378,7 @@ const AdminSidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }: AdminS
 
               <button
                 onClick={() => setShowLogoutModal(true)}
-                className="text-destructive hover:bg-destructive/10 flex w-full items-center gap-4 rounded-lg px-4 py-3 transition-all duration-200"
+                className="text-destructive hover:border-destructive/20 hover:bg-destructive/10 flex w-full items-center gap-4 rounded-lg border border-transparent px-4 py-3 transition-all duration-200 hover:shadow-sm"
               >
                 <LogOut size={18} className="text-destructive" />
                 <p className="text-sm font-medium">Logout</p>
@@ -377,144 +386,64 @@ const AdminSidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }: AdminS
             </>
           )}
 
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                onClick={onToggleCollapse}
-                className="text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-foreground flex w-full items-center justify-center rounded-lg px-2 py-2 transition-all duration-200"
-                aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-              >
-                {isCollapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="right">
-              {isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-            </TooltipContent>
-          </Tooltip>
+          {isCollapsed ? (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={onToggleCollapse}
+                  className={cn(navButtonClass(false, true), "w-full")}
+                  aria-label="Expand sidebar"
+                >
+                  <PanelLeftOpen size={18} className="text-muted-foreground" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="right">Expand sidebar</TooltipContent>
+            </Tooltip>
+          ) : (
+            <button
+              onClick={onToggleCollapse}
+              className={cn(navButtonClass(false, false), "w-full")}
+              aria-label="Collapse sidebar"
+            >
+              <PanelLeftClose size={18} className="text-muted-foreground" />
+              <p className="text-sm font-medium">Collapse sidebar</p>
+            </button>
+          )}
         </div>
       </aside>
 
-      {showLogoutModal && (
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            zIndex: 9999,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            backgroundColor: "rgba(0, 0, 0, 0.5)",
-            backdropFilter: "blur(4px)",
-            animation: "fadeIn 0.15s ease",
-          }}
-          onClick={() => setShowLogoutModal(false)}
+      <Dialog open={showLogoutModal} onOpenChange={setShowLogoutModal}>
+        <DialogContent
+          showCloseButton={false}
+          className="z-[60] rounded-2xl border-0 px-8 pt-9 pb-7 shadow-2xl sm:max-w-[400px]"
         >
-          <div
-            style={{
-              background: "var(--background, #fff)",
-              borderRadius: "16px",
-              padding: "36px 32px 28px",
-              width: "100%",
-              maxWidth: "400px",
-              boxShadow: "0 25px 60px rgba(0,0,0,0.25)",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              gap: "12px",
-              animation: "slideUp 0.2s ease",
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div
-              style={{
-                width: 56,
-                height: 56,
-                borderRadius: "50%",
-                background: "rgba(239,68,68,0.1)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                marginBottom: 4,
-              }}
-            >
-              <LogOut size={24} color="#ef4444" />
+          <DialogHeader className="flex flex-col items-center gap-3 text-center">
+            <div className="bg-destructive/10 mb-1 flex h-14 w-14 items-center justify-center rounded-full">
+              <LogOut size={24} className="text-destructive" />
             </div>
-
-            <h2
-              style={{
-                margin: 0,
-                fontSize: "1.2rem",
-                fontWeight: 700,
-                color: "var(--foreground, #111)",
+            <DialogTitle className="text-lg font-bold">Log Out</DialogTitle>
+            <DialogDescription className="text-center">
+              Are you sure you want to log out?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="w-full flex-row gap-3">
+            <Button variant="outline" className="flex-1" onClick={() => setShowLogoutModal(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              className="text-destructive-foreground flex-1"
+              onClick={() => {
+                setShowLogoutModal(false);
+                onClose();
+                logout();
               }}
             >
               Log Out
-            </h2>
-
-            <p
-              style={{
-                margin: "4px 0 16px",
-                fontSize: "0.925rem",
-                color: "var(--muted-foreground, #666)",
-                textAlign: "center",
-                lineHeight: 1.5,
-              }}
-            >
-              Are you sure you want to log out?
-            </p>
-
-            <div style={{ display: "flex", gap: 12, width: "100%" }}>
-              <button
-                onClick={() => setShowLogoutModal(false)}
-                style={{
-                  flex: 1,
-                  padding: "10px 0",
-                  borderRadius: 10,
-                  border: "1.5px solid var(--border, #e5e7eb)",
-                  background: "transparent",
-                  color: "var(--foreground, #111)",
-                  fontSize: "0.9rem",
-                  fontWeight: 600,
-                  cursor: "pointer",
-                  transition: "background 0.15s",
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = "var(--muted, #f3f4f6)")}
-                onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => {
-                  setShowLogoutModal(false);
-                  onClose();
-                  logout();
-                }}
-                style={{
-                  flex: 1,
-                  padding: "10px 0",
-                  borderRadius: 10,
-                  border: "none",
-                  background: "#ef4444",
-                  color: "#fff",
-                  fontSize: "0.9rem",
-                  fontWeight: 600,
-                  cursor: "pointer",
-                  transition: "background 0.15s",
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = "#dc2626")}
-                onMouseLeave={(e) => (e.currentTarget.style.background = "#ef4444")}
-              >
-                Log Out
-              </button>
-            </div>
-          </div>
-
-          <style>{`
-            @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-            @keyframes slideUp { from { transform: translateY(16px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-          `}</style>
-        </div>
-      )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 };

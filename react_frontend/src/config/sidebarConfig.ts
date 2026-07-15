@@ -10,6 +10,7 @@ import {
   SlidersHorizontal,
   MessageSquare,
   CreditCard,
+  Quote,
 } from "lucide-react";
 import type { NavItem } from "@/types/sidebar";
 
@@ -52,6 +53,12 @@ export const BOTTOM_MENU_ITEMS: NavItem[] = [
     text: "Subscriptions",
     path: "/admin/manage-subscriptions",
     allowedPermissions: ["manage-subscriptions"],
+  },
+  {
+    icon: Quote,
+    text: "Testimonials",
+    path: "/admin/testimonials",
+    allowedPermissions: ["manage-testimonials"],
   },
 ];
 
