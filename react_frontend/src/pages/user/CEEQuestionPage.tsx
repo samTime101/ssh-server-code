@@ -246,6 +246,19 @@ const CEEQuestionPage = () => {
 
         <Card className="relative overflow-visible shadow-lg">
           <CardHeader className="pb-4">
+            {currentQuestion.category_names &&
+              currentQuestion.category_names.length > 0 && (
+                <div className="mb-3 flex flex-wrap gap-2">
+                  {currentQuestion.category_names.map((category, index) => (
+                    <span
+                      key={index}
+                      className="bg-primary/10 text-primary px-3 py-1 rounded-md text-sm font-medium"
+                    >
+                      {category}
+                    </span>
+                  ))}
+                </div>
+              )}
             <h2 className="text-foreground text-xl leading-relaxed font-semibold">
               {currentQuestion.question_text}
             </h2>

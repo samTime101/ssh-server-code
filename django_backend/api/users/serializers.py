@@ -1,4 +1,5 @@
 from core.constants.roles import ROLE_USER
+from core.constants.status import APPROVED_STATUS
 from sql.models import User, Role, UserRole
 from rest_framework import serializers
 from rest_framework_mongoengine import serializers as me_serializers
@@ -17,30 +18,32 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ('id','user_guid','username', 'email', 'first_name', 'last_name', 'is_active','total_right_attempts','total_attempts', 'accuracy_percent', 'completion_percent', 'roles','is_email_verified','phonenumber', 'college')
 
-    # suruama sabai submission haru liney, tespachi sabai attempt haru liney, tespachi total right attempt, total attempt, accuracy percent calculate garne
     def _all_attempts(self, obj):
-        submissions = Submissions.objects(user_guid=obj.user_guid)
-        attempts = []
-        for submission in submissions:
-            attempts.extend(submission.attempts)
-        return attempts
+        cache_key = f"_attempts_cache_{obj.user_guid}"
+        if not hasattr(self, cache_key):
+            submissions = Submissions.objects(user_guid=obj.user_guid)
+            attempts = []
+            for submission in submissions:
+                attempts.extend(submission.attempts)
+            setattr(self, cache_key, attempts)
+        return getattr(self, cache_key)
 
     def get_total_right_attempts(self, obj):
-        attempts = self._all_attempts(obj)
-        return sum(1 for attempt in attempts if attempt.is_correct)
+        return sum(1 for attempt in self._all_attempts(obj) if attempt.is_correct)
 
     def get_total_attempts(self, obj):
         return len(self._all_attempts(obj))
 
     def get_accuracy_percent(self, obj):
-        total_attempts = self.get_total_attempts(obj)
-        if total_attempts == 0:
+        attempts = self._all_attempts(obj)
+        total = len(attempts)
+        if total == 0:
             return 0.0
-        total_right_attempts = self.get_total_right_attempts(obj)
-        return round(((total_right_attempts / total_attempts) * 100), 2)
+        correct = sum(1 for a in attempts if a.is_correct)
+        return round((correct / total) * 100, 2)
     
     def get_completion_percent(self, obj):
-        total_questions = Question.objects.count()
+        total_questions = Question.objects(status=APPROVED_STATUS).count()
         if total_questions == 0:
             return 0.0
         attempted_question_ids = {str(attempt.question.id) for attempt in self._all_attempts(obj) if getattr(attempt, 'question', None)}
@@ -87,7 +90,6 @@ class AttemptSerializer(me_serializers.EmbeddedDocumentSerializer):
         return list(subcategories)
 
     def validate_question(self, value):
-        print('value: ',value)
         return validate_object_id(value, model=Question, field_name="question")
 
     def validate(self, attrs):
@@ -140,7 +142,6 @@ class SubmissionResponseSerializer(me_serializers.EmbeddedDocumentSerializer):
     def get_correct_answers(self, obj):
         question = obj.question
         correct_answers = question.correct_answers()
-        print(correct_answers)
         selected_answers = set(obj.selected_answers)
         return list(selected_answers & correct_answers)
     
@@ -212,3 +213,52 @@ class BookmarkSerializer(me_serializers.EmbeddedDocumentSerializer):
 
 class SubmissionQuerySerializer(serializers.Serializer):
     type = serializers.CharField(required=False)
+
+# Statistics Serializers
+class CategoryPerformanceSerializer(serializers.Serializer):
+    category_name = serializers.CharField()
+    accuracy = serializers.FloatField()
+    questions_attempted = serializers.IntegerField()
+    total_questions = serializers.IntegerField()
+    average_time = serializers.FloatField(allow_null=True)
+
+class AccuracyTrendSerializer(serializers.Serializer):
+    date = serializers.DateField()
+    accuracy = serializers.FloatField()
+    questions_attempted = serializers.IntegerField()
+
+class WeeklyActivitySerializer(serializers.Serializer):
+    day = serializers.CharField()
+    questions = serializers.IntegerField()
+    study_time = serializers.IntegerField(allow_null=True)
+
+class CorrectIncorrectSerializer(serializers.Serializer):
+    correct = serializers.IntegerField()
+    incorrect = serializers.IntegerField()
+    unattempted = serializers.IntegerField()
+
+class UserStatisticsSerializer(serializers.Serializer):
+    # Basic metrics
+    overall_accuracy = serializers.FloatField()
+    total_questions_attempted = serializers.IntegerField()
+    total_correct_answers = serializers.IntegerField()
+    total_incorrect_answers = serializers.IntegerField()
+    average_time_per_question = serializers.FloatField(allow_null=True)
+    total_study_time = serializers.IntegerField(allow_null=True)
+    current_streak = serializers.IntegerField()
+    longest_streak = serializers.IntegerField()
+    
+    # Additional metrics
+    questions_solved_today = serializers.IntegerField()
+    questions_solved_this_week = serializers.IntegerField()
+    favorite_category = CategoryPerformanceSerializer(allow_null=True)
+    strongest_category = CategoryPerformanceSerializer(allow_null=True)
+    weakest_category = CategoryPerformanceSerializer(allow_null=True)
+    average_daily_study_time = serializers.FloatField(allow_null=True)
+    total_categories_practiced = serializers.IntegerField()
+    
+    # Chart data
+    accuracy_trend = AccuracyTrendSerializer(many=True)
+    weekly_activity = WeeklyActivitySerializer(many=True)
+    correct_vs_incorrect = CorrectIncorrectSerializer()
+    category_performance = CategoryPerformanceSerializer(many=True)

@@ -66,6 +66,19 @@ const QuestionPage = () => {
   const questionCard = (
     <Card className="relative overflow-visible shadow-lg">
       <CardHeader className="pb-4">
+        {currentQuestion.category_names &&
+          currentQuestion.category_names.length > 0 && (
+            <div className="mb-3 flex flex-wrap gap-2">
+              {currentQuestion.category_names.map((category, index) => (
+                <span
+                  key={index}
+                  className="bg-primary/10 text-primary px-3 py-1 rounded-md text-sm font-medium"
+                >
+                  {category}
+                </span>
+              ))}
+            </div>
+          )}
         <h2 className="text-foreground text-xl leading-relaxed font-semibold">
           {currentQuestion.question_text}
         </h2>
@@ -84,40 +97,40 @@ const QuestionPage = () => {
         <div className="space-y-4">
           {currentQuestion.option_type === "multiple"
             ? currentQuestion.options.map((option) => (
-                <MultipleChoiceOption
-                  key={option.label}
-                  option={option}
-                  handleOptionSelect={handleOptionSelect}
-                  selectedOptions={selectedOptions}
-                  disabled={isExamModeEnabled ? isSavingAnswer || isSubmittingSession : isAttempted}
-                  correctOptions={
-                    isExamModeEnabled
-                      ? []
-                      : currentAttempt?.isCorrect === false
-                        ? (currentAttempt?.actualAnswers ?? [])
-                        : (currentAttempt?.correctOptions ?? [])
-                  }
-                  showResultStyles={!isExamModeEnabled}
-                />
-              ))
+              <MultipleChoiceOption
+                key={option.label}
+                option={option}
+                handleOptionSelect={handleOptionSelect}
+                selectedOptions={selectedOptions}
+                disabled={isExamModeEnabled ? isSavingAnswer || isSubmittingSession : isAttempted}
+                correctOptions={
+                  isExamModeEnabled
+                    ? []
+                    : currentAttempt?.isCorrect === false
+                      ? (currentAttempt?.actualAnswers ?? [])
+                      : (currentAttempt?.correctOptions ?? [])
+                }
+                showResultStyles={!isExamModeEnabled}
+              />
+            ))
             : currentQuestion.options.map((option) => (
-                <SingleChoiceOption
-                  key={option.label}
-                  option={option}
-                  handleOptionSelect={handleOptionSelect}
-                  selectedOption={selectedOption}
-                  disabled={isExamModeEnabled ? isSavingAnswer || isSubmittingSession : isAttempted}
-                  correctOptions={
-                    isExamModeEnabled
-                      ? []
-                      : currentAttempt?.isCorrect === false
-                        ? (currentAttempt?.actualAnswers ?? [])
-                        : (currentAttempt?.correctOptions ?? [])
-                  }
-                  radioName={`question-${currentQuestion.id}`}
-                  showResultStyles={!isExamModeEnabled}
-                />
-              ))}
+              <SingleChoiceOption
+                key={option.label}
+                option={option}
+                handleOptionSelect={handleOptionSelect}
+                selectedOption={selectedOption}
+                disabled={isExamModeEnabled ? isSavingAnswer || isSubmittingSession : isAttempted}
+                correctOptions={
+                  isExamModeEnabled
+                    ? []
+                    : currentAttempt?.isCorrect === false
+                      ? (currentAttempt?.actualAnswers ?? [])
+                      : (currentAttempt?.correctOptions ?? [])
+                }
+                radioName={`question-${currentQuestion.id}`}
+                showResultStyles={!isExamModeEnabled}
+              />
+            ))}
         </div>
         <QuestionFeedbackWidget questionId={currentQuestion.id} />
 
