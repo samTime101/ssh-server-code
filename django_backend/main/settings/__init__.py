@@ -8,3 +8,4 @@ from .templates import *
 from .cache import *
 from .emails import *
 from .recaptcha import *
+from .sentry import *

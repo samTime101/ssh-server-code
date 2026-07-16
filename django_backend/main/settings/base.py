@@ -26,6 +26,7 @@ THIRD_PARTY_APPS = [
     'corsheaders',
     'rest_framework_simplejwt',
     'drf_recaptcha',
+    'django_filters',
 ]
 
 # https://stackoverflow.com/a/71172233
@@ -43,6 +44,8 @@ LOCAL_APPS = [
     'api.feedback',
     'api.notes',
     'api.analytics',
+    'api.subscription',
+    'api.testimonials',
 ]
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',

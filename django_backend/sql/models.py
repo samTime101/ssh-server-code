@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 import uuid
+from django.conf import settings
 from core.constants.roles import ROLE_USER
 from sql.managers.user_manager import UserManager
 
@@ -62,3 +63,41 @@ class UserRole(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.role.name}"
+
+
+class Subscription(models.Model):
+    plan_name = models.CharField(max_length=50)
+    description = models.TextField()
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    image_url = models.ImageField(upload_to='subscription_images/', null=True, blank=True)
+    number_of_months = models.PositiveIntegerField()
+    status = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ['plan_name']
+
+    def __str__(self):
+        return f"{self.plan_name}"
+    
+    def delete(self, *args, **kwargs):
+        if self.image:
+            self.image.delete(save=False)
+        super().delete(*args, **kwargs)
+
+
+class SubscriptionOrder(models.Model):
+    class Status(models.TextChoices):
+        PENDING = "PENDING", "Pending"
+        APPROVED = "APPROVED", "Approved"
+        REJECTED = "REJECTED", "Rejected"
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,related_name="subscription_requests")
+    subscription = models.ForeignKey("Subscription",on_delete=models.CASCADE,related_name="requests")
+    payment_screenshot = models.ImageField(upload_to="subscription_payments/")
+    remarks = models.TextField(blank=True)
+    status = models.CharField(max_length=20,choices=Status.choices,default=Status.PENDING)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.user} - {self.subscription}"
