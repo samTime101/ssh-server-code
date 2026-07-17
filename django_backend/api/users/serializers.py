@@ -55,13 +55,14 @@ class UserSerializer(serializers.ModelSerializer):
 class AttemptSerializer(me_serializers.EmbeddedDocumentSerializer):
     question = serializers.CharField(write_only=True)
     question_text = serializers.SerializerMethodField(read_only=True)
+    response_time_seconds = serializers.IntegerField(required=False, min_value=0, default=0)
     # SHOW SELECTED OPTION LABELS IN LIST
     selected_options_labels = serializers.SerializerMethodField(read_only=True)
     categories = serializers.SerializerMethodField(read_only=True)
     subcategories = serializers.SerializerMethodField(read_only=True)
     class Meta:
         model = Attempt
-        fields = ('question', 'selected_answers','is_correct', 'question_text', 'selected_options_labels', 'categories', 'subcategories')
+        fields = ('question', 'selected_answers','is_correct', 'response_time_seconds', 'question_text', 'selected_options_labels', 'categories', 'subcategories')
         extra_kwargs = {'is_correct':{'read_only':True}}
     
     def get_question_text(self, obj):
@@ -130,7 +131,7 @@ class SubmissionResponseSerializer(me_serializers.EmbeddedDocumentSerializer):
     actual_answers = serializers.SerializerMethodField()
     class Meta:
         model = Attempt
-        fields = ('is_correct', 'detail', 'incorrect_answers', 'correct_answers', 'selected_answers', 'actual_answers')
+        fields = ('is_correct', 'detail', 'incorrect_answers', 'correct_answers', 'selected_answers', 'actual_answers', 'response_time_seconds')
         read_only_fields = fields
 
     def get_incorrect_answers(self, obj):

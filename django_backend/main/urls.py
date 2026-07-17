@@ -13,9 +13,11 @@ urlpatterns = [
     path('api/', include('api.sets.urls')),
     path('api/', include('api.constraint.urls')),
     path('api/', include('api.feedback.urls')),
+    path('api/', include('api.testimonials.urls')),
     path('api/', include('api.notes.urls')),
     path('api/', include('api.analytics.urls')),
     path('api/', include('api.comments.urls')),
+    path('api/', include('api.subscription.urls')),
 
     
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),

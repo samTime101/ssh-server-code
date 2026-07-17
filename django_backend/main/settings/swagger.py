@@ -3,6 +3,23 @@ SPECTACULAR_SETTINGS = {
     "TITLE": "MCQ API",
     "DESCRIPTION": """
 
+## July 12, 2026
+- Added `response_time_seconds` field in AttemptSerializer to track the time taken by users to answer each question, providing insights into user performance and engagement.
+- Added specialization field in Testimonial model and serializer to allow users to specify their area of expertise or focus when submitting testimonials, enhancing the context and credibility of the feedback provided.
+
+## July 11, 2026
+- Added `testimonials` app to manage user testimonials and related functionalities.
+- added old_password validation in change password endpoint to ensure that users provide their current password before changing it, enhancing security and preventing unauthorized password changes.
+
+## July 5, 2026
+- Added reCAPTCHA validation to the feedback submission endpoint to prevent spam and automated submissions.
+- Added `subscription-orders` endpoint to allow users to request subscriptions, with admin-only access to view and manage these requests.
+- corrected the `FeedbackCreateSerializer` to use `EmailField` for the email field instead of `CharField`, ensuring proper email validation and formatting.    
+- Added sentry integration to capture and report errors and exceptions in the application for better monitoring and debugging.
+
+## June 30, 2026
+- Added `subscription` app to manage user subscriptions and related functionalities.    
+
 ## June 28, 2026
 - changed the naming conventions of auth endpoints to be more intuitive and consistent. 
 - added icon fields in heirarchy endpoints for categories and subcategories.
