@@ -24,7 +24,7 @@ const ProfilePage = () => {
     { id: "profile" as TabType, label: "My Profile" },
     { id: "statistics" as TabType, label: "My Statistics" },
     { id: "questions" as TabType, label: "My Suggested Questions" },
-    { id: "subscriptions" as TabType, label: "My Subscriptions" },
+    { id: "subscriptions" as TabType, label: "My Subscription" },
   ];
 
   const renderTabContent = () => {
@@ -51,15 +51,11 @@ const ProfilePage = () => {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`
-                  relative px-4 py-3 text-sm font-medium transition-colors
-                  hover:text-primary focus:outline-none
-                  ${
-                    activeTab === tab.id
-                      ? "text-primary border-b-2 border-primary"
-                      : "text-muted-foreground"
-                  }
-                `}
+                className={`hover:text-primary relative px-4 py-3 text-sm font-medium transition-colors focus:outline-none ${
+                  activeTab === tab.id
+                    ? "text-primary border-primary border-b-2"
+                    : "text-muted-foreground"
+                } `}
               >
                 {tab.label}
               </button>

@@ -2,7 +2,6 @@ import { useAuth } from "@/hooks/useAuth";
 import Loader from "@/components/ui/Loader";
 import AppearanceSection from "@/components/AppearanceSection";
 import SecuritySection from "@/components/SecuritySection";
-import SubscriptionSection from "@/components/SubscriptionSection";
 
 const SettingsPage = () => {
   const { user } = useAuth();
@@ -20,7 +19,6 @@ const SettingsPage = () => {
       <h1 className="text-foreground text-2xl font-semibold">Settings</h1>
       <AppearanceSection />
       <SecuritySection />
-      <SubscriptionSection />
     </div>
   );
 };
