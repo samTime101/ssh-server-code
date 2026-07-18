@@ -1,3 +1,5 @@
+export const OVERALL_STATS_SCOPE = "overall" as const;
+
 /**
  * Format seconds into a human-readable time string.
  * Returns "—" when the value is null (not yet calculated).
@@ -41,17 +43,13 @@ export const formatStudyTime = (minutes: number | null): string => {
   const remainingMinutes = Math.round(minutes % 60);
 
   if (hours < 24) {
-    return remainingMinutes > 0
-      ? `${hours}h ${remainingMinutes}m`
-      : `${hours}h`;
+    return remainingMinutes > 0 ? `${hours}h ${remainingMinutes}m` : `${hours}h`;
   }
 
   const days = Math.floor(hours / 24);
   const remainingHours = hours % 24;
 
-  return remainingHours > 0
-    ? `${days}d ${remainingHours}h`
-    : `${days}d`;
+  return remainingHours > 0 ? `${days}d ${remainingHours}h` : `${days}d`;
 };
 
 /**

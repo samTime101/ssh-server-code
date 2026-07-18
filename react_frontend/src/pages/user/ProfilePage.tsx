@@ -63,7 +63,9 @@ const ProfilePage = () => {
           </div>
         </nav>
       </div>
-      <div className="max-w-4xl">{renderTabContent()}</div>
+      <div className={activeTab === "statistics" ? "w-full" : "max-w-4xl"}>
+        {renderTabContent()}
+      </div>
     </div>
   );
 };

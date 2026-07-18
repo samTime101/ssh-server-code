@@ -16,7 +16,6 @@ import {
   AlertCircle,
 } from "lucide-react";
 
-import { useUserStatistics } from "@/hooks/user/useUserStatistics";
 import { StatCard } from "./stats/StatCard";
 import { ChartCard } from "./stats/ChartCard";
 import { DetailedStatItem } from "./stats/DetailedStatItem";
@@ -24,16 +23,16 @@ import { AccuracyTrendChart } from "./stats/AccuracyTrendChart";
 import { WeeklyActivityChart } from "./stats/WeeklyActivityChart";
 import { CorrectIncorrectChart } from "./stats/CorrectIncorrectChart";
 import { CategoryPerformanceChart } from "./stats/CategoryPerformanceChart";
-import {
-  formatAccuracy,
-  formatStudyTime,
-  formatTime,
-  STAT_COLORS,
-} from "@/utils/statisticsUtils";
+import { formatAccuracy, formatStudyTime, formatTime, STAT_COLORS } from "@/utils/statisticsUtils";
+import type { UseUserStatisticsReturn } from "@/hooks/user/useUserStatistics";
 
-const UserStatistics = () => {
+interface UserStatisticsProps {
+  statisticsState: UseUserStatisticsReturn;
+}
+
+const UserStatistics = ({ statisticsState }: UserStatisticsProps) => {
   const navigate = useNavigate();
-  const { statistics, isLoading, error, isEmpty, refetch } = useUserStatistics();
+  const { statistics, isLoading, error, isEmpty, refetch } = statisticsState;
 
   if (isLoading) {
     return <LoadingState />;
@@ -53,21 +52,6 @@ const UserStatistics = () => {
 
   return (
     <div className="space-y-8">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight">Performance Statistics</h2>
-          <p className="text-muted-foreground mt-1">
-            Track your learning progress and performance
-          </p>
-        </div>
-        <Button variant="outline" size="sm" onClick={refetch}>
-          <RefreshCw className="h-4 w-4 mr-2" />
-          Refresh
-        </Button>
-      </div>
-
-      {/* Section 1: KPI Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatCard
           title="Overall Accuracy"
@@ -97,13 +81,8 @@ const UserStatistics = () => {
         />
       </div>
 
-      {/* Section 2: Performance Charts */}
       <div className="grid gap-6 md:grid-cols-2">
-        <ChartCard
-          title="Accuracy Trend"
-          description="Your accuracy over time"
-          icon={TrendingUp}
-        >
+        <ChartCard title="Accuracy Trend" description="Your accuracy over time" icon={TrendingUp}>
           <AccuracyTrendChart data={statistics.accuracy_trend} />
         </ChartCard>
 
@@ -123,20 +102,15 @@ const UserStatistics = () => {
           <CorrectIncorrectChart data={statistics.correct_vs_incorrect} />
         </ChartCard>
 
-        <ChartCard
-          title="Category Performance"
-          description="Accuracy by category"
-          icon={Brain}
-        >
+        <ChartCard title="Category Performance" description="Accuracy by category" icon={Brain}>
           <CategoryPerformanceChart data={statistics.category_performance} />
         </ChartCard>
       </div>
 
-      {/* Section 3: Detailed Statistics */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <BarChart3 className="h-5 w-5 text-primary" />
+            <BarChart3 className="text-primary h-5 w-5" />
             Detailed Statistics
           </CardTitle>
         </CardHeader>
@@ -192,26 +166,20 @@ const UserStatistics = () => {
               />
             )}
           </div>
-
         </CardContent>
       </Card>
     </div>
   );
 };
 
-// Loading State Component
 const LoadingState = () => (
   <div className="space-y-8">
-    <div>
-      <Skeleton className="h-8 w-64 mb-2" />
-      <Skeleton className="h-4 w-96" />
-    </div>
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
       {Array.from({ length: 4 }).map((_, i) => (
         <Card key={i}>
           <CardContent className="p-6">
-            <Skeleton className="h-4 w-24 mb-2" />
-            <Skeleton className="h-8 w-32 mb-1" />
+            <Skeleton className="mb-2 h-4 w-24" />
+            <Skeleton className="mb-1 h-8 w-32" />
             <Skeleton className="h-3 w-20" />
           </CardContent>
         </Card>
@@ -232,32 +200,30 @@ const LoadingState = () => (
   </div>
 );
 
-// Error State Component
 const ErrorState = ({ error, onRetry }: { error: string; onRetry: () => void }) => (
   <Card className="border-destructive/50">
     <CardContent className="flex flex-col items-center justify-center py-12">
-      <div className="rounded-full bg-destructive/10 p-3 mb-4">
-        <AlertCircle className="h-8 w-8 text-destructive" />
+      <div className="bg-destructive/10 mb-4 rounded-full p-3">
+        <AlertCircle className="text-destructive h-8 w-8" />
       </div>
-      <h3 className="text-lg font-semibold mb-2">Failed to Load Statistics</h3>
-      <p className="text-sm text-muted-foreground mb-4 text-center max-w-md">{error}</p>
+      <h3 className="mb-2 text-lg font-semibold">Failed to Load Statistics</h3>
+      <p className="text-muted-foreground mb-4 max-w-md text-center text-sm">{error}</p>
       <Button onClick={onRetry} variant="default">
-        <RefreshCw className="h-4 w-4 mr-2" />
+        <RefreshCw className="mr-2 h-4 w-4" />
         Try Again
       </Button>
     </CardContent>
   </Card>
 );
 
-// Empty State Component
 const EmptyState = ({ onStart }: { onStart: () => void }) => (
   <Card>
     <CardContent className="flex flex-col items-center justify-center py-12">
-      <div className="rounded-full bg-muted p-4 mb-4">
-        <BarChart3 className="h-10 w-10 text-muted-foreground" />
+      <div className="bg-muted mb-4 rounded-full p-4">
+        <BarChart3 className="text-muted-foreground h-10 w-10" />
       </div>
-      <h3 className="text-lg font-semibold mb-2">No Statistics Available</h3>
-      <p className="text-sm text-muted-foreground mb-6 text-center max-w-md">
+      <h3 className="mb-2 text-lg font-semibold">No Statistics Available</h3>
+      <p className="text-muted-foreground mb-6 max-w-md text-center text-sm">
         Start solving questions to see your performance statistics and track your progress over
         time.
       </p>
