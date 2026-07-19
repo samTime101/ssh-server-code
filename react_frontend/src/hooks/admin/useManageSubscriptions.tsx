@@ -159,7 +159,11 @@ export const useManageSubscriptions = () => {
     try {
       await deleteSubscription(subscription.id);
       toast.success("Subscription deleted successfully");
-      await loadSubscriptions();
+      if (subscriptions.length === 1 && currentPage > 1) {
+        setCurrentPage((prev) => prev - 1);
+      } else {
+        await loadSubscriptions();
+      }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to delete subscription");
     }

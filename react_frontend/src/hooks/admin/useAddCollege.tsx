@@ -79,7 +79,11 @@ export const useAddCollege = () => {
     try {
       await deleteCollege(id);
       toast.success("College deleted successfully");
-      loadColleges();
+      if (colleges.length === 1 && currentPage > 1) {
+        setCurrentPage((prev) => prev - 1);
+      } else {
+        loadColleges();
+      }
     } catch {
       toast.error("Failed to delete college");
     }

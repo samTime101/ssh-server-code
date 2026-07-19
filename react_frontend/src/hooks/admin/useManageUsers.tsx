@@ -68,7 +68,11 @@ export const useManageUsers = () => {
     try {
       await deleteUser(user.user_guid);
       toast.success("User deleted successfully");
-      fetchUsers();
+      if (usersList.length === 1 && currentPage > 1) {
+        setCurrentPage((prev) => prev - 1);
+      } else {
+        fetchUsers();
+      }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to delete user");
       console.error("Error deleting user:", error);
@@ -96,6 +100,6 @@ export const useManageUsers = () => {
     handleSearchChange,
     handleDeleteUser,
     handleEditUser,
-    fetchUsers
+    fetchUsers,
   };
 };

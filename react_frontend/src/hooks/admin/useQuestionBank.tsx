@@ -129,7 +129,11 @@ export const useQuestionBank = () => {
     try {
       await deleteQuestion(question.id);
       toast.success("Question deleted successfully");
-      loadQuestions();
+      if (questionList.length === 1 && currentPage > 1) {
+        setCurrentPage((prev) => prev - 1);
+      } else {
+        loadQuestions();
+      }
     } catch (error) {
       toast.error("Failed to delete question");
       console.error("Error deleting question:", error);

@@ -79,7 +79,11 @@ export const useManageCategories = () => {
     try {
       await deleteCategory(category.id);
       toast.success("Category deleted successfully");
-      await loadCategories();
+      if (categories.length === 1 && currentPage > 1) {
+        setCurrentPage((prev) => prev - 1);
+      } else {
+        await loadCategories();
+      }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to delete category");
     }

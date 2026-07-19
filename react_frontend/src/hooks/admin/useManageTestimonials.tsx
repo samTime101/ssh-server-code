@@ -144,7 +144,11 @@ export const useManageTestimonials = () => {
     try {
       await deleteTestimonial(testimonial.id);
       toast.success("Testimonial deleted successfully");
-      await loadTestimonials();
+      if (testimonials.length === 1 && currentPage > 1) {
+        setCurrentPage((prev) => prev - 1);
+      } else {
+        await loadTestimonials();
+      }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to delete testimonial");
     }
