@@ -23,7 +23,11 @@ export const useQuestionPageController = () => {
     updateQuestionBookmark,
     sessionAttemptCount,
     sessionAttemptResults,
+    sessionAttempts,
     sessionInstanceId,
+    setSessionAttemptCount,
+    setSessionAttemptResults,
+    setSessionAttempt,
   } = useQuestions();
   const navigate = useNavigate();
 
@@ -129,6 +133,13 @@ export const useQuestionPageController = () => {
     for (let i = 0; i < Math.min(safeAttemptCount, questionData.length); i += 1) {
       const question = questionData[i];
       if (!question) continue;
+
+      const fullRecord = sessionAttempts[question.id];
+      if (fullRecord) {
+        initialAttempts[question.id] = fullRecord;
+        continue;
+      }
+
       const isCorrect = sessionAttemptResults[i];
       initialAttempts[question.id] = {
         selectedOptions: [],
@@ -139,7 +150,13 @@ export const useQuestionPageController = () => {
 
     setAttempts(initialAttempts);
     setCurrentIndex(resumeIndex);
-  }, [questionData, sessionAttemptCount, sessionAttemptResults, sessionInstanceId]);
+  }, [
+    questionData,
+    sessionAttemptCount,
+    sessionAttemptResults,
+    sessionAttempts,
+    sessionInstanceId,
+  ]);
 
   useEffect(() => {
     if (completionPromptedRef.current) return;
@@ -239,6 +256,13 @@ export const useQuestionPageController = () => {
     .slice(0, totalCount)
     .filter((question) => Boolean(attempts[question.id]?.isAttempted));
 
+  const recordSessionAttempt = (questionId: string, attempt: QuestionAttemptState) => {
+    if (attempts[questionId]?.isAttempted) return;
+    setSessionAttemptCount((prev: number) => prev + 1);
+    setSessionAttemptResults((prev: (boolean | null)[]) => [...prev, attempt.isCorrect ?? null]);
+    setSessionAttempt(questionId, attempt);
+  };
+
   const handleAttemptQuestion = async (question: Question) => {
     if (!currentSubmissionId) {
       toast.error("No active submission found. Please start a new session.");
@@ -273,18 +297,21 @@ export const useQuestionPageController = () => {
 
       resetTimer();
 
+      const newAttempt: QuestionAttemptState = {
+        selectedOptions: selected,
+        selectedOption: question.option_type === "multiple" ? undefined : selected[0],
+        isAttempted: true,
+        feedback: result?.detail ?? "",
+        correctOptions: result?.correct_answers ?? [],
+        actualAnswers: result?.actual_answers ?? [],
+        isCorrect: result.is_correct,
+      };
+
       setAttempts((prev) => ({
         ...prev,
-        [question.id]: {
-          selectedOptions: selected,
-          selectedOption: question.option_type === "multiple" ? undefined : selected[0],
-          isAttempted: true,
-          feedback: result?.detail ?? "",
-          correctOptions: result?.correct_answers ?? [],
-          actualAnswers: result?.actual_answers ?? [],
-          isCorrect: result.is_correct,
-        },
+        [question.id]: newAttempt,
       }));
+      recordSessionAttempt(question.id, newAttempt);
 
       if (result.is_correct) {
         toast.success("Correct answer!");
@@ -338,18 +365,21 @@ export const useQuestionPageController = () => {
 
       resetTimer();
 
+      const newAttempt: QuestionAttemptState = {
+        selectedOptions: selected,
+        selectedOption: currentQuestion.option_type === "multiple" ? undefined : selected[0],
+        isAttempted: true,
+        feedback: result?.detail ?? "",
+        correctOptions: result?.correct_answers ?? [],
+        actualAnswers: result?.actual_answers ?? [],
+        isCorrect: result.is_correct,
+      };
+
       setAttempts((prev) => ({
         ...prev,
-        [currentQuestion.id]: {
-          selectedOptions: selected,
-          selectedOption: currentQuestion.option_type === "multiple" ? undefined : selected[0],
-          isAttempted: true,
-          feedback: result?.detail ?? "",
-          correctOptions: result?.correct_answers ?? [],
-          actualAnswers: result?.actual_answers ?? [],
-          isCorrect: result.is_correct,
-        },
+        [currentQuestion.id]: newAttempt,
       }));
+      recordSessionAttempt(currentQuestion.id, newAttempt);
     } catch (error) {
       console.error("Error attempting question:", error);
       toast.error("Failed to save answer. Please try again.");

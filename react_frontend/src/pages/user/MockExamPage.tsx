@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { ArrowLeft, ArrowRight, Clock } from "lucide-react";
@@ -18,38 +18,71 @@ import { useQuestionResponseTimer } from "@/hooks/user/useQuestionResponseTimer"
 
 const MockExamPage = () => {
   const navigate = useNavigate();
-  const { setSessionQuestions, questionData, currentSubmissionId, resetQuestionSelection } =
-    useQuestions();
+  const {
+    setSessionQuestions,
+    questionData,
+    currentSubmissionId,
+    resetQuestionSelection,
+    sessionAttempts,
+    sessionInstanceId,
+    setSessionAttempt,
+    mockExamEndsAtMs,
+    startMockExamTimer,
+    clearMockExamTimer,
+  } = useQuestions();
+
+  const MOCK_EXAM_DURATION_SECONDS = 3 * 60 * 60; // 3 hours
 
   const [isLoading, setIsLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
   const [selectedOption, setSelectedOption] = useState<string>("");
   const [attempts, setAttempts] = useState<{ [id: string]: QuestionAttemptState }>({});
-  const [timeLeft, setTimeLeft] = useState(3 * 60 * 60); // 2 hours in seconds
+  // Derived from the persisted absolute end-timestamp (mockExamEndsAtMs) so a
+  // page refresh continues the countdown instead of resetting it.
+  const [timeLeft, setTimeLeft] = useState(() =>
+    mockExamEndsAtMs
+      ? Math.max(0, Math.round((mockExamEndsAtMs - Date.now()) / 1000))
+      : MOCK_EXAM_DURATION_SECONDS
+  );
   const [isExamFinished, setIsExamFinished] = useState(false);
+
+  const sessionInitRef = useRef<number | null>(null);
 
   const handleFinishExam = useCallback(async () => {
     if (currentSubmissionId) {
       await submitSubmission(currentSubmissionId);
     }
+    clearMockExamTimer();
     setIsExamFinished(true);
-  }, [currentSubmissionId]);
+  }, [currentSubmissionId, clearMockExamTimer]);
 
   useEffect(() => {
-    let timer: ReturnType<typeof setInterval>;
-    if (!isLoading && timeLeft > 0 && !isExamFinished) {
-      timer = setInterval(() => {
-        setTimeLeft((prev) => prev - 1);
-      }, 1000);
-    } else if (timeLeft === 0 && !isExamFinished) {
-      toast.info("Time is up!");
-      handleFinishExam();
-    }
+    if (isLoading || isExamFinished || !mockExamEndsAtMs) return;
+
+    const updateRemaining = () => {
+      const remaining = Math.max(0, Math.round((mockExamEndsAtMs - Date.now()) / 1000));
+      setTimeLeft(remaining);
+      if (remaining === 0) {
+        toast.info("Time is up!");
+        handleFinishExam();
+      }
+    };
+
+    updateRemaining();
+    const timer = setInterval(updateRemaining, 1000);
     return () => clearInterval(timer);
-  }, [isLoading, timeLeft, isExamFinished, handleFinishExam]);
+  }, [isLoading, isExamFinished, mockExamEndsAtMs, handleFinishExam]);
 
   useEffect(() => {
+    if (questionData && questionData.length > 0 && currentSubmissionId) {
+      if (!mockExamEndsAtMs) {
+        startMockExamTimer(MOCK_EXAM_DURATION_SECONDS);
+      }
+      setIsLoading(false);
+      return;
+    }
+
     const loadRandomExam = async () => {
       setIsLoading(true);
       try {
@@ -69,6 +102,7 @@ const MockExamPage = () => {
           return;
         }
         setSessionQuestions(validQuestions, session.submission_id ?? null);
+        startMockExamTimer(MOCK_EXAM_DURATION_SECONDS);
       } catch (error) {
         console.error(error);
         toast.error("Failed to load mock exam.");
@@ -85,6 +119,30 @@ const MockExamPage = () => {
     questionData && questionData.length > 0 ? questionData[currentIndex] || null : null;
 
   const { getResponseTimeSeconds, resetTimer } = useQuestionResponseTimer(currentQuestion?.id);
+
+  useEffect(() => {
+    if (sessionInitRef.current === sessionInstanceId) return;
+    sessionInitRef.current = sessionInstanceId;
+
+    if (!questionData || questionData.length === 0) {
+      setCurrentIndex(0);
+      setAttempts({});
+      return;
+    }
+
+    const restoredAttempts: Record<string, QuestionAttemptState> = {};
+    let resumeIndex = 0;
+    questionData.forEach((question: Question, idx: number) => {
+      const savedAttempt = sessionAttempts[question.id];
+      if (savedAttempt) {
+        restoredAttempts[question.id] = savedAttempt;
+        resumeIndex = Math.max(resumeIndex, Math.min(idx + 1, questionData.length - 1));
+      }
+    });
+
+    setAttempts(restoredAttempts);
+    setCurrentIndex(resumeIndex);
+  }, [questionData, sessionAttempts, sessionInstanceId]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -153,18 +211,21 @@ const MockExamPage = () => {
 
       resetTimer();
 
+      const newAttempt: QuestionAttemptState = {
+        selectedOptions: selected,
+        selectedOption: question.option_type === "multiple" ? undefined : selected[0],
+        isAttempted: true,
+        feedback: result?.detail ?? "",
+        correctOptions: result?.correct_answers ?? [],
+        actualAnswers: result?.actual_answers ?? [],
+        isCorrect: result?.is_correct ?? false,
+      };
+
       setAttempts((prev) => ({
         ...prev,
-        [question.id]: {
-          selectedOptions: selected,
-          selectedOption: question.option_type === "multiple" ? undefined : selected[0],
-          isAttempted: true,
-          feedback: result?.detail ?? "",
-          correctOptions: result?.correct_answers ?? [],
-          actualAnswers: result?.actual_answers ?? [],
-          isCorrect: result?.is_correct,
-        },
+        [question.id]: newAttempt,
       }));
+      setSessionAttempt(question.id, newAttempt);
     } catch (error) {
       console.error("Error attempting question:", error);
     }
@@ -297,19 +358,18 @@ const MockExamPage = () => {
           {/* Question Card */}
           <Card className="shadow-lg">
             <CardHeader className="pb-4">
-              {currentQuestion.category_names &&
-                currentQuestion.category_names.length > 0 && (
-                  <div className="mb-3 flex flex-wrap gap-2">
-                    {currentQuestion.category_names.map((category, index) => (
-                      <span
-                        key={index}
-                        className="bg-primary/10 text-primary px-3 py-1 rounded-md text-sm font-medium"
-                      >
-                        {category}
-                      </span>
-                    ))}
-                  </div>
-                )}
+              {currentQuestion.category_names && currentQuestion.category_names.length > 0 && (
+                <div className="mb-3 flex flex-wrap gap-2">
+                  {currentQuestion.category_names.map((category, index) => (
+                    <span
+                      key={index}
+                      className="bg-primary/10 text-primary rounded-md px-3 py-1 text-sm font-medium"
+                    >
+                      {category}
+                    </span>
+                  ))}
+                </div>
+              )}
               <h2 className="text-foreground text-xl leading-relaxed font-semibold">
                 {currentQuestion.question_text}
               </h2>
