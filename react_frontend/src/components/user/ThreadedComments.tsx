@@ -1,5 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { MessageSquare, Reply, Edit2, Trash2, Loader2, Send } from "lucide-react";
+import {
+  MessageSquare,
+  Reply,
+  Edit2,
+  Trash2,
+  Loader2,
+  Send,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useComments } from "@/hooks/useComments";
@@ -43,10 +52,10 @@ const CommentItem: React.FC<CommentItemProps> = ({
   const [replyText, setReplyText] = useState("");
   const [editText, setEditText] = useState(comment.text);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showReplies, setShowReplies] = useState(false);
 
-  // Maximum visual nesting depth to prevent layout breaking
-  // const maxDepth = 5;
-  // const paddingLeft = depth > maxDepth ? 0 : 24;
+  const replyCount = comment.replies?.length ?? 0;
+  const hasReplies = replyCount > 0;
 
   const handleReplySubmit = async () => {
     if (!replyText.trim()) return;
@@ -55,6 +64,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
       await onReply(comment.id, replyText);
       setReplyText("");
       setIsReplying(false);
+      setShowReplies(true);
     } finally {
       setIsSubmitting(false);
     }
@@ -79,7 +89,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
       <div
         className={`rounded-lg border p-4 transition-colors ${
           depth > 0
-            ? "bg-muted/10 border-l-primary/40 border-l-[3px] shadow-sm ml-2"
+            ? "bg-muted/10 border-l-primary/40 ml-2 border-l-[3px] shadow-sm"
             : "bg-card shadow-md"
         }`}
       >
@@ -202,12 +212,35 @@ const CommentItem: React.FC<CommentItemProps> = ({
         )}
       </div>
 
-      {comment.replies && comment.replies.length > 0 && (
-        <div className="flex flex-col gap-4 mt-4 relative pl-4 sm:pl-8 ml-2 sm:ml-4 border-l-2 border-border/50">
+      {hasReplies && (
+        <div className="mt-3 ml-2 pl-4 sm:ml-4 sm:pl-8">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-primary hover:text-primary h-8 px-2 font-semibold"
+            onClick={() => setShowReplies(!showReplies)}
+          >
+            {showReplies ? (
+              <>
+                <ChevronUp className="mr-1.5 h-4 w-4" />
+                Hide Replies
+              </>
+            ) : (
+              <>
+                <ChevronDown className="mr-1.5 h-4 w-4" />
+                View Replies ({replyCount})
+              </>
+            )}
+          </Button>
+        </div>
+      )}
+
+      {hasReplies && showReplies && (
+        <div className="border-border/50 relative mt-4 ml-2 flex flex-col gap-4 border-l-2 pl-4 sm:ml-4 sm:pl-8">
           {comment.replies.map((reply) => (
             <div key={reply.id} className="relative">
               {/* Small horizontal line connecting the vertical line to the reply card */}
-              <div className="absolute top-8 -left-4 sm:-left-8 w-4 sm:w-8 h-px bg-border/50" />
+              <div className="bg-border/50 absolute top-8 -left-4 h-px w-4 sm:-left-8 sm:w-8" />
               <CommentItem
                 comment={reply}
                 onReply={onReply}

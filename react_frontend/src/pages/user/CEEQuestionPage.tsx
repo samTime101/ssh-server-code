@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { useQuestions } from "@/hooks/useQuestions";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { ArrowLeft, ArrowRight, Lightbulb } from "lucide-react";
 import { attemptQuestion, submitSubmission } from "@/services/user/question-service";
@@ -17,7 +17,14 @@ import { calculateScore } from "@/utils/scoreCalculation";
 import { useQuestionResponseTimer } from "@/hooks/user/useQuestionResponseTimer";
 
 const CEEQuestionPage = () => {
-  const { questionData, currentSubmissionId, resetQuestionSelection } = useQuestions();
+  const {
+    questionData,
+    currentSubmissionId,
+    resetQuestionSelection,
+    sessionAttempts,
+    sessionInstanceId,
+    setSessionAttempt,
+  } = useQuestions();
   const navigate = useNavigate();
 
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -26,6 +33,8 @@ const CEEQuestionPage = () => {
   const [attempts, setAttempts] = useState<{ [id: string]: QuestionAttemptState }>({});
   const [showScoreModal, setShowScoreModal] = useState(false);
 
+  const sessionInitRef = useRef<number | null>(null);
+
   const currentQuestion: Question | null =
     questionData && questionData.length > 0 ? questionData[currentIndex] || null : null;
 
@@ -33,14 +42,31 @@ const CEEQuestionPage = () => {
 
   useEffect(() => {
     window.scrollTo(0, 0);
+  }, [currentIndex]);
+
+  useEffect(() => {
+    if (sessionInitRef.current === sessionInstanceId) return;
+    sessionInitRef.current = sessionInstanceId;
+
     if (!questionData || questionData.length === 0) {
       setCurrentIndex(0);
+      setAttempts({});
       return;
     }
-    setCurrentIndex(0);
-    setSelectedOptions([]);
-    setSelectedOption("");
-  }, [questionData]);
+
+    const restoredAttempts: Record<string, QuestionAttemptState> = {};
+    let resumeIndex = 0;
+    questionData.forEach((question: Question, idx: number) => {
+      const savedAttempt = sessionAttempts[question.id];
+      if (savedAttempt) {
+        restoredAttempts[question.id] = savedAttempt;
+        resumeIndex = Math.max(resumeIndex, Math.min(idx + 1, questionData.length - 1));
+      }
+    });
+
+    setAttempts(restoredAttempts);
+    setCurrentIndex(resumeIndex);
+  }, [questionData, sessionAttempts, sessionInstanceId]);
 
   useEffect(() => {
     if (!currentQuestion) return;
@@ -75,9 +101,8 @@ const CEEQuestionPage = () => {
   };
 
   const handlePreviousQuestion = () => {
-    if (!questionData || questionData.length === 0) return;
-    const prevIndex = (currentIndex - 1 + questionData.length) % questionData.length;
-    setCurrentIndex(prevIndex);
+    if (!questionData || questionData.length === 0 || currentIndex === 0) return;
+    setCurrentIndex(currentIndex - 1);
   };
 
   const handleBack = () => {
@@ -159,18 +184,21 @@ const CEEQuestionPage = () => {
 
       resetTimer();
 
+      const newAttempt: QuestionAttemptState = {
+        selectedOptions: selected,
+        selectedOption: question.option_type === "multiple" ? undefined : selected[0],
+        isAttempted: true,
+        feedback: result?.detail ?? "",
+        correctOptions: result?.correct_answers,
+        actualAnswers: result?.actual_answers ?? [],
+        isCorrect: result.is_correct,
+      };
+
       setAttempts((prev) => ({
         ...prev,
-        [question.id]: {
-          selectedOptions: selected,
-          selectedOption: question.option_type === "multiple" ? undefined : selected[0],
-          isAttempted: true,
-          feedback: result?.detail ?? "",
-          correctOptions: result?.correct_answers,
-          actualAnswers: result?.actual_answers ?? [],
-          isCorrect: result.is_correct,
-        },
+        [question.id]: newAttempt,
       }));
+      setSessionAttempt(question.id, newAttempt);
 
       if (result.is_correct) {
         toast.success("Correct answer!");
@@ -246,19 +274,18 @@ const CEEQuestionPage = () => {
 
         <Card className="relative overflow-visible shadow-lg">
           <CardHeader className="pb-4">
-            {currentQuestion.category_names &&
-              currentQuestion.category_names.length > 0 && (
-                <div className="mb-3 flex flex-wrap gap-2">
-                  {currentQuestion.category_names.map((category, index) => (
-                    <span
-                      key={index}
-                      className="bg-primary/10 text-primary px-3 py-1 rounded-md text-sm font-medium"
-                    >
-                      {category}
-                    </span>
-                  ))}
-                </div>
-              )}
+            {currentQuestion.category_names && currentQuestion.category_names.length > 0 && (
+              <div className="mb-3 flex flex-wrap gap-2">
+                {currentQuestion.category_names.map((category, index) => (
+                  <span
+                    key={index}
+                    className="bg-primary/10 text-primary rounded-md px-3 py-1 text-sm font-medium"
+                  >
+                    {category}
+                  </span>
+                ))}
+              </div>
+            )}
             <h2 className="text-foreground text-xl leading-relaxed font-semibold">
               {currentQuestion.question_text}
             </h2>

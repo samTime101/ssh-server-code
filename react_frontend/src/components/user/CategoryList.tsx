@@ -80,11 +80,21 @@ const CategoryList: React.FC<{ category: Category }> = ({ category }) => {
   const categoryProgress = calculateProgress(category.attempted_count, category.question_count);
   const isCategoryExpanded = expandedCategories.includes(category.id);
 
-  const isCategoryChecked =
+  const isCategoryFullySelected =
     selectedCategoriesId.includes(category.id) ||
     (category.sub_categories &&
       category.sub_categories.length > 0 &&
       category.sub_categories.every((sub) => selectedSubCategoryId.includes(sub.id)));
+
+  const hasPartialSubSelection =
+    !isCategoryFullySelected &&
+    !!category.sub_categories?.some((sub) => selectedSubCategoryId.includes(sub.id));
+
+  const categoryCheckState: boolean | "indeterminate" = isCategoryFullySelected
+    ? true
+    : hasPartialSubSelection
+      ? "indeterminate"
+      : false;
 
   return (
     <li
@@ -104,8 +114,8 @@ const CategoryList: React.FC<{ category: Category }> = ({ category }) => {
             <Checkbox
               className="border-input h-5 w-5 cursor-pointer appearance-none border-1"
               id={`category-${category.id}`}
-              checked={isCategoryChecked}
-              onCheckedChange={onCategoryCheckChange}
+              checked={categoryCheckState}
+              onCheckedChange={(checked) => onCategoryCheckChange(checked === true)}
             />
             <label
               htmlFor={`category-${category.id}`}

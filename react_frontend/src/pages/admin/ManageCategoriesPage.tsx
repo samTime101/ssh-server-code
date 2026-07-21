@@ -107,7 +107,7 @@ const ManageCategoriesPage = () => {
           </TableBody>
         </Table>
 
-        {pagination && pagination.total_pages > 1 && (
+        {pagination && (
           <Paginator
             currentPage={currentPage}
             totalPages={pagination.total_pages}

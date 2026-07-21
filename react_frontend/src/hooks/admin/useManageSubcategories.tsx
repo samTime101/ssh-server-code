@@ -89,7 +89,11 @@ export const useManageSubcategories = () => {
     try {
       await deleteSubCategory(subcategory.id);
       toast.success("Subcategory deleted successfully");
-      await loadSubcategories();
+      if (subcategories.length === 1 && currentPage > 1) {
+        setCurrentPage((prev) => prev - 1);
+      } else {
+        await loadSubcategories();
+      }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to delete subcategory");
     }
