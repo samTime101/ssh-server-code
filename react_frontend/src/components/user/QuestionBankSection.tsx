@@ -244,7 +244,7 @@ const QuestionBankSection = () => {
             <Search className="text-muted-foreground absolute top-1/2 left-4 h-5 w-5 -translate-y-1/2 transform" />
             <Input
               placeholder="Search by Topic, Keyword, or Question ID"
-              className="border-input focus:border-ring focus:ring-ring rounded-lg py-3 pr-4 pl-12 text-base"
+              className="border-input focus:border-ring focus:ring-ring rounded-lg py-2 pr-3 pl-12 text-base"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
