@@ -205,7 +205,7 @@ const QuestionBankSection = () => {
 
   const stats = getQuestionBankProgress(analytics);
   return (
-    <section className="mx-auto flex min-h-full max-w-[1500px] flex-1 flex-col gap-8 p-8">
+    <section className="mx-auto flex min-h-full max-w-[1500px] flex-1 flex-col gap-8 px-5 pt-0 pb-8 md:p-8">
       {/* Header Section */}
       <div className="border-border bg-card rounded-xl border p-6 shadow-sm">
         <h1 className="text-foreground mb-6 text-3xl font-bold">Question Bank</h1>
@@ -250,7 +250,7 @@ const QuestionBankSection = () => {
             />
           </div>
           <div className="mt-4 flex justify-end">
-            <label className="flex items-center space-x-2">
+            <label className="flex items-center space-x-14">
               <Checkbox
                 className="h-5 w-5 cursor-pointer appearance-none border-1 border-border"
                 checked={reattemptWrongOnly}
