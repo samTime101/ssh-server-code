@@ -249,8 +249,8 @@ const QuestionBankSection = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <div className="mt-4 flex justify-end">
-            <label className="flex items-center space-x-14">
+          <div className="mt-4 flex md:justify-end justify-start pl-4 md:pl-0">
+            <label className="flex items-center space-x-0 md:space-x-14">
               <Checkbox
                 className="h-5 w-5 cursor-pointer appearance-none border-1 border-border"
                 checked={reattemptWrongOnly}
