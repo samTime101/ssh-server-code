@@ -20,6 +20,7 @@ const QuestionPage = () => {
     questionData,
     currentIndex,
     totalCount,
+    isLastQuestion,
     attempts,
     currentAttempt,
     isAttempted,
@@ -32,11 +33,13 @@ const QuestionPage = () => {
     reviewQuestions,
     isExamModeEnabled,
     isFetchingNextPage,
+    isRestoringSession,
     handleOptionSelect,
     handleBack,
     handleReviewDone,
     handlePreviousQuestion,
     handleNextQuestion,
+    handleFinishSession,
     handleAttemptQuestion,
     handleBookmarkToggle,
     isBookmarked,
@@ -50,7 +53,7 @@ const QuestionPage = () => {
   };
 
   if (!currentQuestion) {
-    if (isFetchingNextPage) {
+    if (isFetchingNextPage || isRestoringSession) {
       return <Loader />;
     }
 
@@ -66,19 +69,18 @@ const QuestionPage = () => {
   const questionCard = (
     <Card className="relative overflow-visible shadow-lg">
       <CardHeader className="pb-4">
-        {currentQuestion.category_names &&
-          currentQuestion.category_names.length > 0 && (
-            <div className="mb-3 flex flex-wrap gap-2">
-              {currentQuestion.category_names.map((category, index) => (
-                <span
-                  key={index}
-                  className="bg-primary/10 text-primary px-3 py-1 rounded-md text-sm font-medium"
-                >
-                  {category}
-                </span>
-              ))}
-            </div>
-          )}
+        {currentQuestion.category_names && currentQuestion.category_names.length > 0 && (
+          <div className="mb-3 flex flex-wrap gap-2">
+            {currentQuestion.category_names.map((category, index) => (
+              <span
+                key={index}
+                className="bg-primary/10 text-primary rounded-md px-3 py-1 text-sm font-medium"
+              >
+                {category}
+              </span>
+            ))}
+          </div>
+        )}
         <h2 className="text-foreground text-xl leading-relaxed font-semibold">
           {currentQuestion.question_text}
         </h2>
@@ -97,40 +99,40 @@ const QuestionPage = () => {
         <div className="space-y-4">
           {currentQuestion.option_type === "multiple"
             ? currentQuestion.options.map((option) => (
-              <MultipleChoiceOption
-                key={option.label}
-                option={option}
-                handleOptionSelect={handleOptionSelect}
-                selectedOptions={selectedOptions}
-                disabled={isExamModeEnabled ? isSavingAnswer || isSubmittingSession : isAttempted}
-                correctOptions={
-                  isExamModeEnabled
-                    ? []
-                    : currentAttempt?.isCorrect === false
-                      ? (currentAttempt?.actualAnswers ?? [])
-                      : (currentAttempt?.correctOptions ?? [])
-                }
-                showResultStyles={!isExamModeEnabled}
-              />
-            ))
+                <MultipleChoiceOption
+                  key={option.label}
+                  option={option}
+                  handleOptionSelect={handleOptionSelect}
+                  selectedOptions={selectedOptions}
+                  disabled={isExamModeEnabled ? isSavingAnswer || isSubmittingSession : isAttempted}
+                  correctOptions={
+                    isExamModeEnabled
+                      ? []
+                      : currentAttempt?.isCorrect === false
+                        ? (currentAttempt?.actualAnswers ?? [])
+                        : (currentAttempt?.correctOptions ?? [])
+                  }
+                  showResultStyles={!isExamModeEnabled}
+                />
+              ))
             : currentQuestion.options.map((option) => (
-              <SingleChoiceOption
-                key={option.label}
-                option={option}
-                handleOptionSelect={handleOptionSelect}
-                selectedOption={selectedOption}
-                disabled={isExamModeEnabled ? isSavingAnswer || isSubmittingSession : isAttempted}
-                correctOptions={
-                  isExamModeEnabled
-                    ? []
-                    : currentAttempt?.isCorrect === false
-                      ? (currentAttempt?.actualAnswers ?? [])
-                      : (currentAttempt?.correctOptions ?? [])
-                }
-                radioName={`question-${currentQuestion.id}`}
-                showResultStyles={!isExamModeEnabled}
-              />
-            ))}
+                <SingleChoiceOption
+                  key={option.label}
+                  option={option}
+                  handleOptionSelect={handleOptionSelect}
+                  selectedOption={selectedOption}
+                  disabled={isExamModeEnabled ? isSavingAnswer || isSubmittingSession : isAttempted}
+                  correctOptions={
+                    isExamModeEnabled
+                      ? []
+                      : currentAttempt?.isCorrect === false
+                        ? (currentAttempt?.actualAnswers ?? [])
+                        : (currentAttempt?.correctOptions ?? [])
+                  }
+                  radioName={`question-${currentQuestion.id}`}
+                  showResultStyles={!isExamModeEnabled}
+                />
+              ))}
         </div>
         <QuestionFeedbackWidget questionId={currentQuestion.id} />
 
@@ -288,12 +290,35 @@ const QuestionPage = () => {
                 className="bg-primary hover:bg-primary/90 text-primary-foreground mt-6"
                 onClick={() => handleAttemptQuestion(currentQuestion)}
                 disabled={
-                  currentQuestion.option_type === "multiple"
+                  isSavingAnswer ||
+                  (currentQuestion.option_type === "multiple"
                     ? selectedOptions.length === 0
-                    : selectedOption === ""
+                    : selectedOption === "")
                 }
               >
-                Attempt
+                {isSavingAnswer ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <p>Saving...</p>
+                  </>
+                ) : (
+                  <p>Attempt</p>
+                )}
+              </Button>
+            ) : isLastQuestion ? (
+              <Button
+                onClick={handleFinishSession}
+                disabled={isSubmittingSession}
+                className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2"
+              >
+                {isSubmittingSession ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <p>Finishing...</p>
+                  </>
+                ) : (
+                  <p>Finish</p>
+                )}
               </Button>
             ) : (
               <Button

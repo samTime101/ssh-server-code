@@ -1,19 +1,16 @@
-import { Minus, Plus, Search, SlidersHorizontal, RefreshCw } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { Minus, Plus, Search, SlidersHorizontal } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "../ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-//import { getCategories } from "@/services/user/questionService.ts";
 import { toast } from "sonner";
 import { useQuestions } from "@/hooks/useQuestions.tsx";
 import CategoryList from "./CategoryList";
 import type { Category, GetCategoriesResponse } from "@/types/category";
-import { getCategories, getQuestionsByIds } from "@/services/user/question-service";
-import { getSubmissionHistory } from "@/services/user/history-service";
-import { SUBMISSION_PAGE_SIZE } from "@/utils/historyUtils";
+import { getCategories } from "@/services/user/question-service";
 import { getQuestionBankAnalytics } from "@/services/user/analytics-service";
 import type { QuestionBankAnalytics } from "@/types/analytics";
 import { getQuestionBankProgress } from "@/utils/questionBankUtils";
@@ -25,6 +22,9 @@ import {
   MIN_EXAM_MINUTES,
   MIN_EXAM_QUESTIONS,
 } from "@/utils/examModeUtils";
+import { resolveUnfinishedStart } from "@/utils/sessionResume";
+import { markSubmissionNonContinuable } from "@/utils/sessionTimerStorage";
+import { useContinueSessionPrompt } from "@/components/user/ContinueSessionModal";
 import { Skeleton } from "@/components/ui/skeleton";
 
 /*
@@ -50,14 +50,15 @@ const QuestionBankSection = () => {
     setSessionQuestions,
     selectedCategoriesId,
     selectedSubCategoryId,
-  } = useQuestions(); //selectedSubSubCategoryId,
+  } = useQuestions();
   const navigate = useNavigate();
+  const { ask: askContinueOrNew, modal: continueModal } = useContinueSessionPrompt(
+    "You have an unfinished question bank session. Continue where you left off, or start a new one?"
+  );
 
   const [categories, setCategories] = useState<GetCategoriesResponse>();
   const [reattemptWrongOnly, setReattemptWrongOnly] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [showRetryModal, setShowRetryModal] = useState(false);
-  const retryResolveRef = useRef<((val: boolean) => void) | null>(null);
 
   const timerMinutes = Math.floor(sessionTimerSeconds / 60);
 
@@ -65,9 +66,7 @@ const QuestionBankSection = () => {
     if (!token) return;
     const getCategoriesData = async () => {
       try {
-        const categoryResponse = await getCategories();
-
-        setCategories(categoryResponse);
+        setCategories(await getCategories());
       } catch (error) {
         console.error("Failed to fetch categories:", error);
         setCategories({ total_questions: 0, categories: [] });
@@ -77,78 +76,39 @@ const QuestionBankSection = () => {
     getCategoriesData();
   }, [token]);
 
-  const askRetryConfirm = (): Promise<boolean> =>
-    new Promise((resolve) => {
-      retryResolveRef.current = resolve;
-      setShowRetryModal(true);
-    });
-
-  const handleStartSession = async (reattemptWrongOnly: boolean) => {
+  const handleStartSession = async (wrongOnly: boolean) => {
     if (isExamModeEnabled) {
-      startSessionTimer(sessionTimerSeconds);
-      await fetchQuestions(reattemptWrongOnly);
-      navigate("/userpanel/question");
-      return;
-    } else {
       clearSessionTimer();
-    }
-
-    const startMode = await getQuestionBankStartMode();
-
-    if (startMode === "retry") {
-      const wantsRetry = await askRetryConfirm();
-      if (!wantsRetry) {
+      const submissionId = await fetchQuestions(wrongOnly);
+      if (!submissionId) {
+        toast.error("Failed to start exam session.");
         return;
       }
-    }
-
-    if (startMode === "resume") {
+      markSubmissionNonContinuable(submissionId);
+      startSessionTimer(sessionTimerSeconds);
       navigate("/userpanel/question");
       return;
     }
 
-    await fetchQuestions(reattemptWrongOnly);
-    navigate("/userpanel/question");
-  };
+    clearSessionTimer();
 
-  const getQuestionBankStartMode = async (): Promise<"resume" | "retry" | "new"> => {
     try {
-      const submissions = await getSubmissionHistory("question_bank", {
-        pageSize: SUBMISSION_PAGE_SIZE,
-        maxPages: 5,
+      const result = await resolveUnfinishedStart({
+        kind: "question_bank",
+        askContinue: askContinueOrNew,
+        setSessionQuestions,
       });
-      const activeSubmission = submissions.find((submission) => {
-        return submission.status === "in_progress";
-      });
-
-      if (!activeSubmission?.selected_question_ids?.length) {
-        const latestSubmission = submissions[0];
-        if (latestSubmission?.status === "submitted") {
-          return "retry";
-        }
-        return "new";
+      if (result === "cancel") return;
+      if (result === "resumed") {
+        navigate("/userpanel/question");
+        return;
       }
-
-      const questions = await getQuestionsByIds(activeSubmission.selected_question_ids);
-      if (questions.length === 0) {
-        return "new";
-      }
-
-      const attemptResults = (activeSubmission.attempts ?? []).map((attempt) =>
-        attempt?.is_correct === true ? true : attempt?.is_correct === false ? false : null
-      );
-
-      setSessionQuestions(
-        questions,
-        activeSubmission.submission_id,
-        activeSubmission.attempts?.length ?? 0,
-        attemptResults
-      );
-      return "resume";
     } catch (error) {
-      console.error("Failed to resume question bank session:", error);
-      return "new";
+      console.error("Failed to check previous question bank session:", error);
     }
+
+    await fetchQuestions(wrongOnly);
+    navigate("/userpanel/question");
   };
 
   const adjustQuestionCount = (direction: "inc" | "dec") => {
@@ -252,7 +212,7 @@ const QuestionBankSection = () => {
           <div className="mt-4 flex justify-end">
             <label className="flex items-center space-x-2">
               <Checkbox
-                className="h-5 w-5 cursor-pointer appearance-none border-1 border-border"
+                className="border-border h-5 w-5 cursor-pointer appearance-none border-1"
                 checked={reattemptWrongOnly}
                 onCheckedChange={() => setReattemptWrongOnly(!reattemptWrongOnly)}
               />
@@ -432,56 +392,7 @@ const QuestionBankSection = () => {
         </div>
       </div>
 
-      {/* All Questions Complete — Retry Modal */}
-      {showRetryModal && (
-        <div
-          className="animate-in fade-in fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm duration-150"
-          onClick={() => {
-            setShowRetryModal(false);
-            retryResolveRef.current?.(false);
-          }}
-        >
-          <div
-            className="bg-background animate-in slide-in-from-bottom-4 flex w-full max-w-sm flex-col items-center gap-3 rounded-2xl p-8 shadow-2xl duration-200"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Icon */}
-            <div className="mb-1 flex h-14 w-14 items-center justify-center rounded-full bg-blue-100">
-              <RefreshCw size={24} color="#4f6bff" />
-            </div>
-
-            {/* Title */}
-            <h2 className="text-foreground text-xl font-bold">All Questions Complete</h2>
-
-            {/* Message */}
-            <p className="text-muted-foreground my-1 mb-4 text-center text-sm leading-relaxed">
-              Do you want to retry the same questions?
-            </p>
-
-            {/* Buttons */}
-            <div className="flex w-full gap-3">
-              <button
-                onClick={() => {
-                  setShowRetryModal(false);
-                  retryResolveRef.current?.(false);
-                }}
-                className="border-border text-foreground hover:bg-muted flex-1 rounded-lg border-2 bg-transparent py-2.5 text-sm font-semibold transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => {
-                  setShowRetryModal(false);
-                  retryResolveRef.current?.(true);
-                }}
-                className="bg-primary hover:bg-primary/90 flex-1 rounded-lg border-0 py-2.5 text-sm font-semibold text-white transition-colors"
-              >
-                Retry
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {continueModal}
     </section>
   );
 };

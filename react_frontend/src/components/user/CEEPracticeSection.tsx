@@ -8,11 +8,17 @@ import { fetchQuestionSetSession, fetchQuestionSets } from "@/services/admin/que
 import type { QuestionSet } from "@/types/questionset";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useContinueSessionPrompt } from "@/components/user/ContinueSessionModal";
+import { resolveSetUnfinishedStart } from "@/utils/sessionResume";
 
 const CEEPracticeSection = () => {
   const { token } = useAuth();
   const { setSessionQuestions } = useQuestions();
   const navigate = useNavigate();
+  const { ask: askContinueOrNew, modal: continueModal } = useContinueSessionPrompt(
+    "You have an unfinished set session. Continue where you left off, or start a new one?"
+  );
+
   const [sets, setSets] = useState<QuestionSet[]>([]);
   const [isLoadingSets, setIsLoadingSets] = useState(false);
   const [isStarting, setIsStarting] = useState(false);
@@ -46,12 +52,32 @@ const CEEPracticeSection = () => {
     [sets]
   );
 
+  const startFreshSession = async () => {
+    if (!selectedSet) {
+      toast.error("Please select a question set");
+      return;
+    }
+    if (selectedSet.questions.length === 0) {
+      toast.error("This set has no questions");
+      return;
+    }
+
+    const session = await fetchQuestionSetSession(selectedSet.id);
+    const validQuestions = session.results ?? [];
+    if (validQuestions.length === 0) {
+      toast.error("No questions available for this set");
+      return;
+    }
+
+    setSessionQuestions(validQuestions, session.submission_id ?? null);
+    navigate("/userpanel/cee-question");
+  };
+
   const handleStart = async () => {
     if (!selectedSet) {
       toast.error("Please select a question set");
       return;
     }
-
     if (selectedSet.questions.length === 0) {
       toast.error("This set has no questions");
       return;
@@ -59,16 +85,17 @@ const CEEPracticeSection = () => {
 
     setIsStarting(true);
     try {
-      const session = await fetchQuestionSetSession(selectedSet.id);
-      const validQuestions = session.results ?? [];
-
-      if (validQuestions.length === 0) {
-        toast.error("No questions available for this set");
+      const result = await resolveSetUnfinishedStart({
+        preferredSetName: selectedSet.name,
+        askContinue: askContinueOrNew,
+        setSessionQuestions,
+      });
+      if (result === "cancel") return;
+      if (result === "resumed") {
+        navigate("/userpanel/cee-question");
         return;
       }
-
-      setSessionQuestions(validQuestions, session.submission_id ?? null);
-      navigate("/userpanel/cee-question");
+      await startFreshSession();
     } catch {
       toast.error("Failed to start CEE practice");
     } finally {
@@ -127,7 +154,6 @@ const CEEPracticeSection = () => {
               <div className="grid gap-3 md:grid-cols-2">
                 {sets.map((set) => {
                   const isSelected = set.id === selectedSetId;
-
                   return (
                     <button
                       key={set.id}
@@ -195,16 +221,14 @@ const CEEPracticeSection = () => {
               </p>
             )}
 
-            <Button
-              className="w-full"
-              onClick={handleStart}
-              disabled={!selectedSetId || isStarting || isLoadingSets}
-            >
+            <Button className="w-full" onClick={handleStart} disabled={isStarting || isLoadingSets}>
               {isStarting ? "Starting..." : "Start Practice"}
             </Button>
           </CardContent>
         </Card>
       </div>
+
+      {continueModal}
     </section>
   );
 };

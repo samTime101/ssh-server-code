@@ -7,6 +7,8 @@ import type { Question, QuestionAttemptState } from "@/types/question";
 import { getEffectiveQuestionCount } from "@/utils/examModeUtils";
 import { bookmarkQuestion, removeBookmark } from "@/services/user/bookmark-service";
 import { useQuestionResponseTimer } from "@/hooks/user/useQuestionResponseTimer";
+import { useRestoreSession } from "@/hooks/user/useRestoreSession";
+import { markSubmissionNonContinuable } from "@/utils/sessionTimerStorage";
 
 export const useQuestionPageController = () => {
   const {
@@ -21,8 +23,6 @@ export const useQuestionPageController = () => {
     resetQuestionSelection,
     currentSubmissionId,
     updateQuestionBookmark,
-    sessionAttemptCount,
-    sessionAttemptResults,
     sessionAttempts,
     sessionInstanceId,
     setSessionAttemptCount,
@@ -30,6 +30,11 @@ export const useQuestionPageController = () => {
     setSessionAttempt,
   } = useQuestions();
   const navigate = useNavigate();
+  const { isRestoringSession } = useRestoreSession({
+    kind: "question_bank",
+    fallbackPath: "/userpanel/question-bank",
+    supportExamTimer: true,
+  });
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
@@ -44,25 +49,21 @@ export const useQuestionPageController = () => {
   const prevQuestionIdsRef = useRef<string[]>([]);
   const timeoutHandledRef = useRef(false);
   const sessionInitRef = useRef<number | null>(null);
-  const completionPromptedRef = useRef(false);
 
   const currentQuestion: Question | null =
     questionData && questionData.length > 0 ? questionData[currentIndex] || null : null;
 
   const { getResponseTimeSeconds, resetTimer } = useQuestionResponseTimer(currentQuestion?.id);
-
-  const [isBookmarked, setIsBookmarked] = useState<boolean>(false);
+  const [isBookmarked, setIsBookmarked] = useState(false);
 
   useEffect(() => {
-    if (currentQuestion) {
-      setIsBookmarked(!!currentQuestion.is_bookmarked);
-    }
+    if (currentQuestion) setIsBookmarked(!!currentQuestion.is_bookmarked);
   }, [currentQuestion]);
 
   const handleBookmarkToggle = async () => {
     if (!currentQuestion) return;
     const previousState = isBookmarked;
-    setIsBookmarked(!isBookmarked); // optimistic update
+    setIsBookmarked(!isBookmarked);
     try {
       if (previousState) {
         await removeBookmark(currentQuestion.id);
@@ -71,10 +72,8 @@ export const useQuestionPageController = () => {
         await bookmarkQuestion(currentQuestion.id);
         toast.success("Question bookmarked");
       }
-      // Immutably update the question in context so the state persists
-      // across question navigation without direct object mutation
       updateQuestionBookmark(currentQuestion.id, !previousState);
-    } catch (e) {
+    } catch {
       setIsBookmarked(previousState);
       toast.error("Failed to update bookmark");
     }
@@ -86,22 +85,20 @@ export const useQuestionPageController = () => {
     const prevLength = prevDataLengthRef.current;
     prevDataLengthRef.current = questionData?.length ?? 0;
 
-    const currentIds = (questionData as Question[] | undefined)?.map((q: Question) => q.id) ?? [];
+    const currentIds = (questionData as Question[] | undefined)?.map((q) => q.id) ?? [];
     const prevIds = prevQuestionIdsRef.current;
     const isSameList =
-      currentIds.length === prevIds.length &&
-      currentIds.every((id: string, idx: number) => id === prevIds[idx]);
+      currentIds.length === prevIds.length && currentIds.every((id, idx) => id === prevIds[idx]);
     const isAppend =
       prevIds.length > 0 &&
       currentIds.length > prevIds.length &&
       prevIds.every((id, idx) => id === currentIds[idx]);
     prevQuestionIdsRef.current = currentIds;
 
-    if (!questionData || questionData.length === 0) {
+    if (!questionData?.length) {
       setCurrentIndex(0);
       return;
     }
-
     if (questionData.length > prevLength || isSameList || isAppend) return;
 
     setCurrentIndex(0);
@@ -112,7 +109,6 @@ export const useQuestionPageController = () => {
   useEffect(() => {
     if (sessionInitRef.current === sessionInstanceId) return;
     sessionInitRef.current = sessionInstanceId;
-    completionPromptedRef.current = false;
 
     setAttempts({});
     setCurrentIndex(0);
@@ -120,64 +116,22 @@ export const useQuestionPageController = () => {
     setSelectedOption("");
     setShowReview(false);
 
-    if (!questionData || questionData.length === 0) return;
-
-    const safeAttemptCount = Math.max(0, Math.floor(sessionAttemptCount));
-    if (safeAttemptCount === 0) return;
-
-    const maxIndex = Math.max(questionData.length - 1, 0);
-    const nextIndex = Math.min(safeAttemptCount, maxIndex + 1);
-    const resumeIndex = Math.min(nextIndex, maxIndex);
+    if (!questionData?.length) return;
 
     const initialAttempts: Record<string, QuestionAttemptState> = {};
-    for (let i = 0; i < Math.min(safeAttemptCount, questionData.length); i += 1) {
-      const question = questionData[i];
-      if (!question) continue;
+    let resumeIndex = 0;
+    const maxIndex = questionData.length - 1;
 
-      const fullRecord = sessionAttempts[question.id];
-      if (fullRecord) {
-        initialAttempts[question.id] = fullRecord;
-        continue;
-      }
-
-      const isCorrect = sessionAttemptResults[i];
-      initialAttempts[question.id] = {
-        selectedOptions: [],
-        isAttempted: true,
-        isCorrect: typeof isCorrect === "boolean" ? isCorrect : undefined,
-      };
-    }
+    questionData.forEach((question: Question, idx: number) => {
+      const saved = sessionAttempts[question.id];
+      if (!saved) return;
+      initialAttempts[question.id] = saved;
+      resumeIndex = Math.min(idx + 1, maxIndex);
+    });
 
     setAttempts(initialAttempts);
     setCurrentIndex(resumeIndex);
-  }, [
-    questionData,
-    sessionAttemptCount,
-    sessionAttemptResults,
-    sessionAttempts,
-    sessionInstanceId,
-  ]);
-
-  useEffect(() => {
-    if (completionPromptedRef.current) return;
-    if (!questionData || questionData.length === 0) return;
-
-    const totalAvailable = questionPagination?.count ?? questionData.length;
-    const totalCount = isExamModeEnabled
-      ? getEffectiveQuestionCount(sessionQuestionLimit, totalAvailable)
-      : totalAvailable;
-
-    if (sessionAttemptCount < totalCount || sessionAttemptCount === 0) return;
-
-    completionPromptedRef.current = true;
-    void finalizeAndExitSession();
-  }, [
-    isExamModeEnabled,
-    questionData,
-    questionPagination?.count,
-    sessionAttemptCount,
-    sessionQuestionLimit,
-  ]);
+  }, [questionData, sessionAttempts, sessionInstanceId]);
 
   useEffect(() => {
     timeoutHandledRef.current = false;
@@ -190,10 +144,10 @@ export const useQuestionPageController = () => {
     const updateRemaining = () => {
       const timeLeft = Math.max(0, sessionEndsAtMs - Date.now());
       setRemainingMs(timeLeft);
-
       if (timeLeft > 0 || timeoutHandledRef.current) return;
 
       timeoutHandledRef.current = true;
+      if (currentSubmissionId) markSubmissionNonContinuable(currentSubmissionId);
       clearSessionTimer();
       resetQuestionSelection();
       toast.error("Time is up. Session ended.");
@@ -202,11 +156,8 @@ export const useQuestionPageController = () => {
 
     updateRemaining();
     const intervalId = window.setInterval(updateRemaining, 1000);
-
-    return () => {
-      window.clearInterval(intervalId);
-    };
-  }, [clearSessionTimer, navigate, resetQuestionSelection, sessionEndsAtMs]);
+    return () => window.clearInterval(intervalId);
+  }, [clearSessionTimer, currentSubmissionId, navigate, resetQuestionSelection, sessionEndsAtMs]);
 
   useEffect(() => {
     if (!currentQuestion) return;
@@ -222,7 +173,6 @@ export const useQuestionPageController = () => {
 
   const handleOptionSelect = (label: string) => {
     if (!currentQuestion) return;
-
     if (currentQuestion.option_type === "multiple") {
       setSelectedOptions((prev) =>
         prev.includes(label) ? prev.filter((id) => id !== label) : [...prev, label]
@@ -233,6 +183,9 @@ export const useQuestionPageController = () => {
   };
 
   const handleBack = () => {
+    if (isExamModeEnabled && currentSubmissionId) {
+      markSubmissionNonContinuable(currentSubmissionId);
+    }
     clearSessionTimer();
     resetQuestionSelection();
     navigate("/userpanel");
@@ -276,7 +229,7 @@ export const useQuestionPageController = () => {
           ? [selectedOption]
           : [];
 
-    if (!selected || selected.length === 0) {
+    if (!selected.length) {
       toast.error("Please select an option before attempting the question.");
       return;
     }
@@ -289,14 +242,12 @@ export const useQuestionPageController = () => {
         selected,
         getResponseTimeSeconds()
       );
-
       if (!result) {
         toast.error("Something wrong occurred. Try again.");
         return;
       }
 
       resetTimer();
-
       const newAttempt: QuestionAttemptState = {
         selectedOptions: selected,
         selectedOption: question.option_type === "multiple" ? undefined : selected[0],
@@ -306,18 +257,11 @@ export const useQuestionPageController = () => {
         actualAnswers: result?.actual_answers ?? [],
         isCorrect: result.is_correct,
       };
-
-      setAttempts((prev) => ({
-        ...prev,
-        [question.id]: newAttempt,
-      }));
+      setAttempts((prev) => ({ ...prev, [question.id]: newAttempt }));
       recordSessionAttempt(question.id, newAttempt);
-
-      if (result.is_correct) {
-        toast.success("Correct answer!");
-      } else {
-        toast.error("Incorrect answer. Try again!");
-      }
+      toast[result.is_correct ? "success" : "error"](
+        result.is_correct ? "Correct answer!" : "Incorrect answer. Try again!"
+      );
     } catch (error) {
       console.error("Error attempting question:", error);
       toast.error("Failed to save answer. Please try again.");
@@ -328,12 +272,10 @@ export const useQuestionPageController = () => {
 
   const handleExamNextQuestion = async () => {
     if (!currentQuestion) return;
-
     if (!currentSubmissionId) {
       toast.error("No active submission found. Please start a new session.");
       return;
     }
-
     if (
       (currentQuestion.option_type === "multiple" && selectedOptions.length === 0) ||
       (currentQuestion.option_type === "single" && selectedOption === "")
@@ -357,14 +299,12 @@ export const useQuestionPageController = () => {
         selected,
         getResponseTimeSeconds()
       );
-
       if (!result) {
         toast.error("Failed to save answer. Please try again.");
         return;
       }
 
       resetTimer();
-
       const newAttempt: QuestionAttemptState = {
         selectedOptions: selected,
         selectedOption: currentQuestion.option_type === "multiple" ? undefined : selected[0],
@@ -374,11 +314,7 @@ export const useQuestionPageController = () => {
         actualAnswers: result?.actual_answers ?? [],
         isCorrect: result.is_correct,
       };
-
-      setAttempts((prev) => ({
-        ...prev,
-        [currentQuestion.id]: newAttempt,
-      }));
+      setAttempts((prev) => ({ ...prev, [currentQuestion.id]: newAttempt }));
       recordSessionAttempt(currentQuestion.id, newAttempt);
     } catch (error) {
       console.error("Error attempting question:", error);
@@ -389,7 +325,6 @@ export const useQuestionPageController = () => {
     }
 
     const nextIndex = currentIndex + 1;
-
     if (nextIndex >= totalCount) {
       try {
         setIsSubmittingSession(true);
@@ -398,7 +333,6 @@ export const useQuestionPageController = () => {
           toast.error("Failed to submit session. Please try again.");
           return;
         }
-
         setShowReview(true);
         toast.success("Session submitted. Review your answers below.");
       } catch (error) {
@@ -425,15 +359,12 @@ export const useQuestionPageController = () => {
 
   const handleNormalNextQuestion = async () => {
     if (!currentQuestion) return;
-
-    const currentAttemptForQuestion = attempts[currentQuestion.id];
-    if (!currentAttemptForQuestion?.isAttempted) {
+    if (!attempts[currentQuestion.id]?.isAttempted) {
       toast.error("Please attempt the current question before proceeding.");
       return;
     }
 
     const nextIndex = currentIndex + 1;
-
     if (nextIndex >= totalCount) {
       await finalizeAndExitSession();
       return;
@@ -457,30 +388,40 @@ export const useQuestionPageController = () => {
       await handleExamNextQuestion();
       return;
     }
-
     await handleNormalNextQuestion();
   };
 
   const finalizeAndExitSession = async () => {
     if (currentSubmissionId) {
       try {
-        await submitSubmission(currentSubmissionId);
+        setIsSubmittingSession(true);
+        const result = await submitSubmission(currentSubmissionId);
+        if (!result) {
+          toast.error("Failed to submit session. Please try again.");
+          return;
+        }
       } catch (error) {
         console.error("Error submitting session:", error);
+        toast.error("Failed to submit session. Please try again.");
+        return;
+      } finally {
+        setIsSubmittingSession(false);
       }
     }
-
-    toast.info("You've completed all questions!");
+    toast.success("Session completed!");
     clearSessionTimer();
     resetQuestionSelection();
     navigate("/userpanel/question-bank");
   };
+
+  const isLastQuestion = currentIndex + 1 >= totalCount;
 
   return {
     currentQuestion,
     questionData,
     currentIndex,
     totalCount,
+    isLastQuestion,
     attempts,
     currentAttempt,
     isAttempted,
@@ -493,15 +434,17 @@ export const useQuestionPageController = () => {
     reviewQuestions,
     isExamModeEnabled,
     isFetchingNextPage,
+    isRestoringSession,
     handleOptionSelect,
     handleBack,
     handleReviewDone,
     handleAttemptQuestion,
     handlePreviousQuestion: () => {
-      if (!questionData || questionData.length === 0 || currentIndex === 0) return;
+      if (!questionData?.length || currentIndex === 0) return;
       setCurrentIndex(currentIndex - 1);
     },
     handleNextQuestion,
+    handleFinishSession: finalizeAndExitSession,
     handleBookmarkToggle,
     isBookmarked,
   };

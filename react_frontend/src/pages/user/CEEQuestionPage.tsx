@@ -15,6 +15,8 @@ import QuestionFeedbackWidget from "@/components/user/QuestionFeedbackWidget";
 import ScoreSummaryModal from "@/components/user/ScoreSummaryModal";
 import { calculateScore } from "@/utils/scoreCalculation";
 import { useQuestionResponseTimer } from "@/hooks/user/useQuestionResponseTimer";
+import Loader from "@/components/ui/Loader";
+import { useRestoreSession } from "@/hooks/user/useRestoreSession";
 
 const CEEQuestionPage = () => {
   const {
@@ -26,6 +28,10 @@ const CEEQuestionPage = () => {
     setSessionAttempt,
   } = useQuestions();
   const navigate = useNavigate();
+  const { isRestoringSession } = useRestoreSession({
+    kind: "set",
+    fallbackPath: "/userpanel/cee-practice",
+  });
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
@@ -211,6 +217,10 @@ const CEEQuestionPage = () => {
   };
 
   if (!currentQuestion) {
+    if (isRestoringSession) {
+      return <Loader />;
+    }
+
     return (
       <div className="flex min-h-screen items-center justify-center">
         <p className="text-muted-foreground text-lg">

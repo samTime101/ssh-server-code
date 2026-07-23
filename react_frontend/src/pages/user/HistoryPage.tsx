@@ -5,7 +5,14 @@ import {
   getSubmissionMetrics,
   getSubmissionOverview,
 } from "@/utils/historyUtils";
+import {
+  fetchResumedSession,
+  applyResumedSession,
+  isContinuableSubmission,
+} from "@/utils/sessionResume";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -17,11 +24,15 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import TableSkeletonLoader from "@/components/TableSkeletonLoader";
 import Paginator from "@/components/Paginator";
 import { isAxiosError } from "axios";
+import { useQuestions } from "@/hooks/useQuestions";
 
 const HistoryPage = () => {
+  const navigate = useNavigate();
+  const { setSessionQuestions, clearSessionTimer, setIsExamModeEnabled } = useQuestions();
   const [submissionHistory, setSubmissionHistory] = useState<SubmissionHistoryItem[]>([]);
   const [overview, setOverview] = useState<SubmissionOverview>({
     totalSubmissions: 0,
@@ -31,6 +42,7 @@ const HistoryPage = () => {
   });
   const [selectedSubmission, setSelectedSubmission] = useState<SubmissionHistoryItem | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isContinuing, setIsContinuing] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [pagination, setPagination] = useState({ count: 0, total_pages: 0 });
@@ -44,7 +56,10 @@ const HistoryPage = () => {
         const data = await fetchSubmissionHistoryPage(currentPage, pageSize, {
           signal: controller.signal,
         });
-        setSubmissionHistory(data.results);
+        const withAttempts = data.results.filter(
+          (submission) => (submission.attempts?.length ?? 0) > 0
+        );
+        setSubmissionHistory(withAttempts);
         setPagination({ count: data.count, total_pages: data.total_pages });
       } catch (error) {
         if (
@@ -98,6 +113,36 @@ const HistoryPage = () => {
     setPageSize(size);
     setCurrentPage(1);
   };
+
+  const handleContinue = async () => {
+    if (!selectedSubmission || !isContinuableSubmission(selectedSubmission)) return;
+
+    setIsContinuing(true);
+    try {
+      const resumed = await fetchResumedSession(selectedSubmission.submission_id);
+      if (!resumed) {
+        toast.error("Failed to continue this session.");
+        return;
+      }
+
+      clearSessionTimer();
+      setIsExamModeEnabled(false);
+      applyResumedSession(setSessionQuestions, resumed);
+      setSelectedSubmission(null);
+      navigate(
+        selectedSubmission.type === "question_bank"
+          ? "/userpanel/question"
+          : "/userpanel/cee-question"
+      );
+    } catch (error) {
+      console.error("Failed to continue submission:", error);
+      toast.error("Failed to continue this session.");
+    } finally {
+      setIsContinuing(false);
+    }
+  };
+
+  const canContinue = selectedSubmission != null && isContinuableSubmission(selectedSubmission);
 
   return (
     <div className="space-y-6 p-6">
@@ -216,7 +261,14 @@ const HistoryPage = () => {
       <Dialog open={Boolean(selectedSubmission)} onOpenChange={() => setSelectedSubmission(null)}>
         <DialogContent className="bg-card max-h-[90vh] w-[96vw] sm:max-w-[96vw] lg:max-w-[1200px]">
           <DialogHeader>
-            <DialogTitle>Submission Details</DialogTitle>
+            <div className="flex flex-wrap items-center justify-between gap-3 pr-8">
+              <DialogTitle>Submission Details</DialogTitle>
+              {canContinue && (
+                <Button onClick={handleContinue} disabled={isContinuing}>
+                  {isContinuing ? "Continuing..." : "Continue session"}
+                </Button>
+              )}
+            </div>
           </DialogHeader>
 
           <Table className="table-fixed">

@@ -57,6 +57,38 @@ export const getSubmissionHistory = async (
   return results;
 };
 
+export const getSubmissionById = async (
+  submissionId: string,
+  signal?: AbortSignal
+): Promise<SubmissionHistoryItem | null> => {
+  if (!submissionId) return null;
+
+  try {
+    const response = await axiosInstance.get(`${API_ENDPOINTS.attemptQuestion}${submissionId}/`, {
+      signal,
+    });
+    const data = response.data as SubmissionHistoryItem;
+    if (!data?.submission_id) return null;
+    return {
+      ...data,
+      attempts: Array.isArray(data.attempts) ? data.attempts : [],
+    };
+  } catch (error) {
+    if (
+      (typeof error === "object" &&
+        error !== null &&
+        "code" in error &&
+        (error as { code?: string }).code === "ERR_CANCELED") ||
+      (error instanceof Error && error.name === "CanceledError") ||
+      signal?.aborted
+    ) {
+      throw error;
+    }
+    console.error("Failed to fetch submission by id:", error);
+    return null;
+  }
+};
+
 /** Search recent submission pages for a prior attempt on a bookmarked question. */
 export const findAttemptForQuestion = async (
   questionText: string,

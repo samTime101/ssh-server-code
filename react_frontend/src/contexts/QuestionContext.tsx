@@ -1,4 +1,4 @@
-import React, { createContext, useEffect, useState } from "react"; //useContext,
+import React, { createContext, useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth.tsx";
 import { getQuestions, getNextPageQuestions } from "@/services/user/question-service";
 import { getAllBookmarkIds } from "@/services/user/bookmark-service";
@@ -16,11 +16,12 @@ import {
   shuffleQuestions,
 } from "@/utils/examModeUtils";
 import {
-  clearPersistedQuestionSession,
-  loadPersistedQuestionSession,
-  persistQuestionSession,
-  type PersistedQuestionSession,
-} from "@/utils/questionSessionStorage";
+  clearExamTimer,
+  clearMockTimer,
+  getActiveExamTimer,
+  setExamTimer,
+  setMockTimer,
+} from "@/utils/sessionTimerStorage";
 
 export const QuestionContext = createContext<any>(null);
 
@@ -33,117 +34,57 @@ const clampSessionSeconds = (seconds: number) =>
 const QuestionProvider = ({ children }: { children: React.ReactNode }) => {
   const { token } = useAuth();
 
-  const [persistedSession] = useState<PersistedQuestionSession | null>(() =>
-    loadPersistedQuestionSession()
-  );
+  const initialExamTimer = getActiveExamTimer();
 
-  const [selectedCategoriesId, setSelectedCategoriesId] = useState<string[]>(
-    () => persistedSession?.selectedCategoriesId ?? []
-  );
-  const [selectedSubCategoryId, setSelectedSubCategoryId] = useState<string[]>(
-    () => persistedSession?.selectedSubCategoryId ?? []
-  );
-  const [selectedSubSubCategoryId, setSelectedSubSubCategoryId] = useState<string[]>(
-    () => persistedSession?.selectedSubSubCategoryId ?? []
-  );
-  const [questionData, setQuestionData] = useState<Question[]>(
-    () => persistedSession?.questionData ?? []
-  );
-  const [questionPagination, setQuestionPagination] = useState<QuestionPaginationMeta | null>(
-    () => persistedSession?.questionPagination ?? null
-  );
-  const [currentSubmissionId, setCurrentSubmissionId] = useState<string | null>(
-    () => persistedSession?.currentSubmissionId ?? null
-  );
-  const [lastFetchPayload, setLastFetchPayload] = useState<FetchQuestionsPayload | null>(
-    () => persistedSession?.lastFetchPayload ?? null
-  );
+  const [selectedCategoriesId, setSelectedCategoriesId] = useState<string[]>([]);
+  const [selectedSubCategoryId, setSelectedSubCategoryId] = useState<string[]>([]);
+  const [selectedSubSubCategoryId, setSelectedSubSubCategoryId] = useState<string[]>([]);
+  const [questionData, setQuestionData] = useState<Question[]>([]);
+  const [questionPagination, setQuestionPagination] = useState<QuestionPaginationMeta | null>(null);
+  const [currentSubmissionId, setCurrentSubmissionId] = useState<string | null>(null);
+  const [lastFetchPayload, setLastFetchPayload] = useState<FetchQuestionsPayload | null>(null);
   const [isFetchingNextPage, setIsFetchingNextPage] = useState(false);
-  const [sessionAttemptCount, setSessionAttemptCount] = useState(
-    () => persistedSession?.sessionAttemptCount ?? 0
-  );
-  const [sessionAttemptResults, setSessionAttemptResults] = useState<(boolean | null)[]>(
-    () => persistedSession?.sessionAttemptResults ?? []
-  );
-  const [sessionAttempts, setSessionAttempts] = useState<Record<string, QuestionAttemptState>>(
-    () => persistedSession?.sessionAttempts ?? {}
-  );
-  const [sessionInstanceId, setSessionInstanceId] = useState(
-    () => persistedSession?.sessionInstanceId ?? 0
-  );
-  const [sessionWrongOnly, setSessionWrongOnly] = useState(
-    () => persistedSession?.sessionWrongOnly ?? false
-  );
-  const [sessionTimerSeconds, setSessionTimerSeconds] = useState(
-    () => persistedSession?.sessionTimerSeconds ?? 30 * 60
-  );
-  const [sessionQuestionLimit, setSessionQuestionLimit] = useState(
-    () => persistedSession?.sessionQuestionLimit ?? 20
-  );
+  const [sessionAttemptCount, setSessionAttemptCount] = useState(0);
+  const [sessionAttemptResults, setSessionAttemptResults] = useState<(boolean | null)[]>([]);
+  const [sessionAttempts, setSessionAttempts] = useState<Record<string, QuestionAttemptState>>({});
+  const [sessionInstanceId, setSessionInstanceId] = useState(0);
+  const [sessionWrongOnly, setSessionWrongOnly] = useState(false);
+  const [sessionTimerSeconds, setSessionTimerSeconds] = useState(30 * 60);
+  const [sessionQuestionLimit, setSessionQuestionLimit] = useState(20);
   const [sessionEndsAtMs, setSessionEndsAtMs] = useState<number | null>(
-    () => persistedSession?.sessionEndsAtMs ?? null
+    () => initialExamTimer?.endsAtMs ?? null
   );
-  const [isExamModeEnabled, setIsExamModeEnabled] = useState(
-    () => persistedSession?.isExamModeEnabled ?? false
-  );
-  const [mockExamEndsAtMs, setMockExamEndsAtMs] = useState<number | null>(
-    () => persistedSession?.mockExamEndsAtMs ?? null
-  );
+  const [isExamModeEnabled, setIsExamModeEnabled] = useState(() => Boolean(initialExamTimer));
+  const [mockExamEndsAtMs, setMockExamEndsAtMs] = useState<number | null>(null);
 
+  // Persist timer deadlines only (not question/attempt state).
   useEffect(() => {
-    if (questionData.length === 0 && !currentSubmissionId) {
-      clearPersistedQuestionSession();
+    if (sessionEndsAtMs && currentSubmissionId && isExamModeEnabled) {
+      setExamTimer(currentSubmissionId, sessionEndsAtMs);
       return;
     }
+    if (!sessionEndsAtMs) {
+      clearExamTimer();
+    }
+  }, [sessionEndsAtMs, currentSubmissionId, isExamModeEnabled]);
 
-    persistQuestionSession({
-      selectedCategoriesId,
-      selectedSubCategoryId,
-      selectedSubSubCategoryId,
-      questionData,
-      questionPagination,
-      currentSubmissionId,
-      lastFetchPayload,
-      sessionAttemptCount,
-      sessionAttemptResults,
-      sessionAttempts,
-      sessionInstanceId,
-      sessionWrongOnly,
-      sessionTimerSeconds,
-      sessionQuestionLimit,
-      sessionEndsAtMs,
-      isExamModeEnabled,
-      mockExamEndsAtMs,
-    });
-  }, [
-    selectedCategoriesId,
-    selectedSubCategoryId,
-    selectedSubSubCategoryId,
-    questionData,
-    questionPagination,
-    currentSubmissionId,
-    lastFetchPayload,
-    sessionAttemptCount,
-    sessionAttemptResults,
-    sessionAttempts,
-    sessionInstanceId,
-    sessionWrongOnly,
-    sessionTimerSeconds,
-    sessionQuestionLimit,
-    sessionEndsAtMs,
-    isExamModeEnabled,
-    mockExamEndsAtMs,
-  ]);
+  useEffect(() => {
+    if (mockExamEndsAtMs && currentSubmissionId) {
+      setMockTimer(currentSubmissionId, mockExamEndsAtMs);
+      return;
+    }
+    if (!mockExamEndsAtMs) {
+      clearMockTimer();
+    }
+  }, [mockExamEndsAtMs, currentSubmissionId]);
 
   const handleCategorySelection = (categoryId: string) => {
-    // Filters and removes duplicates and adds the selected category ID
     setSelectedCategoriesId((prev) =>
       prev.includes(categoryId) ? prev.filter((id) => id !== categoryId) : [...prev, categoryId]
     );
   };
 
   const handleSubCategorySelection = (subCategoryId: string) => {
-    // Toggles selection of sub-category IDs
     setSelectedSubCategoryId((prev) =>
       prev.includes(subCategoryId)
         ? prev.filter((id) => id !== subCategoryId)
@@ -152,7 +93,6 @@ const QuestionProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const handleSubSubCategorySelection = (subSubCategoryId: string) => {
-    // Toggles selection of sub-sub-category IDs
     setSelectedSubSubCategoryId((prev) =>
       prev.includes(subSubCategoryId)
         ? prev.filter((id) => id !== subSubCategoryId)
@@ -160,11 +100,11 @@ const QuestionProvider = ({ children }: { children: React.ReactNode }) => {
     );
   };
 
-  const fetchQuestions = async (wrong_only?: boolean) => {
+  const fetchQuestions = async (wrong_only?: boolean): Promise<string | null> => {
     try {
       if (!token) {
         console.error("No token available");
-        return;
+        return null;
       }
       const payload: FetchQuestionsPayload = {
         category_ids: selectedCategoriesId,
@@ -175,12 +115,10 @@ const QuestionProvider = ({ children }: { children: React.ReactNode }) => {
       setLastFetchPayload(payload);
       setSessionWrongOnly(Boolean(wrong_only));
 
-      // Fetch questions and bookmark IDs in parallel
       const [response, bookmarkIds] = await Promise.all([
         getQuestions(payload),
         getAllBookmarkIds(),
       ]);
-      console.log("Questions fetched in context:", response);
 
       if (response) {
         const bookmarkSet = new Set(bookmarkIds);
@@ -188,32 +126,33 @@ const QuestionProvider = ({ children }: { children: React.ReactNode }) => {
           ? shuffleQuestions(response.results)
           : response.results;
 
-        // Stamp is_bookmarked onto every question so the question page
-        // reflects the correct state without relying on the API to include it
         const sessionQuestions = rawQuestions.map((q) => ({
           ...q,
           is_bookmarked: bookmarkSet.has(q.id),
         }));
 
+        const submissionId = response.submission_id ?? null;
         setQuestionData(sessionQuestions);
         setQuestionPagination({
           count: response.count,
           next: response.next,
           total_pages: response.total_pages,
         });
-        setCurrentSubmissionId(response.submission_id ?? null);
+        setCurrentSubmissionId(submissionId);
         setSessionAttemptCount(0);
         setSessionAttemptResults([]);
         setSessionAttempts({});
         setSessionInstanceId((prev) => prev + 1);
-      } else {
-        setQuestionData([]);
-        setQuestionPagination(null);
-        setCurrentSubmissionId(null);
-        setSessionAttemptCount(0);
-        setSessionAttemptResults([]);
-        setSessionAttempts({});
+        return submissionId;
       }
+
+      setQuestionData([]);
+      setQuestionPagination(null);
+      setCurrentSubmissionId(null);
+      setSessionAttemptCount(0);
+      setSessionAttemptResults([]);
+      setSessionAttempts({});
+      return null;
     } catch (e) {
       console.error(e);
       setQuestionData([]);
@@ -222,6 +161,7 @@ const QuestionProvider = ({ children }: { children: React.ReactNode }) => {
       setSessionAttemptCount(0);
       setSessionAttemptResults([]);
       setSessionAttempts({});
+      return null;
     }
   };
 
@@ -234,7 +174,6 @@ const QuestionProvider = ({ children }: { children: React.ReactNode }) => {
         getNextPageQuestions(questionPagination.next, lastFetchPayload),
         getAllBookmarkIds(),
       ]);
-      console.log("Next page fetched in context:", response);
 
       if (response) {
         const bookmarkSet = new Set(bookmarkIds);
@@ -283,16 +222,28 @@ const QuestionProvider = ({ children }: { children: React.ReactNode }) => {
     setSessionEndsAtMs(Date.now() + clampedSeconds * 1000);
   };
 
+  const restoreSessionTimer = (endsAtMs: number) => {
+    const remainingSeconds = Math.max(0, Math.round((endsAtMs - Date.now()) / 1000));
+    setSessionTimerSeconds(Math.max(remainingSeconds, MIN_SESSION_SECONDS));
+    setSessionEndsAtMs(endsAtMs);
+  };
+
   const clearSessionTimer = () => {
     setSessionEndsAtMs(null);
+    clearExamTimer();
   };
 
   const startMockExamTimer = (totalSeconds: number) => {
     setMockExamEndsAtMs(Date.now() + Math.max(0, Math.floor(totalSeconds)) * 1000);
   };
 
+  const restoreMockExamTimer = (endsAtMs: number) => {
+    setMockExamEndsAtMs(endsAtMs);
+  };
+
   const clearMockExamTimer = () => {
     setMockExamEndsAtMs(null);
+    clearMockTimer();
   };
 
   const resetQuestionSelection = () => {
@@ -306,24 +257,25 @@ const QuestionProvider = ({ children }: { children: React.ReactNode }) => {
     setSessionAttemptResults([]);
     setSessionAttempts({});
     setMockExamEndsAtMs(null);
-    clearPersistedQuestionSession();
+    setSessionEndsAtMs(null);
+    clearExamTimer();
+    clearMockTimer();
   };
 
   const setSessionQuestions = (
     questions: Question[],
     submissionId?: string | null,
-    attemptsCount: number = 0,
-    attemptResults: (boolean | null)[] = []
+    attemptsByQuestionId: Record<string, QuestionAttemptState> = {}
   ) => {
+    const attemptEntries = Object.values(attemptsByQuestionId);
     setQuestionData(questions);
     setQuestionPagination(null);
     setCurrentSubmissionId(submissionId ?? null);
-    setSessionAttemptCount(Math.max(0, Math.floor(attemptsCount)));
-    setSessionAttemptResults(attemptResults);
-    setSessionAttempts({});
+    setSessionAttemptCount(attemptEntries.length);
+    setSessionAttemptResults(attemptEntries.map((attempt) => attempt.isCorrect ?? null));
+    setSessionAttempts(attemptsByQuestionId);
     setSessionInstanceId((prev) => prev + 1);
     setSessionWrongOnly(false);
-    setMockExamEndsAtMs(null);
   };
 
   const setSessionAttempt = (questionId: string, attempt: QuestionAttemptState) => {
@@ -372,9 +324,11 @@ const QuestionProvider = ({ children }: { children: React.ReactNode }) => {
         configureSessionTimer,
         configureSessionQuestionLimit,
         startSessionTimer,
+        restoreSessionTimer,
         clearSessionTimer,
         mockExamEndsAtMs,
         startMockExamTimer,
+        restoreMockExamTimer,
         clearMockExamTimer,
         resetQuestionSelection,
       }}
