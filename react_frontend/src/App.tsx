@@ -198,7 +198,7 @@ const App = () => {
         </Route>
       </Route>
       <Route path="/" element={<RootRedirect />} />
-      <Route path="*" element={<div>404 - Page Not Found</div>} />
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 };
