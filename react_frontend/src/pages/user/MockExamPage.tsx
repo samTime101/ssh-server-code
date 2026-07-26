@@ -15,6 +15,10 @@ import QuestionReview from "@/components/user/QuestionReview";
 import Loader from "@/components/ui/Loader";
 import ExamResultSummary from "@/components/user/ExamResultSummary";
 import { useQuestionResponseTimer } from "@/hooks/user/useQuestionResponseTimer";
+import { applyResumedSession, fetchResumedSession } from "@/utils/sessionResume";
+import { getActiveMockTimer, markSubmissionNonContinuable } from "@/utils/sessionTimerStorage";
+
+const MOCK_EXAM_DURATION_SECONDS = 3 * 60 * 60; // 3 hours
 
 const MockExamPage = () => {
   const navigate = useNavigate();
@@ -28,18 +32,15 @@ const MockExamPage = () => {
     setSessionAttempt,
     mockExamEndsAtMs,
     startMockExamTimer,
+    restoreMockExamTimer,
     clearMockExamTimer,
   } = useQuestions();
-
-  const MOCK_EXAM_DURATION_SECONDS = 3 * 60 * 60; // 3 hours
 
   const [isLoading, setIsLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
   const [selectedOption, setSelectedOption] = useState<string>("");
   const [attempts, setAttempts] = useState<{ [id: string]: QuestionAttemptState }>({});
-  // Derived from the persisted absolute end-timestamp (mockExamEndsAtMs) so a
-  // page refresh continues the countdown instead of resetting it.
   const [timeLeft, setTimeLeft] = useState(() =>
     mockExamEndsAtMs
       ? Math.max(0, Math.round((mockExamEndsAtMs - Date.now()) / 1000))
@@ -75,43 +76,63 @@ const MockExamPage = () => {
   }, [isLoading, isExamFinished, mockExamEndsAtMs, handleFinishExam]);
 
   useEffect(() => {
-    if (questionData && questionData.length > 0 && currentSubmissionId) {
-      if (!mockExamEndsAtMs) {
-        startMockExamTimer(MOCK_EXAM_DURATION_SECONDS);
-      }
-      setIsLoading(false);
-      return;
-    }
+    let cancelled = false;
 
-    const loadRandomExam = async () => {
+    const bootstrap = async () => {
       setIsLoading(true);
+
+      if (questionData?.length > 0 && currentSubmissionId) {
+        if (!mockExamEndsAtMs) {
+          startMockExamTimer(MOCK_EXAM_DURATION_SECONDS);
+        }
+        if (!cancelled) setIsLoading(false);
+        return;
+      }
+
       try {
+        const mockTimer = getActiveMockTimer();
+        if (mockTimer) {
+          const resumed = await fetchResumedSession(mockTimer.submissionId);
+          if (cancelled) return;
+          if (resumed) {
+            applyResumedSession(setSessionQuestions, resumed);
+            restoreMockExamTimer(mockTimer.endsAtMs);
+            if (!cancelled) setIsLoading(false);
+            return;
+          }
+          clearMockExamTimer();
+        }
+
         const { sets } = await fetchQuestionSets();
-        if (!sets || sets.length === 0) {
+        if (!sets?.length) {
           toast.error("No exam sets available.");
-          setIsLoading(false);
           return;
         }
+
         const randomSet = sets[Math.floor(Math.random() * sets.length)];
         const session = await fetchQuestionSetSession(randomSet.id);
         const validQuestions = session.results ?? [];
-
-        if (validQuestions.length === 0) {
+        if (!validQuestions.length) {
           toast.error("The selected random set has no questions.");
-          setIsLoading(false);
           return;
         }
-        setSessionQuestions(validQuestions, session.submission_id ?? null);
+
+        const submissionId = session.submission_id ?? null;
+        if (submissionId) markSubmissionNonContinuable(submissionId);
+        setSessionQuestions(validQuestions, submissionId);
         startMockExamTimer(MOCK_EXAM_DURATION_SECONDS);
       } catch (error) {
         console.error(error);
         toast.error("Failed to load mock exam.");
       } finally {
-        setIsLoading(false);
+        if (!cancelled) setIsLoading(false);
       }
     };
 
-    loadRandomExam();
+    void bootstrap();
+    return () => {
+      cancelled = true;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -160,7 +181,6 @@ const MockExamPage = () => {
   const handleNextQuestion = async () => {
     if (!currentQuestion) return;
 
-    // Require at least one option to be selected before proceeding
     if (
       (currentQuestion.option_type === "multiple" && selectedOptions.length === 0) ||
       (currentQuestion.option_type === "single" && selectedOption === "")
@@ -169,7 +189,6 @@ const MockExamPage = () => {
       return;
     }
 
-    // Save the answer before moving to next question
     if (!attempts[currentQuestion.id]?.isAttempted) {
       await handleAttemptQuestion(currentQuestion);
     }
@@ -195,7 +214,6 @@ const MockExamPage = () => {
           ? [selectedOption]
           : [];
 
-    // Ensure at least one option is selected
     if (selected.length === 0) {
       toast.error("Please select at least one option.");
       return;
@@ -243,6 +261,10 @@ const MockExamPage = () => {
   };
 
   const handleExit = () => {
+    if (currentSubmissionId) {
+      markSubmissionNonContinuable(currentSubmissionId);
+    }
+    clearMockExamTimer();
     resetQuestionSelection();
     navigate("/userpanel");
   };
@@ -300,7 +322,6 @@ const MockExamPage = () => {
   return (
     <div className="bg-background flex min-h-screen items-center justify-center p-4 md:p-8">
       <div className="flex w-full max-w-6xl flex-col gap-6 md:flex-row">
-        {/* Left Side: Question Bubbles */}
         <div className="w-full flex-shrink-0 md:sticky md:top-8 md:w-72 md:self-start">
           <Card className="shadow-lg">
             <CardHeader className="pb-4">
@@ -330,9 +351,7 @@ const MockExamPage = () => {
           </Card>
         </div>
 
-        {/* Main Workspace */}
         <div className="flex-1 space-y-6">
-          {/* Header & Progress */}
           <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between">
               <Button
@@ -355,7 +374,6 @@ const MockExamPage = () => {
             />
           </div>
 
-          {/* Question Card */}
           <Card className="shadow-lg">
             <CardHeader className="pb-4">
               {currentQuestion.category_names && currentQuestion.category_names.length > 0 && (

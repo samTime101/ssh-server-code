@@ -1,4 +1,5 @@
 export interface Attempt {
+  question?: string | { id?: string } | null;
   subcategories: string[];
   categories: string[];
   question_text: string;
@@ -12,6 +13,7 @@ export interface SubmissionHistoryItem {
   submission_label: string;
   submission_id: string;
   status: string;
+  type?: string;
   attempts: Attempt[];
   selected_question_ids?: string[];
   started_at?: string | null;
