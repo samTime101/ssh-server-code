@@ -7,6 +7,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv("SECRET_KEY")
 ENVIRONMENT = os.getenv("DJANGO_ENV", "development")
+# Google OAuth
+GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
+GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
+GOOGLE_REDIRECT_URI = os.getenv("GOOGLE_REDIRECT_URI")
 DEBUG = ENVIRONMENT != "production"
 ALLOWED_HOSTS = ["*"] if DEBUG else os.getenv("ALLOWED_HOSTS","").split(",")
 

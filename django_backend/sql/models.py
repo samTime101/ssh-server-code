@@ -31,6 +31,12 @@ class User(AbstractUser):
     last_name = models.CharField(max_length=20)
     # aaileko lagi null allowed xa, that means college filed napathuada pani hunxa
     college = models.CharField(max_length=100, null=True, blank=True)
+    google_sub = models.CharField(
+        max_length=255,
+        unique=True,
+        null=True,
+        blank=True,
+    )
     objects = UserManager()
     # Disabling is_active, is_staff, is_superuser from AbstractUser
     is_staff = None
