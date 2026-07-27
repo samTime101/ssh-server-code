@@ -94,3 +94,77 @@ class VerifiedTokenObtainPairSerializer(TokenObtainPairSerializer):
         if not self.user.is_email_verified:
             raise AuthenticationFailed("Please verify your email address before signing in.")
         return data
+
+
+
+class GoogleLoginSerializer(serializers.Serializer):
+    code = serializers.CharField(required=True)
+
+
+class GoogleExistingUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('user_guid', 'email', 'username', 'phonenumber', 'first_name', 'last_name', 'college')
+        read_only_fields = fields
+
+
+class GoogleSignupSerializer(serializers.Serializer):
+    signup_token = serializers.CharField(required=True)
+    username = serializers.CharField(max_length=30, required=True)
+    phonenumber = serializers.CharField(max_length=10, required=True)
+    college = serializers.CharField(max_length=100, required=True)
+
+    def validate_username(self, value):
+        if User.objects.filter(username=value).exists():
+            raise serializers.ValidationError("A user with that username already exists.")
+        return value
+
+    def validate_phonenumber(self, value):
+        if User.objects.filter(phonenumber=value).exists():
+            raise serializers.ValidationError(
+                "A user with that phonenumber already exists."
+            )
+        return value
+
+    def validate_signup_token(self, value):
+        from core.token.google_signup.verify import verify_google_signup_token
+
+        return verify_google_signup_token(value)
+
+    def validate(self, attrs):
+        token_payload = attrs["signup_token"]
+        email = token_payload["email"]
+        google_sub = token_payload["google_sub"]
+
+        if User.objects.filter(email=email).exists():
+            raise serializers.ValidationError(
+                {"email": ["A user with that email already exists."]}
+            )
+
+        if User.objects.filter(google_sub=google_sub).exists():
+            raise serializers.ValidationError(
+                {"google_sub": ["A user with that Google account already exists."]}
+            )
+
+        attrs["token_payload"] = token_payload
+        return attrs
+
+    def create(self, validated_data):
+        token_payload = validated_data.pop("token_payload")
+        validated_data.pop("signup_token", None)
+        first_name = (token_payload.get("first_name") or "")[:20]
+        last_name = (token_payload.get("last_name") or "")[:20]
+
+        user = User(
+            email=token_payload["email"],
+            username=validated_data["username"],
+            phonenumber=validated_data["phonenumber"],
+            first_name=first_name,
+            last_name=last_name,
+            college=validated_data["college"],
+            google_sub=token_payload["google_sub"],
+            is_email_verified=True,
+        )
+        user.set_unusable_password()
+        user.save()
+        return user
