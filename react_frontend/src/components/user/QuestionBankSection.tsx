@@ -165,7 +165,7 @@ const QuestionBankSection = () => {
 
   const stats = getQuestionBankProgress(analytics);
   return (
-    <section className="mx-auto flex min-h-full max-w-[1500px] flex-1 flex-col gap-8 p-8">
+    <section className="mx-auto flex min-h-full max-w-[1500px] flex-1 flex-col gap-8 px-5 pt-0 pb-8 md:p-8">
       {/* Header Section */}
       <div className="border-border bg-card rounded-xl border p-6 shadow-sm">
         <h1 className="text-foreground mb-6 text-3xl font-bold">Question Bank</h1>
@@ -204,13 +204,13 @@ const QuestionBankSection = () => {
             <Search className="text-muted-foreground absolute top-1/2 left-4 h-5 w-5 -translate-y-1/2 transform" />
             <Input
               placeholder="Search by Topic, Keyword, or Question ID"
-              className="border-input focus:border-ring focus:ring-ring rounded-lg py-3 pr-4 pl-12 text-base"
+              className="border-input focus:border-ring focus:ring-ring rounded-lg py-2 pr-3 pl-12 text-base"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <div className="mt-4 flex justify-end">
-            <label className="flex items-center space-x-2">
+          <div className="mt-4 flex md:justify-end justify-start pl-4 md:pl-0">
+            <label className="flex items-center space-x-0 md:space-x-14">
               <Checkbox
                 className="border-border h-5 w-5 cursor-pointer appearance-none border-1"
                 checked={reattemptWrongOnly}
