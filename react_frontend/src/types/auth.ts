@@ -58,3 +58,67 @@ export interface ResetPasswordVerifyRequest {
   new_password: string;
   confirm_new_password: string;
 }
+
+export interface GoogleLoginRequest {
+  code: string;
+}
+
+export interface GoogleProfile {
+  email: string;
+  first_name: string;
+  last_name: string;
+}
+
+export interface GoogleNewUserResponse {
+  is_new_user: true;
+  signup_token: string;
+  profile: GoogleProfile;
+  /** @deprecated Temporary flat fields from Phase 1; prefer profile. */
+  email?: string;
+  first_name?: string;
+  last_name?: string;
+}
+
+export interface GoogleExistingUserResponse {
+  is_new_user: false;
+  access: string;
+  refresh: string;
+  user: {
+    user_guid: string;
+    email: string;
+    username: string;
+    phonenumber: string;
+    first_name: string;
+    last_name: string;
+    college: string;
+  };
+}
+
+export type GoogleLoginResponse = GoogleNewUserResponse | GoogleExistingUserResponse;
+
+export type GoogleSignupResponse = GoogleExistingUserResponse;
+
+/**
+ * Normalized pending Google signup state passed to Complete Profile.
+ */
+export interface GoogleSignupPending {
+  signupToken: string;
+  profile: GoogleProfile;
+}
+
+export interface GoogleSignupRequest {
+  signup_token: string;
+  username: string;
+  phonenumber: string;
+  college: string;
+}
+
+export interface CompleteProfileFormValues {
+  username: string;
+  phonenumber: string;
+  college: string;
+}
+
+export interface CompleteProfileLocationState {
+  googleSignup: GoogleSignupPending;
+}
