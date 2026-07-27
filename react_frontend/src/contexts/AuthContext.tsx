@@ -52,10 +52,6 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, [token]);
 
-  useEffect(() => {
-    console.log("AuthContext user changed:", user);
-  }, [user]);
-
   const fetchUserInfo = async (accessToken: string): Promise<User | null> => {
     if (!accessToken) return null;
 

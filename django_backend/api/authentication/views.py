@@ -45,7 +45,6 @@ class EmailVerifyView(APIView):
     serializer_class = EmailVerifySerializer
     def get(self, request, token):
         verification_result = verify_email_token(token)
-        print(f"Verification result: {verification_result}")
         if verification_result == "EMAIL_VERIFICATION_SUCCESS":
             return Response(verified_email(), status=status.HTTP_200_OK)
         elif verification_result == "EMAIL_ALREADY_VERIFIED":

@@ -13,7 +13,6 @@ def exchange_code_for_token(code: str):
     client_id = settings.GOOGLE_CLIENT_ID
     client_secret = settings.GOOGLE_CLIENT_SECRET
     redirect_uri = settings.GOOGLE_REDIRECT_URI
-    print(f"Client ID: {client_id}, Client Secret: {client_secret}, Redirect URI: {redirect_uri}")
     payload = {
         "code": code,
         "client_id": client_id,
