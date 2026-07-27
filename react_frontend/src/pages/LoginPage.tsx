@@ -15,6 +15,9 @@ import { requestPasswordResetService } from "@/services/auth";
 import { toast } from "sonner";
 import RecaptchaField from "@/components/RecaptchaField";
 import { useRecaptchaGate } from "@/hooks/useRecaptchaGate";
+import GoogleSignInButton from "@/components/GoogleSignInButton";
+import { Separator } from "@/components/ui/separator";
+import { isGoogleAuthConfigured } from "@/config/googleAuth";
 
 const LoginPage = () => {
   const { login } = useAuth();
@@ -166,6 +169,16 @@ const LoginPage = () => {
             {loading ? "Signing In..." : "Sign In"}
           </Button>
         </form>
+        {isGoogleAuthConfigured && (
+          <div className="mt-6 space-y-4">
+            <div className="relative flex items-center gap-3">
+              <Separator className="flex-1" />
+              <span className="text-muted-foreground shrink-0 text-xs uppercase">or</span>
+              <Separator className="flex-1" />
+            </div>
+            <GoogleSignInButton disabled={loading} />
+          </div>
+        )}
       </CardContent>
       <CardFooter className="flex justify-center">
         <p className="text-muted-foreground text-sm">
