@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { useConfirm } from "@/hooks/useConfirm";
 import {
   createConstraint,
   deleteConstraint,
@@ -18,6 +19,7 @@ type RuleDraft = {
 const emptyRule = (): RuleDraft => ({ categoryId: "", count: "" });
 
 export const useManageConstraints = () => {
+  const { confirm, modal } = useConfirm();
   const [constraints, setConstraints] = useState<Constraint[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -161,7 +163,8 @@ export const useManageConstraints = () => {
   };
 
   const handleDelete = async (constraint: Constraint) => {
-    if (!window.confirm(`Delete "${constraint.name}"?`)) return;
+    if (!(await confirm(`Are you sure you want to delete the constraint "${constraint.name}"?`)))
+      return;
 
     try {
       await deleteConstraint(constraint.id);
@@ -190,5 +193,6 @@ export const useManageConstraints = () => {
     removeRule,
     handleSubmit,
     handleDelete,
+    modal,
   };
 };

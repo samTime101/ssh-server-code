@@ -29,6 +29,7 @@ const AddCollegePage = () => {
     handlePageChange,
     handlePageSizeChange,
     resetForm,
+    modal,
   } = useAddCollege();
 
   return (
@@ -137,6 +138,7 @@ const AddCollegePage = () => {
           isLoading={loading}
         />
       </div>
+      {modal}
     </section>
   );
 };

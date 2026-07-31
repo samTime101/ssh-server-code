@@ -39,6 +39,7 @@ const ManageTestimonialsPage = () => {
     pageSize,
     handlePageChange,
     handlePageSizeChange,
+    modal,
   } = useManageTestimonials();
 
   return (
@@ -195,6 +196,7 @@ const ManageTestimonialsPage = () => {
           </div>
         </form>
       </Modal>
+      {modal}
     </div>
   );
 };

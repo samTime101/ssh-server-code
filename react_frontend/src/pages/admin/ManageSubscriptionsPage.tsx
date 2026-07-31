@@ -41,6 +41,7 @@ const ManageSubscriptionsPage = () => {
     pageSize,
     handlePageChange,
     handlePageSizeChange,
+    modal,
   } = useManageSubscriptions();
 
   return (
@@ -226,6 +227,7 @@ const ManageSubscriptionsPage = () => {
           </div>
         </form>
       </Modal>
+      {modal}
     </div>
   );
 };

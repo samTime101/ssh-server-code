@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { useConfirm } from "@/hooks/useConfirm";
 import { fetchCategories, updateCategory, deleteCategory } from "@/services/admin/category-service";
 import type { Category, CategoryStatus } from "@/types/category";
 
 export const useManageCategories = () => {
+  const { confirm, modal } = useConfirm();
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [editTarget, setEditTarget] = useState<Category | null>(null);
@@ -71,9 +73,9 @@ export const useManageCategories = () => {
 
   const handleDelete = async (category: Category) => {
     if (
-      !confirm(
+      !(await confirm(
         `Are you sure you want to delete "${category.name}"? This may affect associated questions.`
-      )
+      ))
     )
       return;
     try {
@@ -118,5 +120,6 @@ export const useManageCategories = () => {
     pagination,
     handlePageChange,
     handlePageSizeChange,
+    modal,
   };
 };

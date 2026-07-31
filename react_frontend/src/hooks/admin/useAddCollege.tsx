@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { useConfirm } from "@/hooks/useConfirm";
 import {
   fetchColleges,
   createCollege,
@@ -11,6 +12,7 @@ import type { College } from "@/types/college";
 const emptyForm = { name: "", city: "", state: "", country: "", postal_code: "" };
 
 export const useAddCollege = () => {
+  const { confirm, modal } = useConfirm();
   const [colleges, setColleges] = useState<College[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -75,7 +77,7 @@ export const useAddCollege = () => {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this college?")) return;
+    if (!(await confirm("Are you sure you want to delete this college?"))) return;
     try {
       await deleteCollege(id);
       toast.success("College deleted successfully");
@@ -116,5 +118,6 @@ export const useAddCollege = () => {
     handlePageChange,
     handlePageSizeChange,
     resetForm,
+    modal,
   };
 };

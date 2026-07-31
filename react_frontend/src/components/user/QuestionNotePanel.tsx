@@ -13,12 +13,14 @@ import {
 } from "@/services/user/note-service";
 import { isEditorContentEmpty, isEditorContentLong } from "@/utils/editorUtils";
 import { cn } from "@/lib/utils";
+import { useConfirm } from "@/hooks/useConfirm";
 
 type QuestionNotePanelProps = {
   questionId: string;
 };
 
 const QuestionNotePanel = ({ questionId }: QuestionNotePanelProps) => {
+  const { confirm, modal } = useConfirm();
   const [noteId, setNoteId] = useState<string | null>(null);
   const [noteValue, setNoteValue] = useState("");
   const [noteDraft, setNoteDraft] = useState("");
@@ -94,7 +96,7 @@ const QuestionNotePanel = ({ questionId }: QuestionNotePanelProps) => {
 
   const handleDeleteNote = async () => {
     if (!noteId) return;
-    const confirmed = window.confirm("Delete this note?");
+    const confirmed = await confirm("Are you sure you want to delete this note?");
     if (!confirmed) return;
 
     setNoteDeleting(true);
@@ -247,6 +249,7 @@ const QuestionNotePanel = ({ questionId }: QuestionNotePanelProps) => {
           </>
         )}
       </CardContent>
+      {modal}
     </Card>
   );
 };

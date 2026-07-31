@@ -17,6 +17,7 @@ import { calculateScore } from "@/utils/scoreCalculation";
 import { useQuestionResponseTimer } from "@/hooks/user/useQuestionResponseTimer";
 import Loader from "@/components/ui/Loader";
 import { useRestoreSession } from "@/hooks/user/useRestoreSession";
+import { useConfirm } from "@/hooks/useConfirm";
 
 const CEEQuestionPage = () => {
   const {
@@ -28,6 +29,7 @@ const CEEQuestionPage = () => {
     setSessionAttempt,
   } = useQuestions();
   const navigate = useNavigate();
+  const { confirm, modal } = useConfirm();
   const { isRestoringSession } = useRestoreSession({
     kind: "set",
     fallbackPath: "/userpanel/cee-practice",
@@ -128,7 +130,7 @@ const CEEQuestionPage = () => {
 
     if (attemptedCount < totalQuestions) {
       const unattemptedCount = totalQuestions - attemptedCount;
-      const confirmSubmit = window.confirm(
+      const confirmSubmit = await confirm(
         `You have ${unattemptedCount} unattempted question${unattemptedCount > 1 ? "s" : ""}. Are you sure you want to submit?`
       );
       if (!confirmSubmit) {
@@ -428,6 +430,7 @@ const CEEQuestionPage = () => {
           </div>
         </div>
       </div>
+      {modal}
     </div>
   );
 };

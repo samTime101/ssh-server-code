@@ -47,6 +47,7 @@ const ManageSubcategoriesPage = () => {
     pagination,
     handlePageChange,
     handlePageSizeChange,
+    modal,
   } = useManageSubcategories();
 
   return (
@@ -171,6 +172,7 @@ const ManageSubcategoriesPage = () => {
           </div>
         </form>
       </Modal>
+      {modal}
     </div>
   );
 };

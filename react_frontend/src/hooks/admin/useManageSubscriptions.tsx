@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { useConfirm } from "@/hooks/useConfirm";
 import {
   createSubscription,
   deleteSubscription,
@@ -17,6 +18,7 @@ const emptyForm = (): SubscriptionFormState => ({
 });
 
 export const useManageSubscriptions = () => {
+  const { confirm, modal } = useConfirm();
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -154,7 +156,12 @@ export const useManageSubscriptions = () => {
   };
 
   const handleDelete = async (subscription: Subscription) => {
-    if (!window.confirm(`Delete "${subscription.plan_name}"?`)) return;
+    if (
+      !(await confirm(
+        `Are you sure you want to delete the subscription "${subscription.plan_name}"?`
+      ))
+    )
+      return;
 
     try {
       await deleteSubscription(subscription.id);
@@ -189,5 +196,6 @@ export const useManageSubscriptions = () => {
     handleDelete,
     handlePageChange,
     handlePageSizeChange,
+    modal,
   };
 };

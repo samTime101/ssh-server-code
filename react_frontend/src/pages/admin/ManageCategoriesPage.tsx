@@ -47,6 +47,7 @@ const ManageCategoriesPage = () => {
     pagination,
     handlePageChange,
     handlePageSizeChange,
+    modal,
   } = useManageCategories();
 
   return (
@@ -164,6 +165,7 @@ const ManageCategoriesPage = () => {
           </div>
         </form>
       </Modal>
+      {modal}
     </div>
   );
 };

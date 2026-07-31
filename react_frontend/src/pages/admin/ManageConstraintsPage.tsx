@@ -41,6 +41,7 @@ const ManageConstraintsPage = () => {
     removeRule,
     handleSubmit,
     handleDelete,
+    modal,
   } = useManageConstraints();
 
   const categoryNameById = new Map(categories.map((category) => [category.id, category.name]));
@@ -185,6 +186,7 @@ const ManageConstraintsPage = () => {
           </div>
         </form>
       </Modal>
+      {modal}
     </div>
   );
 };

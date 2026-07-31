@@ -49,6 +49,7 @@ const QuestionBankPage = () => {
     handleEditClick,
     handleEditSuccess,
     handleDeleteClick,
+    modal,
   } = useQuestionBank();
 
   const convertToLocalDateTime = (utcDateTime: string) => {
@@ -207,6 +208,7 @@ const QuestionBankPage = () => {
           />
         )}
       </Modal>
+      {modal}
     </div>
   );
 };
