@@ -20,13 +20,13 @@ const QuestionProgress = ({
   const [scrollRef, { canScrollUp, canScrollDown }] = useScrollOverflow();
 
   return (
-    <div className="bg-card flex max-h-[calc(100vh-12rem)] flex-col rounded-lg border p-4 shadow-sm">
+    <div className="bg-card flex max-h-[18rem] flex-col rounded-lg border p-4 shadow-sm lg:max-h-[calc(100vh-12rem)]">
       <p className="mb-3 text-sm font-semibold">Session Progress</p>
 
       <div className="relative min-h-0 flex-1">
         <div
           ref={scrollRef}
-          className="scrollbar-hidden grid max-h-full grid-cols-5 gap-2 overflow-y-auto pr-1"
+          className="scrollbar-hidden grid max-h-full grid-cols-[repeat(auto-fill,minmax(2.25rem,1fr))] gap-2 overflow-y-auto pr-1 lg:grid-cols-5"
         >
           {Array.from({ length: totalCount }).map((_, index) => {
             const status = getQuestionProgressStatus(questionData, attempts, index);
