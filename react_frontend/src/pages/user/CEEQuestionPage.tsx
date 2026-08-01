@@ -12,6 +12,7 @@ import EditorRenderer from "@/components/EditorRenderer";
 import { useNavigate } from "react-router-dom";
 import { getImageUrl } from "@/config/apiConfig";
 import QuestionFeedbackWidget from "@/components/user/QuestionFeedbackWidget";
+import QuestionReactionButtons from "@/components/user/QuestionReactionButtons";
 import ScoreSummaryModal from "@/components/user/ScoreSummaryModal";
 import { calculateScore } from "@/utils/scoreCalculation";
 import { useQuestionResponseTimer } from "@/hooks/user/useQuestionResponseTimer";
@@ -344,6 +345,7 @@ const CEEQuestionPage = () => {
                     />
                   ))}
             </div>
+            <QuestionReactionButtons questionId={currentQuestion.id} className="pt-1" />
             <QuestionFeedbackWidget questionId={currentQuestion.id} />
 
             {isAttempted && (

@@ -34,6 +34,9 @@ export const API_ENDPOINTS = {
   // Feedback
   feedback: "/feedback/",
 
+  // Reactions
+  reactions: "/reactions/",
+
   // Questions
   createQuestion: "/questions/",
   adminQuestions: "/questions/",

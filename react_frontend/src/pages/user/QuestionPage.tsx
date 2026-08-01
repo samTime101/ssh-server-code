@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import EditorRenderer from "@/components/EditorRenderer";
 import QuestionProgress from "@/components/user/QuestionProgress";
 import QuestionFeedbackWidget from "@/components/user/QuestionFeedbackWidget";
+import QuestionReactionButtons from "@/components/user/QuestionReactionButtons";
 import { ThreadedComments } from "@/components/user/ThreadedComments";
 
 const QuestionPage = () => {
@@ -134,6 +135,10 @@ const QuestionPage = () => {
                 />
               ))}
         </div>
+
+        {!isExamModeEnabled && (
+          <QuestionReactionButtons questionId={currentQuestion.id} className="pt-1" />
+        )}
         <QuestionFeedbackWidget questionId={currentQuestion.id} />
 
         {!isExamModeEnabled && isAttempted && (
