@@ -54,3 +54,12 @@ body > div:has(iframe[src*="recaptcha"]) {
   fill: #ffffff !important;
   stroke: #ffffff !important;
 }
+
+.scrollbar-hidden {
+  overflow: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.scrollbar-hidden::-webkit-scrollbar {
+  display: none;
+}
