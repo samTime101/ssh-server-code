@@ -56,10 +56,7 @@ const HistoryPage = () => {
         const data = await fetchSubmissionHistoryPage(currentPage, pageSize, {
           signal: controller.signal,
         });
-        const withAttempts = data.results.filter(
-          (submission) => (submission.attempts?.length ?? 0) > 0
-        );
-        setSubmissionHistory(withAttempts);
+        setSubmissionHistory(data.results);
         setPagination({ count: data.count, total_pages: data.total_pages });
       } catch (error) {
         if (
@@ -88,8 +85,7 @@ const HistoryPage = () => {
           maxPages: 10,
           signal: controller.signal,
         });
-        const withAttempts = all.filter((submission) => submission.attempts.length > 0);
-        setOverview(getSubmissionOverview(withAttempts));
+        setOverview(getSubmissionOverview(all));
       } catch (error) {
         if (
           isAxiosError(error) &&

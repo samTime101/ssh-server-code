@@ -247,9 +247,6 @@ const QuestionProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const resetQuestionSelection = () => {
-    setSelectedCategoriesId([]);
-    setSelectedSubCategoryId([]);
-    setSelectedSubSubCategoryId([]);
     setQuestionData([]);
     setQuestionPagination(null);
     setCurrentSubmissionId(null);
