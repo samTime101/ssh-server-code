@@ -109,8 +109,6 @@ const normalizeSetKey = (value: string) =>
     .toLowerCase()
     .replace(/[_\s]+/g, " ");
 
-const hasAttempts = (submission: SubmissionHistoryItem) => (submission.attempts?.length ?? 0) > 0;
-
 /** Match CEE submission to a set via type (`set_{name}`) or submission_label. */
 export const matchesSetSubmission = (submission: SubmissionHistoryItem, setName: string) => {
   const target = normalizeSetKey(setName);
@@ -124,7 +122,7 @@ export const matchesSetSubmission = (submission: SubmissionHistoryItem, setName:
   return false;
 };
 
-/** QB start: auto-continue 0-attempt, else ask. */
+/** always ask when an unfinished session exists. */
 export const resolveUnfinishedStart = async (options: {
   kind: SessionKind;
   askContinue: () => Promise<ContinueSessionChoice>;
@@ -140,7 +138,7 @@ export const resolveUnfinishedStart = async (options: {
   const active = findLatestActive(submissions, kind, true);
   if (!active) return "fresh";
 
-  const choice = hasAttempts(active) ? await askContinue() : ("continue" as const);
+  const choice = await askContinue();
   if (choice === "cancel") return "cancel";
   if (choice === "new") return "fresh";
 
@@ -170,15 +168,13 @@ export const resolveSetUnfinishedStart = async (options: {
 
   const matching =
     unfinished.find((submission) => matchesSetSubmission(submission, preferredSetName)) ?? null;
-  const otherWithAttempts =
-    unfinished.find(
-      (submission) => !matchesSetSubmission(submission, preferredSetName) && hasAttempts(submission)
-    ) ?? null;
+  const otherUnfinished =
+    unfinished.find((submission) => !matchesSetSubmission(submission, preferredSetName)) ?? null;
 
-  const candidate = matching ?? otherWithAttempts;
+  const candidate = matching ?? otherUnfinished;
   if (!candidate) return "fresh";
 
-  const choice = matching && !hasAttempts(matching) ? ("continue" as const) : await askContinue();
+  const choice = await askContinue();
   if (choice === "cancel") return "cancel";
   if (choice === "new") return "fresh";
 

@@ -30,7 +30,8 @@ const ManageUsersPage = () => {
     handleSearchChange,
     handleDeleteUser,
     handleEditUser,
-    fetchUsers    
+    fetchUsers,
+    modal,
   } = useManageUsers();
 
   const [isSignupModalOpen, setIsSignupModalOpen] = useState(false);
@@ -40,12 +41,12 @@ const ManageUsersPage = () => {
       <div className="manage-users-header">
         <h1 className="manage-users-title text-foreground text-2xl font-bold">Manage Users</h1>
       </div>
-        <Button
-          onClick={() => setIsSignupModalOpen(true)}
-          className="bg-primary text-primary-foreground"
-        >
-          Add New User
-        </Button>      
+      <Button
+        onClick={() => setIsSignupModalOpen(true)}
+        className="bg-primary text-primary-foreground"
+      >
+        Add New User
+      </Button>
       <div className="manage-users-content text-muted-foreground mt-1">
         <p>This is where admin can manage users.</p>
       </div>
@@ -110,9 +111,10 @@ const ManageUsersPage = () => {
                     </TableCell>
                     <TableCell>
                       <span
-                        className={`${user.is_email_verified
-                          ? "bg-green-100 text-green-600"
-                          : "bg-destructive/10 text-destructive"
+                        className={`${
+                          user.is_email_verified
+                            ? "bg-green-100 text-green-600"
+                            : "bg-destructive/10 text-destructive"
                         } rounded-md px-2 py-1 text-sm font-medium shadow-xs`}
                       >
                         {user.is_email_verified ? "Verified" : "Not Verified"}
@@ -151,11 +153,15 @@ const ManageUsersPage = () => {
         </div>
       </div>
       <Modal open={isSignupModalOpen} onOpenChange={setIsSignupModalOpen} title="Add New User">
-        <SignupForm onSuccess={() => {
-          setIsSignupModalOpen(false);
-          fetchUsers();
-        }} addUser={true} />
+        <SignupForm
+          onSuccess={() => {
+            setIsSignupModalOpen(false);
+            fetchUsers();
+          }}
+          addUser={true}
+        />
       </Modal>
+      {modal}
     </div>
   );
 };

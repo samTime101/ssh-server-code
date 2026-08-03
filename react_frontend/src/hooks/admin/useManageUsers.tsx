@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
+import { useConfirm } from "@/hooks/useConfirm";
 import axiosInstance from "@/services/axios";
 import { API_ENDPOINTS } from "@/config/apiConfig";
 import { deleteUser } from "@/services/admin/user-service";
@@ -10,6 +11,7 @@ import type { User } from "@/types/user";
 export const useManageUsers = () => {
   const { token, user: authUser } = useAuth();
   const navigate = useNavigate();
+  const { confirm, modal } = useConfirm();
 
   const [usersList, setUsersList] = useState<User[]>([]);
   const [pagination, setPagination] = useState({
@@ -64,7 +66,8 @@ export const useManageUsers = () => {
     setSearchQuery(e.target.value);
 
   const handleDeleteUser = async (user: User) => {
-    if (!confirm(`Are you sure you want to delete ${user.first_name} ${user.last_name}?`)) return;
+    if (!(await confirm(`Are you sure you want to delete ${user.first_name} ${user.last_name}?`)))
+      return;
     try {
       await deleteUser(user.user_guid);
       toast.success("User deleted successfully");
@@ -101,5 +104,6 @@ export const useManageUsers = () => {
     handleDeleteUser,
     handleEditUser,
     fetchUsers,
+    modal,
   };
 };

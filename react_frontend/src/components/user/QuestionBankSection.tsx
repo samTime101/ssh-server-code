@@ -62,6 +62,20 @@ const QuestionBankSection = () => {
 
   const timerMinutes = Math.floor(sessionTimerSeconds / 60);
 
+  const getTotalSelectedQuestions = () => {
+    if (!categories) return 0;
+    if (selectedCategoriesId.length === 0 && selectedSubCategoryId.length === 0) return 0;
+
+    return categories.categories.reduce((total, cat) => {
+      if (selectedCategoriesId.includes(cat.id)) {
+        return total + (cat.question_count || 0);
+      }
+      const selectedSubcats =
+        cat.sub_categories?.filter((sub) => selectedSubCategoryId.includes(sub.id)) || [];
+      return total + selectedSubcats.reduce((acc, sub) => acc + (sub.question_count || 0), 0);
+    }, 0);
+  };
+
   useEffect(() => {
     if (!token) return;
     const getCategoriesData = async () => {
@@ -77,6 +91,12 @@ const QuestionBankSection = () => {
   }, [token]);
 
   const handleStartSession = async (wrongOnly: boolean) => {
+    const hasSelection = selectedCategoriesId.length > 0 || selectedSubCategoryId.length > 0;
+    if (hasSelection && getTotalSelectedQuestions() === 0) {
+      toast.error("Select at least one question to start");
+      return;
+    }
+
     if (isExamModeEnabled) {
       clearSessionTimer();
       const submissionId = await fetchQuestions(wrongOnly);
@@ -209,7 +229,7 @@ const QuestionBankSection = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <div className="mt-4 flex md:justify-end justify-start pl-4 md:pl-0">
+          <div className="mt-4 flex justify-start pl-4 md:justify-end md:pl-0">
             <label className="flex items-center space-x-0 md:space-x-14">
               <Checkbox
                 className="border-border h-5 w-5 cursor-pointer appearance-none border-1"
@@ -357,36 +377,12 @@ const QuestionBankSection = () => {
           {/* Total Selected Question Bubble */}
           {categories && categories.categories.length > 0 && (
             <div>
-              {(() => {
-                let totalSelectedQuestions = 0;
-                if (selectedCategoriesId.length === 0 && selectedSubCategoryId.length === 0) {
-                  totalSelectedQuestions = 0;
-                } else {
-                  categories.categories.forEach((cat) => {
-                    if (selectedCategoriesId.includes(cat.id)) {
-                      totalSelectedQuestions += cat.question_count || 0;
-                    } else {
-                      const selectedSubcats =
-                        cat.sub_categories?.filter((sub) =>
-                          selectedSubCategoryId.includes(sub.id)
-                        ) || [];
-                      totalSelectedQuestions += selectedSubcats.reduce(
-                        (acc, sub) => acc + (sub.question_count || 0),
-                        0
-                      );
-                    }
-                  });
-                }
-
-                return (
-                  <div className="bg-primary/10 text-primary border-primary/20 hover:bg-primary/15 flex items-center gap-3 rounded-full border px-5 py-2 text-sm font-semibold shadow-sm transition-all">
-                    <span> Selected Questions</span>
-                    <span className="bg-primary text-primary-foreground flex h-6 items-center justify-center rounded-full px-3 text-xs font-bold shadow-sm">
-                      {totalSelectedQuestions}
-                    </span>
-                  </div>
-                );
-              })()}
+              <div className="bg-primary/10 text-primary border-primary/20 hover:bg-primary/15 flex items-center gap-3 rounded-full border px-5 py-2 text-sm font-semibold shadow-sm transition-all">
+                <span> Selected Questions</span>
+                <span className="bg-primary text-primary-foreground flex h-6 items-center justify-center rounded-full px-3 text-xs font-bold shadow-sm">
+                  {getTotalSelectedQuestions()}
+                </span>
+              </div>
             </div>
           )}
         </div>

@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
-import { ChevronDown, ChevronUp, Pencil, Trash2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -11,14 +11,19 @@ import {
   listQuestionNotes,
   patchQuestionNote,
 } from "@/services/user/note-service";
-import { isEditorContentEmpty, isEditorContentLong } from "@/utils/editorUtils";
-import { cn } from "@/lib/utils";
+import { isEditorContentEmpty } from "@/utils/editorUtils";
+import { useConfirm } from "@/hooks/useConfirm";
+import { useScrollOverflow } from "@/hooks/useScrollOverflow";
+import { ScrollIndicators } from "@/components/ui/scroll-indicators";
 
 type QuestionNotePanelProps = {
   questionId: string;
 };
 
 const QuestionNotePanel = ({ questionId }: QuestionNotePanelProps) => {
+  const { confirm, modal } = useConfirm();
+  const [noteViewerRef, { canScrollUp: noteCanScrollUp, canScrollDown: noteCanScrollDown }] =
+    useScrollOverflow();
   const [noteId, setNoteId] = useState<string | null>(null);
   const [noteValue, setNoteValue] = useState("");
   const [noteDraft, setNoteDraft] = useState("");
@@ -26,7 +31,6 @@ const QuestionNotePanel = ({ questionId }: QuestionNotePanelProps) => {
   const [noteSaving, setNoteSaving] = useState(false);
   const [noteDeleting, setNoteDeleting] = useState(false);
   const [isEditingNote, setIsEditingNote] = useState(false);
-  const [expanded, setExpanded] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -94,7 +98,7 @@ const QuestionNotePanel = ({ questionId }: QuestionNotePanelProps) => {
 
   const handleDeleteNote = async () => {
     if (!noteId) return;
-    const confirmed = window.confirm("Delete this note?");
+    const confirmed = await confirm("Are you sure you want to delete this note?");
     if (!confirmed) return;
 
     setNoteDeleting(true);
@@ -121,22 +125,16 @@ const QuestionNotePanel = ({ questionId }: QuestionNotePanelProps) => {
     setIsEditingNote(false);
   };
 
-  useEffect(() => {
-    setExpanded(false);
-  }, [questionId]);
-
-  const noteTooLong = useMemo(() => isEditorContentLong(noteValue), [noteValue]);
-
   const showNoteEmptyState = !noteId && !isEditingNote;
   const showNoteEditor = isEditingNote;
   const showNoteViewer = Boolean(noteId) && !isEditingNote;
 
   return (
-    <Card className="shadow-lg lg:sticky lg:top-6">
+    <Card className="max-h-[calc(100vh-12rem)] shadow-lg lg:sticky lg:top-6">
       <CardHeader>
         <h3 className="text-foreground text-lg font-semibold">Notes</h3>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="scrollbar-hidden flex flex-col gap-4 overflow-y-auto">
         {noteLoading ? (
           <p className="text-muted-foreground text-sm">Loading notes...</p>
         ) : (
@@ -188,65 +186,47 @@ const QuestionNotePanel = ({ questionId }: QuestionNotePanelProps) => {
             )}
 
             {showNoteViewer && (
-              <div className="space-y-3">
+              <div className="flex min-h-0 flex-col gap-3">
                 <div className="relative">
-                  <div className={cn("overflow-hidden", expanded ? "max-h-none" : "max-h-40")}>
+                  <div
+                    ref={noteViewerRef}
+                    className="scrollbar-hidden max-h-60 overflow-y-auto"
+                  >
                     <EditorRenderer data={noteValue} className="text-foreground" />
                   </div>
-                  {!expanded && noteTooLong && (
-                    <div className="from-card absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t to-transparent" />
-                  )}
+                  <ScrollIndicators
+                    canScrollUp={noteCanScrollUp}
+                    canScrollDown={noteCanScrollDown}
+                  />
                 </div>
 
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <Button
-                      size="icon"
-                      variant="outline"
-                      aria-label="Edit note"
-                      onClick={() => setIsEditingNote(true)}
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button
+                    size="icon"
+                    variant="outline"
+                    aria-label="Edit note"
+                    onClick={() => setIsEditingNote(true)}
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
 
-                    <Button
-                      size="icon"
-                      variant="outline"
-                      aria-label="Delete note"
-                      className="text-destructive hover:bg-destructive hover:text-white"
-                      onClick={handleDeleteNote}
-                      disabled={noteDeleting}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-
-                  {noteTooLong && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-muted-foreground hover:text-foreground"
-                      onClick={() => setExpanded((prev) => !prev)}
-                    >
-                      {expanded ? (
-                        <>
-                          <ChevronUp className="mr-1 h-4 w-4" />
-                          Show less
-                        </>
-                      ) : (
-                        <>
-                          <ChevronDown className="mr-1 h-4 w-4" />
-                          Read more
-                        </>
-                      )}
-                    </Button>
-                  )}
+                  <Button
+                    size="icon"
+                    variant="outline"
+                    aria-label="Delete note"
+                    className="text-destructive hover:bg-destructive hover:text-white"
+                    onClick={handleDeleteNote}
+                    disabled={noteDeleting}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
                 </div>
               </div>
             )}
           </>
         )}
       </CardContent>
+      {modal}
     </Card>
   );
 };

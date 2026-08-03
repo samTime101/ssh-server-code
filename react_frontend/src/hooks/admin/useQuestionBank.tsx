@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
+import { useConfirm } from "@/hooks/useConfirm";
 import { fetchQuestions, deleteQuestion } from "@/services/admin/addquestion-service";
 import { fetchCategoriesWithHierarchy } from "@/services/admin/category-service";
 import type { Category, SubCategory } from "@/types/category";
 
 export const useQuestionBank = () => {
   const { token } = useAuth();
+  const { confirm, modal } = useConfirm();
 
   const [questionList, setQuestionList] = useState<any[]>([]);
   const [pagination, setPagination] = useState({
@@ -123,7 +125,7 @@ export const useQuestionBank = () => {
 
   const handleDeleteClick = async (question: any) => {
     if (
-      !window.confirm(`Are you sure you want to delete the question: "${question.question_text}"?`)
+      !(await confirm(`Are you sure you want to delete the question: "${question.question_text}"?`))
     )
       return;
     try {
@@ -162,5 +164,6 @@ export const useQuestionBank = () => {
     handleEditClick,
     handleEditSuccess,
     handleDeleteClick,
+    modal,
   };
 };

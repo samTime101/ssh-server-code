@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { useConfirm } from "@/hooks/useConfirm";
 import {
   fetchSubcategories,
   updateSubCategory,
@@ -8,6 +9,7 @@ import {
 import type { CategoryStatus, SubCategoryDetail } from "@/types/category";
 
 export const useManageSubcategories = () => {
+  const { confirm, modal } = useConfirm();
   const [subcategories, setSubcategories] = useState<SubCategoryDetail[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [editTarget, setEditTarget] = useState<SubCategoryDetail | null>(null);
@@ -81,9 +83,9 @@ export const useManageSubcategories = () => {
 
   const handleDelete = async (subcategory: SubCategoryDetail) => {
     if (
-      !confirm(
+      !(await confirm(
         `Are you sure you want to delete "${subcategory.name}"? This may affect associated questions.`
-      )
+      ))
     )
       return;
     try {
@@ -128,5 +130,6 @@ export const useManageSubcategories = () => {
     pagination,
     handlePageChange,
     handlePageSizeChange,
+    modal,
   };
 };

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { useConfirm } from "@/hooks/useConfirm";
 import {
   createTestimonial,
   deleteTestimonial,
@@ -15,6 +16,7 @@ const emptyForm = (): TestimonialFormState => ({
 });
 
 export const useManageTestimonials = () => {
+  const { confirm, modal } = useConfirm();
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -139,7 +141,12 @@ export const useManageTestimonials = () => {
   };
 
   const handleDelete = async (testimonial: Testimonial) => {
-    if (!window.confirm(`Delete testimonial from "${testimonial.name}"?`)) return;
+    if (
+      !(await confirm(
+        `Are you sure you want to delete the testimonial from "${testimonial.name}"?`
+      ))
+    )
+      return;
 
     try {
       await deleteTestimonial(testimonial.id);
@@ -174,5 +181,6 @@ export const useManageTestimonials = () => {
     handleDelete,
     handlePageChange,
     handlePageSizeChange,
+    modal,
   };
 };

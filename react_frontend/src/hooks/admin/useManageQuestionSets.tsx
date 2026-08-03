@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { useConfirm } from "@/hooks/useConfirm";
 import {
   createQuestionSet,
   deleteQuestionSet,
@@ -20,6 +21,7 @@ const INITIAL_FORM_STATE = {
 };
 
 export const useManageQuestionSets = () => {
+  const { confirm, modal } = useConfirm();
   const [sets, setSets] = useState<QuestionSet[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -248,7 +250,7 @@ export const useManageQuestionSets = () => {
   };
 
   const handleDelete = async (set: QuestionSet) => {
-    if (!window.confirm(`Delete "${set.name}"?`)) return;
+    if (!(await confirm(`Are you sure you want to delete the question set "${set.name}"?`))) return;
 
     try {
       await deleteQuestionSet(set.id);
@@ -344,5 +346,6 @@ export const useManageQuestionSets = () => {
     selectedConstraintId,
     setSelectedConstraintId,
     constraintTotalRequired,
+    modal,
   };
 };

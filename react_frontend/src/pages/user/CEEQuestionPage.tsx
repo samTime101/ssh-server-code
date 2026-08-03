@@ -12,11 +12,13 @@ import EditorRenderer from "@/components/EditorRenderer";
 import { useNavigate } from "react-router-dom";
 import { getImageUrl } from "@/config/apiConfig";
 import QuestionFeedbackWidget from "@/components/user/QuestionFeedbackWidget";
+import QuestionReactionButtons from "@/components/user/QuestionReactionButtons";
 import ScoreSummaryModal from "@/components/user/ScoreSummaryModal";
 import { calculateScore } from "@/utils/scoreCalculation";
 import { useQuestionResponseTimer } from "@/hooks/user/useQuestionResponseTimer";
 import Loader from "@/components/ui/Loader";
 import { useRestoreSession } from "@/hooks/user/useRestoreSession";
+import { useConfirm } from "@/hooks/useConfirm";
 
 const CEEQuestionPage = () => {
   const {
@@ -28,6 +30,7 @@ const CEEQuestionPage = () => {
     setSessionAttempt,
   } = useQuestions();
   const navigate = useNavigate();
+  const { confirm, modal } = useConfirm();
   const { isRestoringSession } = useRestoreSession({
     kind: "set",
     fallbackPath: "/userpanel/cee-practice",
@@ -128,7 +131,7 @@ const CEEQuestionPage = () => {
 
     if (attemptedCount < totalQuestions) {
       const unattemptedCount = totalQuestions - attemptedCount;
-      const confirmSubmit = window.confirm(
+      const confirmSubmit = await confirm(
         `You have ${unattemptedCount} unattempted question${unattemptedCount > 1 ? "s" : ""}. Are you sure you want to submit?`
       );
       if (!confirmSubmit) {
@@ -342,6 +345,7 @@ const CEEQuestionPage = () => {
                     />
                   ))}
             </div>
+            <QuestionReactionButtons questionId={currentQuestion.id} className="pt-1" />
             <QuestionFeedbackWidget questionId={currentQuestion.id} />
 
             {isAttempted && (
@@ -428,6 +432,7 @@ const CEEQuestionPage = () => {
           </div>
         </div>
       </div>
+      {modal}
     </div>
   );
 };

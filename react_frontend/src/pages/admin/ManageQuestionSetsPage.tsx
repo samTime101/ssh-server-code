@@ -70,6 +70,7 @@ const ManageQuestionSetsPage = () => {
     selectedConstraintId,
     setSelectedConstraintId,
     constraintTotalRequired,
+    modal,
   } = useManageQuestionSets();
 
   const selectedConstraint =
@@ -370,6 +371,7 @@ const ManageQuestionSetsPage = () => {
           </div>
         </form>
       </Modal>
+      {modal}
     </div>
   );
 };

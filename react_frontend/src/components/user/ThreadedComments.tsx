@@ -12,6 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useComments } from "@/hooks/useComments";
+import { useConfirm } from "@/hooks/useConfirm";
 import type { CommentNode } from "@/types/comment";
 
 function timeAgo(dateString: string): string {
@@ -47,6 +48,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
   onDelete,
   depth = 0,
 }) => {
+  const { confirm, modal } = useConfirm();
   const [isReplying, setIsReplying] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [replyText, setReplyText] = useState("");
@@ -164,8 +166,8 @@ const CommentItem: React.FC<CommentItemProps> = ({
                   variant="ghost"
                   size="sm"
                   className="text-muted-foreground hover:text-destructive h-8 px-2"
-                  onClick={() => {
-                    if (window.confirm("Are you sure you want to delete this comment?")) {
+                  onClick={async () => {
+                    if (await confirm("Are you sure you want to delete this comment?")) {
                       onDelete(comment.id);
                     }
                   }}
@@ -252,6 +254,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
           ))}
         </div>
       )}
+      {modal}
     </div>
   );
 };
