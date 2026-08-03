@@ -5,6 +5,8 @@ from rest_framework_simplejwt.views import TokenRefreshView
 urlpatterns = [
     path('auth/signup/', SignupView.as_view(), name='auth_signup'),
     path('auth/signin/', VerifiedTokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('auth/google/', GoogleLoginView.as_view(), name='google_login'),
+    path('auth/google/signup/', GoogleSignupView.as_view(), name='google_signup'),
     path('auth/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('auth/verify-email/<str:token>/', EmailVerifyView.as_view(), name='email_verify'),
     path('auth/verify-email-request/', EmailVerifyRequestView.as_view(), name='email_verify_request'),

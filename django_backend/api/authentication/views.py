@@ -6,6 +6,7 @@ from rest_framework.decorators import permission_classes
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.exceptions import AuthenticationFailed
 # from rest_framework.permissions import AllowAny
 from core.permissions.permissions import *
 from .serializers import *
@@ -19,6 +20,8 @@ from core.token.password_reset.responses import *
 from core.token.password_reset.send import send_password_reset_email
 from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.views import TokenObtainPairView
+from .services.google_auth import exchange_code_for_token, verify_google_id_token
+from .services.google_login import build_google_auth_tokens, resolve_google_login
 
 User = get_user_model()
 
@@ -42,7 +45,6 @@ class EmailVerifyView(APIView):
     serializer_class = EmailVerifySerializer
     def get(self, request, token):
         verification_result = verify_email_token(token)
-        print(f"Verification result: {verification_result}")
         if verification_result == "EMAIL_VERIFICATION_SUCCESS":
             return Response(verified_email(), status=status.HTTP_200_OK)
         elif verification_result == "EMAIL_ALREADY_VERIFIED":
@@ -122,3 +124,51 @@ class PasswordChangeView(APIView):
 class VerifiedTokenObtainPairView(TokenObtainPairView):
     permission_classes = [AllowAny]
     serializer_class = VerifiedTokenObtainPairSerializer
+
+
+class GoogleLoginView(APIView):
+    permission_classes = [AllowAny]
+    serializer_class = GoogleLoginSerializer
+
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        code = serializer.validated_data["code"]
+
+        token_response = exchange_code_for_token(code)
+        google_id_token = token_response.get("id_token")
+        if not google_id_token:
+            raise AuthenticationFailed("Google authentication failed.")
+
+        id_info = verify_google_id_token(google_id_token)
+
+        if not id_info.get("email_verified", False):
+            raise AuthenticationFailed("Google email is not verified.")
+
+        google_sub = id_info.get("sub")
+        email = id_info.get("email")
+        if not google_sub or not email:
+            raise AuthenticationFailed("Google authentication failed.")
+
+        first_name = id_info.get("given_name", "")
+        last_name = id_info.get("family_name", "")
+
+        result = resolve_google_login(
+            google_sub=google_sub,
+            email=email,
+            first_name=first_name,
+            last_name=last_name,
+        )
+        return Response(result, status=status.HTTP_200_OK)
+
+
+class GoogleSignupView(APIView):
+    permission_classes = [AllowAny]
+    serializer_class = GoogleSignupSerializer
+
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+        return Response(build_google_auth_tokens(user), status=status.HTTP_201_CREATED)

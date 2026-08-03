@@ -1,17 +1,20 @@
 import { API_ENDPOINTS } from "@/config/apiConfig";
-import { loginService, signupService } from "@/services/auth";
+import { googleLogin, googleSignup, loginService, signupService } from "@/services/auth";
 import axiosInstance from "@/services/axios";
-import type { LoginRequest, SignupRequest, User } from "@/types/auth";
+import type { GoogleSignupRequest, LoginRequest, SignupRequest, User } from "@/types/auth";
+import { normalizeGoogleSignupPending } from "@/utils/googleAuthUtils";
 import { createContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { getAlreadyExistsErrors } from "@/utils/errorUtils";
+import { getAlreadyExistsErrors, extractBackendErrorMessages } from "@/utils/errorUtils";
 
 let globalLogout: (() => void) | null = null;
 export const getGlobalLogout = () => globalLogout;
 
 export const AuthContext = createContext<{
   login: (data: LoginRequest) => Promise<void>;
+  loginWithGoogle: (code: string) => Promise<void>;
+  completeGoogleSignup: (data: GoogleSignupRequest) => Promise<void>;
   logout: () => void;
   token: string | null;
   register: (data: SignupRequest) => Promise<void>;
@@ -19,6 +22,8 @@ export const AuthContext = createContext<{
   refreshUserData: () => Promise<void>;
 }>({
   login: () => Promise.resolve(),
+  loginWithGoogle: () => Promise.resolve(),
+  completeGoogleSignup: () => Promise.resolve(),
   logout: () => Promise.resolve(),
   token: null,
   register: () => Promise.resolve(),
@@ -46,10 +51,6 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setUser(null);
     }
   }, [token]);
-
-  useEffect(() => {
-    console.log("AuthContext user changed:", user);
-  }, [user]);
 
   const fetchUserInfo = async (accessToken: string): Promise<User | null> => {
     if (!accessToken) return null;
@@ -109,6 +110,85 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         toast.error(detail || "Login failed. Please check your credentials.");
       }
       logout();
+      throw error;
+    }
+  };
+
+  const loginWithGoogle = async (code: string) => {
+    try {
+      const response = await googleLogin({ code });
+      const data = response.data;
+
+      if (data.is_new_user) {
+        const pending = normalizeGoogleSignupPending(data);
+        if (!pending) {
+          toast.error("Google sign-in incomplete. Please try again.");
+          throw new Error("GOOGLE_SIGNUP_TOKEN_MISSING");
+        }
+        navigate("/auth/complete-profile", { state: { googleSignup: pending } });
+        return;
+      }
+
+      const userInfo = await fetchUserInfo(data.access);
+      toast.success("Login successful! Welcome back.");
+      handleAuthSuccess(data.access, userInfo);
+    } catch (error: any) {
+      console.error("Google login failed:", error);
+      if (error.message === "GOOGLE_SIGNUP_TOKEN_MISSING") {
+        throw error;
+      }
+      const detail = error.response?.data?.detail;
+      toast.error(detail || "Google sign-in failed. Please try again.");
+      throw error;
+    }
+  };
+
+  const completeGoogleSignup = async ({
+    signup_token,
+    username,
+    phonenumber,
+    college,
+  }: GoogleSignupRequest) => {
+    try {
+      const response = await googleSignup({
+        signup_token,
+        username,
+        phonenumber,
+        college,
+      });
+      const userInfo = await fetchUserInfo(response.data.access);
+      toast.success("Account created successfully! Welcome.");
+      handleAuthSuccess(response.data.access, userInfo);
+    } catch (error: any) {
+      console.error("Google signup failed:", error);
+      if (error?.response?.data && typeof error.response.data === "object") {
+        const messages = getAlreadyExistsErrors(error.response.data);
+        if (messages.length > 0) {
+          messages.forEach((msg) => toast.error(msg));
+          throw error;
+        }
+        const signupTokenError = error.response.data.signup_token;
+        if (Array.isArray(signupTokenError) && signupTokenError[0]) {
+          toast.error(signupTokenError[0]);
+          throw error;
+        }
+        if (error.response.data.detail) {
+          toast.error(error.response.data.detail);
+          throw error;
+        }
+        const otherMessages = extractBackendErrorMessages(error.response.data).filter(
+          (msg) =>
+            !msg.toLowerCase().includes("username") &&
+            !msg.toLowerCase().includes("phonenumber") &&
+            !msg.toLowerCase().includes("college")
+        );
+        if (otherMessages.length > 0) {
+          otherMessages.forEach((msg) => toast.error(msg));
+          throw error;
+        }
+        throw error;
+      }
+      toast.error("Failed to complete Google signup. Please try again.");
       throw error;
     }
   };
@@ -180,7 +260,18 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ login, logout, token, register, user, refreshUserData }}>
+    <AuthContext.Provider
+      value={{
+        login,
+        loginWithGoogle,
+        completeGoogleSignup,
+        logout,
+        token,
+        register,
+        user,
+        refreshUserData,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

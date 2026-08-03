@@ -38,6 +38,7 @@ import Loader from "@/components/ui/Loader";
 import ROLE_CONFIG from "@/config/roleConfig";
 import EmailVerified from "@/pages/EmailVerified";
 import ResetPasswordPage from "@/pages/ResetPasswordPage";
+import CompleteProfilePage from "@/pages/CompleteProfilePage";
 
 // Redirect user to correct panel based on role
 const RootRedirect = () => {
@@ -101,6 +102,14 @@ const App = () => {
           element={
             <PublicRoute>
               <ResetPasswordPage />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="complete-profile"
+          element={
+            <PublicRoute>
+              <CompleteProfilePage />
             </PublicRoute>
           }
         />

@@ -1,6 +1,10 @@
 import { API_ENDPOINTS } from "@/config/apiConfig";
 import type {
   ForgotPasswordRequest,
+  GoogleLoginRequest,
+  GoogleLoginResponse,
+  GoogleSignupRequest,
+  GoogleSignupResponse,
   LoginRequest,
   ResetPasswordVerifyRequest,
   SignupRequest,
@@ -12,6 +16,24 @@ export const loginService = async ({ email, password, recaptcha }: LoginRequest)
     email,
     password,
     ...(recaptcha ? { recaptcha } : {}),
+  });
+};
+
+export const googleLogin = async ({ code }: GoogleLoginRequest) => {
+  return axiosInstance.post<GoogleLoginResponse>(API_ENDPOINTS.googleLogin, { code });
+};
+
+export const googleSignup = async ({
+  signup_token,
+  username,
+  phonenumber,
+  college,
+}: GoogleSignupRequest) => {
+  return axiosInstance.post<GoogleSignupResponse>(API_ENDPOINTS.googleSignup, {
+    signup_token,
+    username,
+    phonenumber,
+    college,
   });
 };
 
