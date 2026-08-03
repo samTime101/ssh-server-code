@@ -12,9 +12,6 @@ if
 	beginning. 
 		History page should have only one record for question_bank type. 
 		The questions attempted after each session should be updated accordingly in the same question_bank type. 
-		
-CEE practice set
-	does not continue from where they have left off. Show history with new attempt,  store the previous attempts.
 	
 Mock Exams 
 	does not continue from where they have left off. 
@@ -26,3 +23,17 @@ Mock Exams
 		Pass Mark: 50th percentile (50% or more)
 		Duration: 3 hours
 		Question Type: Four options (A, B, C, D)
+
+Session Flow
+	QB Normal and CEE:
+		user selects categories/subcategories (QB) or a set (CEE), then clicks Start.
+		
+		if an unfinished session exists, show a modal: Continue / Start New / Cancel.
+			Continue: restore same questions and attempts, jump to first unanswered question. Same submission record is updated.
+
+			Start New: create a fresh submission; old unfinished one stays in History as in_progress which can be restored anytime.
+
+			No prior unfinished session: start immediately with no modal.
+
+	QB Exam Mode and Mock Exam:
+		every Start creates a new submission. No resume from where left off.
