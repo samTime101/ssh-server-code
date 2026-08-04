@@ -50,6 +50,7 @@ LOCAL_APPS = [
     'api.analytics',
     'api.subscription',
     'api.testimonials',
+    'api.reactions',
 ]
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',

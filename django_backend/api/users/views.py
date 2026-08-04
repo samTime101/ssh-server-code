@@ -14,6 +14,7 @@ from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework.exceptions import MethodNotAllowed, NotFound
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
+from mongoengine.queryset.visitor import Q
 
 class UserViewSet(ModelViewSet):
     queryset = User.objects.all()
@@ -156,8 +157,13 @@ class SubmissionCollectionViewSet(ModelViewSet):
             return Submissions.objects.none()
         queryset = Submissions.objects(user_guid=user_guid)
         submission_type = self.request.query_params.get("type")
+        show_zero_attempts = self.request.query_params.get("show_zero_attempts", "true").lower()
+
         if submission_type:
             queryset = queryset.filter(type=submission_type)
+
+        if show_zero_attempts == "false":
+            queryset = queryset.filter(attempts__not__size=0)
         return queryset
 
     # submissions/

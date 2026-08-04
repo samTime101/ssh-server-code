@@ -3,6 +3,13 @@ SPECTACULAR_SETTINGS = {
     "TITLE": "MCQ API",
     "DESCRIPTION": """
 
+## August 4, 2026
+- Added show_zero attempts query parameter in submissions/ endpoint
+    
+## July 29, 2026
+- Created Reaction model to allow users to react to questions with "like" or "dislike".
+- Added ReactionSerializer and ReactionViewSet to handle reaction creation and retrieval.
+
 ## July 12, 2026
 - Added `response_time_seconds` field in AttemptSerializer to track the time taken by users to answer each question, providing insights into user performance and engagement.
 - Added specialization field in Testimonial model and serializer to allow users to specify their area of expertise or focus when submitting testimonials, enhancing the context and credibility of the feedback provided.
