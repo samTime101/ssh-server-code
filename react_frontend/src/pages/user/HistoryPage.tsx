@@ -54,6 +54,7 @@ const HistoryPage = () => {
       setIsLoading(true);
       try {
         const data = await fetchSubmissionHistoryPage(currentPage, pageSize, {
+          showZeroAttempts: false,
           signal: controller.signal,
         });
         setSubmissionHistory(data.results);
@@ -83,6 +84,7 @@ const HistoryPage = () => {
         const all = await getSubmissionHistory(undefined, {
           pageSize: 50,
           maxPages: 10,
+          showZeroAttempts: true,
           signal: controller.signal,
         });
         setOverview(getSubmissionOverview(all));

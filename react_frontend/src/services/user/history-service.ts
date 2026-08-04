@@ -18,9 +18,12 @@ export const fetchSubmissionHistoryPage = async (
   pageSize = SUBMISSION_PAGE_SIZE,
   options?: FetchSubmissionHistoryPageOptions
 ): Promise<PaginatedSubmissionHistoryResult> => {
-  const params: Record<string, string | number> = { page, page_size: pageSize };
+  const params: Record<string, string | number | boolean> = { page, page_size: pageSize };
   if (options?.type) {
     params.type = options.type;
+  }
+  if (options?.showZeroAttempts !== undefined) {
+    params.show_zero_attempts = options.showZeroAttempts;
   }
 
   const response = await axiosInstance.get(API_ENDPOINTS.attemptQuestion, {
@@ -46,7 +49,11 @@ export const getSubmissionHistory = async (
   let page = 1;
 
   while (page <= maxPages) {
-    const data = await fetchSubmissionHistoryPage(page, pageSize, { type, signal });
+    const data = await fetchSubmissionHistoryPage(page, pageSize, {
+      type,
+      showZeroAttempts: options?.showZeroAttempts,
+      signal,
+    });
     results.push(...data.results);
     if (!data.next) {
       break;
