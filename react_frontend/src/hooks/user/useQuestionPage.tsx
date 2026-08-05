@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useQuestions } from "@/hooks/useQuestions";
@@ -48,6 +48,7 @@ export const useQuestionPageController = () => {
   const prevDataLengthRef = useRef(0);
   const prevQuestionIdsRef = useRef<string[]>([]);
   const timeoutHandledRef = useRef(false);
+  const isFinalizingExamRef = useRef(false);
   const sessionInitRef = useRef<number | null>(null);
 
   const currentQuestion: Question | null =
@@ -133,10 +134,62 @@ export const useQuestionPageController = () => {
     setCurrentIndex(resumeIndex);
   }, [questionData, sessionAttempts, sessionInstanceId]);
 
+  const totalAvailable = questionPagination?.count ?? questionData.length;
+  const totalCount = isExamModeEnabled
+    ? getEffectiveQuestionCount(sessionQuestionLimit, totalAvailable)
+    : totalAvailable;
+
+  const currentAttempt = currentQuestion ? attempts[currentQuestion.id] : undefined;
+  const isAttempted = !!currentAttempt?.isAttempted;
+
+  const reviewQuestions = (questionData as Question[])
+    .slice(0, totalCount)
+    .filter((question) => Boolean(attempts[question.id]?.isAttempted));
+
+  const finalizeExamSession = useCallback(
+    async (options?: { timedOut?: boolean }) => {
+      if (isFinalizingExamRef.current) return false;
+      isFinalizingExamRef.current = true;
+
+      if (currentSubmissionId) {
+        try {
+          setIsSubmittingSession(true);
+          const submissionResponse = await submitSubmission(currentSubmissionId);
+          if (!submissionResponse) {
+            toast.error("Failed to submit session. Please try again.");
+            isFinalizingExamRef.current = false;
+            return false;
+          }
+          markSubmissionNonContinuable(currentSubmissionId);
+        } catch (error) {
+          console.error("Error submitting session:", error);
+          toast.error("Failed to submit session. Please try again.");
+          isFinalizingExamRef.current = false;
+          return false;
+        } finally {
+          setIsSubmittingSession(false);
+        }
+      }
+
+      clearSessionTimer();
+      setShowReview(true);
+      toast[options?.timedOut ? "info" : "success"](
+        options?.timedOut
+          ? "Time is up. Review your results below."
+          : "Session submitted. Review your results below."
+      );
+      return true;
+    },
+    [clearSessionTimer, currentSubmissionId]
+  );
+
   useEffect(() => {
     timeoutHandledRef.current = false;
+    isFinalizingExamRef.current = false;
+  }, [sessionInstanceId]);
 
-    if (!sessionEndsAtMs) {
+  useEffect(() => {
+    if (!sessionEndsAtMs || showReview) {
       setRemainingMs(null);
       return;
     }
@@ -147,17 +200,13 @@ export const useQuestionPageController = () => {
       if (timeLeft > 0 || timeoutHandledRef.current) return;
 
       timeoutHandledRef.current = true;
-      if (currentSubmissionId) markSubmissionNonContinuable(currentSubmissionId);
-      clearSessionTimer();
-      resetQuestionSelection();
-      toast.error("Time is up. Session ended.");
-      navigate("/userpanel");
+      void finalizeExamSession({ timedOut: true });
     };
 
     updateRemaining();
     const intervalId = window.setInterval(updateRemaining, 1000);
     return () => window.clearInterval(intervalId);
-  }, [clearSessionTimer, currentSubmissionId, navigate, resetQuestionSelection, sessionEndsAtMs]);
+  }, [finalizeExamSession, sessionEndsAtMs, showReview]);
 
   useEffect(() => {
     if (!currentQuestion) return;
@@ -196,18 +245,6 @@ export const useQuestionPageController = () => {
     resetQuestionSelection();
     navigate("/userpanel");
   };
-
-  const totalAvailable = questionPagination?.count ?? questionData.length;
-  const totalCount = isExamModeEnabled
-    ? getEffectiveQuestionCount(sessionQuestionLimit, totalAvailable)
-    : totalAvailable;
-
-  const currentAttempt = currentQuestion ? attempts[currentQuestion.id] : undefined;
-  const isAttempted = !!currentAttempt?.isAttempted;
-
-  const reviewQuestions = (questionData as Question[])
-    .slice(0, totalCount)
-    .filter((question) => Boolean(attempts[question.id]?.isAttempted));
 
   const recordSessionAttempt = (questionId: string, attempt: QuestionAttemptState) => {
     if (attempts[questionId]?.isAttempted) return;
@@ -326,21 +363,7 @@ export const useQuestionPageController = () => {
 
     const nextIndex = currentIndex + 1;
     if (nextIndex >= totalCount) {
-      try {
-        setIsSubmittingSession(true);
-        const submissionResponse = await submitSubmission(currentSubmissionId);
-        if (!submissionResponse) {
-          toast.error("Failed to submit session. Please try again.");
-          return;
-        }
-        setShowReview(true);
-        toast.success("Session submitted. Review your answers below.");
-      } catch (error) {
-        console.error("Error submitting session:", error);
-        toast.error("Failed to submit session. Please try again.");
-      } finally {
-        setIsSubmittingSession(false);
-      }
+      await finalizeExamSession();
       return;
     }
 
