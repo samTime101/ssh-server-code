@@ -1,6 +1,11 @@
 import { API_ENDPOINTS } from "@/config/apiConfig";
 import axiosInstance from "@/services/axios";
-import type { CreateReactionPayload, Reaction, ReactionType } from "@/types/reaction";
+import type {
+  CreateReactionPayload,
+  Reaction,
+  ReactionCheckResponse,
+  ReactionCountResponse,
+} from "@/types/reaction";
 
 const normalizeQuestionId = (question: string | { id?: string } | null | undefined): string => {
   if (!question) return "";
@@ -18,16 +23,16 @@ export const createReaction = async (payload: CreateReactionPayload): Promise<Re
   return normalizeReaction(response.data);
 };
 
-export const updateReaction = async (
-  reactionId: string,
-  reactionType: ReactionType
-): Promise<Reaction> => {
-  const response = await axiosInstance.patch<Reaction>(`${API_ENDPOINTS.reactions}${reactionId}/`, {
-    reaction_type: reactionType,
-  });
-  return normalizeReaction(response.data);
+export const getReactionCheck = async (questionId: string): Promise<ReactionCheckResponse> => {
+  const response = await axiosInstance.get<ReactionCheckResponse>(
+    API_ENDPOINTS.reactionCheck(questionId)
+  );
+  return response.data;
 };
 
-export const deleteReaction = async (reactionId: string): Promise<void> => {
-  await axiosInstance.delete(`${API_ENDPOINTS.reactions}${reactionId}/`);
+export const getReactionCount = async (questionId: string): Promise<ReactionCountResponse> => {
+  const response = await axiosInstance.get<ReactionCountResponse>(
+    API_ENDPOINTS.reactionCount(questionId)
+  );
+  return response.data;
 };

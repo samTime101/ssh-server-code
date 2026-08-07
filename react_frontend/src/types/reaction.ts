@@ -13,3 +13,14 @@ export interface CreateReactionPayload {
   question: string;
   reaction_type: ReactionType;
 }
+
+export interface ReactionCheckResponse {
+  question_id: string;
+  reaction_type: ReactionType | null;
+}
+
+export interface ReactionCountResponse {
+  question_id: string;
+  likes: number;
+  dislikes: number;
+}
