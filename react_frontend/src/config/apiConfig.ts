@@ -38,6 +38,8 @@ export const API_ENDPOINTS = {
 
   // Reactions
   reactions: "/reactions/",
+  reactionCheck: (questionId: string) => `/reactions/check/${questionId}/`,
+  reactionCount: (questionId: string) => `/reactions/count/${questionId}/`,
 
   // Questions
   createQuestion: "/questions/",

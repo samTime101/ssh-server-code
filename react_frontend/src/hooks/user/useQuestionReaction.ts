@@ -3,138 +3,126 @@ import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import {
   createReaction,
-  deleteReaction,
-  updateReaction,
+  getReactionCheck,
+  getReactionCount,
 } from "@/services/user/reaction-service";
 import type { ReactionType } from "@/types/reaction";
 
-interface StoredUserReaction {
-  id: string;
-  type: ReactionType;
-}
-
 interface ReactionUiState {
   userReaction: ReactionType | null;
-  userReactionId: string | null;
+  likes: number;
+  dislikes: number;
+  isLoading: boolean;
   isSubmitting: boolean;
 }
 
-const storageKey = (userGuid: string, questionId: string) =>
-  `question-reaction:${userGuid}:${questionId}`;
-
-const readStoredReaction = (userGuid: string, questionId: string): StoredUserReaction | null => {
-  try {
-    const raw = localStorage.getItem(storageKey(userGuid, questionId));
-    if (!raw) return null;
-    const parsed = JSON.parse(raw) as StoredUserReaction;
-    if (!parsed?.id || (parsed.type !== "like" && parsed.type !== "dislike")) return null;
-    return parsed;
-  } catch {
-    return null;
-  }
-};
-
-const writeStoredReaction = (
-  userGuid: string,
-  questionId: string,
-  reaction: StoredUserReaction | null
-) => {
-  const key = storageKey(userGuid, questionId);
-  if (!reaction) {
-    localStorage.removeItem(key);
-    return;
-  }
-  localStorage.setItem(key, JSON.stringify(reaction));
-};
-
-const getUserGuid = (user: { userId?: string; user_guid?: string } | null): string | null => {
-  if (!user) return null;
-  return user.user_guid || user.userId || null;
-};
-
 const initialState: ReactionUiState = {
   userReaction: null,
-  userReactionId: null,
+  likes: 0,
+  dislikes: 0,
+  isLoading: false,
   isSubmitting: false,
+};
+
+const nextCounts = (
+  likes: number,
+  dislikes: number,
+  prev: ReactionType | null,
+  next: ReactionType
+): { likes: number; dislikes: number } => {
+  let nextLikes = likes;
+  let nextDislikes = dislikes;
+
+  if (prev === "like") nextLikes = Math.max(0, nextLikes - 1);
+  if (prev === "dislike") nextDislikes = Math.max(0, nextDislikes - 1);
+  if (next === "like") nextLikes += 1;
+  if (next === "dislike") nextDislikes += 1;
+
+  return { likes: nextLikes, dislikes: nextDislikes };
 };
 
 export const useQuestionReaction = (questionId: string | undefined) => {
   const { user } = useAuth();
-  const userGuid = getUserGuid(user as { userId?: string; user_guid?: string } | null);
   const [state, setState] = useState<ReactionUiState>(initialState);
   const stateRef = useRef(state);
   stateRef.current = state;
 
   useEffect(() => {
-    if (!questionId || !userGuid) {
+    if (!questionId || !user) {
       setState(initialState);
       return;
     }
 
-    const stored = readStoredReaction(userGuid, questionId);
-    setState({
-      userReaction: stored?.type ?? null,
-      userReactionId: stored?.id ?? null,
-      isSubmitting: false,
-    });
-  }, [questionId, userGuid]);
+    let cancelled = false;
+
+    const load = async () => {
+      setState((prev) => ({ ...prev, isLoading: true }));
+
+      try {
+        const [check, count] = await Promise.all([
+          getReactionCheck(questionId),
+          getReactionCount(questionId),
+        ]);
+
+        if (cancelled) return;
+
+        setState({
+          userReaction: check.reaction_type,
+          likes: count.likes,
+          dislikes: count.dislikes,
+          isLoading: false,
+          isSubmitting: false,
+        });
+      } catch (error) {
+        console.error("Error loading reactions:", error);
+        if (cancelled) return;
+        setState(initialState);
+      }
+    };
+
+    void load();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [questionId, user]);
 
   const react = useCallback(
     async (nextType: ReactionType) => {
-      if (!questionId || !userGuid) {
+      if (!questionId || !user) {
         toast.error("Please sign in to react to questions.");
         return;
       }
 
       const prev = stateRef.current;
-      if (prev.isSubmitting) return;
+      if (prev.isSubmitting || prev.isLoading) return;
 
-      const isRemoving = prev.userReaction === nextType;
-      const isSwitching = !!prev.userReaction && prev.userReaction !== nextType;
+      // Backend upserts via POST; non-admins cannot delete a reaction.
+      if (prev.userReaction === nextType) return;
+
+      const counts = nextCounts(prev.likes, prev.dislikes, prev.userReaction, nextType);
 
       setState({
         ...prev,
-        userReaction: isRemoving ? null : nextType,
+        userReaction: nextType,
+        likes: counts.likes,
+        dislikes: counts.dislikes,
         isSubmitting: true,
       });
 
       try {
-        if (isRemoving && prev.userReactionId) {
-          await deleteReaction(prev.userReactionId);
-          writeStoredReaction(userGuid, questionId, null);
-          setState({
-            userReaction: null,
-            userReactionId: null,
-            isSubmitting: false,
-          });
-          return;
-        }
-
-        if (isSwitching && prev.userReactionId) {
-          const updated = await updateReaction(prev.userReactionId, nextType);
-          writeStoredReaction(userGuid, questionId, {
-            id: updated.id,
-            type: updated.reaction_type,
-          });
-          setState({
-            userReaction: updated.reaction_type,
-            userReactionId: updated.id,
-            isSubmitting: false,
-          });
-          return;
-        }
-
-        const created = await createReaction({
+        const saved = await createReaction({
           question: questionId,
           reaction_type: nextType,
         });
-        writeStoredReaction(userGuid, questionId, {
-          id: created.id,
-          type: created.reaction_type,
-        });
+
+        const refreshed = await getReactionCount(questionId);
+
         setState({
-          userReaction: created.reaction_type,
-          userReactionId: created.id,
+          userReaction: saved.reaction_type,
+          likes: refreshed.likes,
+          dislikes: refreshed.dislikes,
+          isLoading: false,
           isSubmitting: false,
         });
       } catch (error: unknown) {
@@ -151,11 +139,14 @@ export const useQuestionReaction = (questionId: string | undefined) => {
         }
       }
     },
-    [questionId, userGuid]
+    [questionId, user]
   );
 
   return {
     userReaction: state.userReaction,
+    likes: state.likes,
+    dislikes: state.dislikes,
+    isLoading: state.isLoading,
     isSubmitting: state.isSubmitting,
     react,
   };

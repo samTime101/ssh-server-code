@@ -49,12 +49,14 @@ export interface PaginatedSubmissionHistoryResult extends PaginatedSubmissionHis
 
 export interface FetchSubmissionHistoryPageOptions {
   type?: string;
+  showZeroAttempts?: boolean;
   signal?: AbortSignal;
 }
 
 export interface GetSubmissionHistoryOptions {
   pageSize?: number;
   maxPages?: number;
+  showZeroAttempts?: boolean;
   signal?: AbortSignal;
 }
 
