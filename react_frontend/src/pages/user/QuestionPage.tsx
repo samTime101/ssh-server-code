@@ -8,12 +8,14 @@ import MultipleChoiceOption from "@/components/user/MultipleChoiceOption";
 import SingleChoiceOption from "@/components/user/SingleChoiceOption";
 import { getImageUrl } from "@/config/apiConfig";
 import QuestionReview from "@/components/user/QuestionReview";
+import ExamResultSummary from "@/components/user/ExamResultSummary";
 import { toast } from "sonner";
 import EditorRenderer from "@/components/EditorRenderer";
 import QuestionProgress from "@/components/user/QuestionProgress";
 import QuestionFeedbackWidget from "@/components/user/QuestionFeedbackWidget";
 import QuestionReactionButtons from "@/components/user/QuestionReactionButtons";
 import { ThreadedComments } from "@/components/user/ThreadedComments";
+import type { Question } from "@/types/question";
 
 const QuestionPage = () => {
   const {
@@ -52,6 +54,35 @@ const QuestionPage = () => {
     const seconds = totalSeconds % 60;
     return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
   };
+
+  if (showReview && isExamModeEnabled) {
+    let correctCount = 0;
+    let attemptedCount = 0;
+
+    (questionData as Question[] | undefined)?.slice(0, totalCount).forEach((question) => {
+      const attempt = attempts[question.id];
+      if (!attempt?.isAttempted) return;
+      attemptedCount += 1;
+      if (attempt.isCorrect) correctCount += 1;
+    });
+
+    return (
+      <div className="bg-background min-h-screen pt-12">
+        <ExamResultSummary
+          totalQuestions={totalCount}
+          attemptedQuestionsCount={attemptedCount}
+          correctCount={correctCount}
+        />
+        <div className="mt-8">
+          <QuestionReview
+            questions={reviewQuestions}
+            attempts={attempts}
+            onDone={handleReviewDone}
+          />
+        </div>
+      </div>
+    );
+  }
 
   if (!currentQuestion) {
     if (isFetchingNextPage || isRestoringSession) {
@@ -168,12 +199,6 @@ const QuestionPage = () => {
       </CardContent>
     </Card>
   );
-
-  if (showReview && isExamModeEnabled) {
-    return (
-      <QuestionReview questions={reviewQuestions} attempts={attempts} onDone={handleReviewDone} />
-    );
-  }
 
   return (
     <div className="min-h-screen p-6">
