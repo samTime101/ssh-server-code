@@ -214,6 +214,7 @@ class BookmarkSerializer(me_serializers.EmbeddedDocumentSerializer):
 
 class SubmissionQuerySerializer(serializers.Serializer):
     type = serializers.CharField(required=False)
+    show_zero_attempts = serializers.BooleanField(required=False, default=True)
 
 # Statistics Serializers
 class CategoryPerformanceSerializer(serializers.Serializer):

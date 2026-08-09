@@ -153,3 +153,11 @@ class Testimonial(TimeStampedDocument):
     specialization = StringField(required=False)
 
     meta = {'collection': 'testimonials', 'indexes': ['name', '-created_at']}
+
+
+class Reaction(TimeStampedDocument):
+    user_guid = UUIDField(required=True, binary=False)
+    question = ReferenceField(Question, required=True)
+    reaction_type = StringField(required=True, choices=["like", "dislike"])
+
+    meta = {'collection': 'reactions','indexes': [{'fields': ['user_guid', 'question'],'unique': True,}]}
