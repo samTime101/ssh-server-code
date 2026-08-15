@@ -3,6 +3,9 @@ SPECTACULAR_SETTINGS = {
     "TITLE": "MCQ API",
     "DESCRIPTION": """
 
+## August 15, 2026
+- Added endpoint for client
+
 ## August 4, 2026
 - Added show_zero attempts query parameter in submissions/ endpoint
     

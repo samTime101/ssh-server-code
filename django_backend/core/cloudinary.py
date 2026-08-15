@@ -113,3 +113,32 @@ def delete_question_folder(question_id):
         os.rmdir(folder_path)
     except Exception as e:
         print("local folder delete error:", e)
+
+def upload_client_image(image_file, client_id, image_type):
+    folder_path = f"Clients/{client_id}"
+    ext = os.path.splitext(image_file.name)[1]
+    filename = f"{image_type}{ext}"
+    relative_path = os.path.join(folder_path, filename)
+
+    if default_storage.exists(relative_path):
+        default_storage.delete(relative_path)
+
+    saved_path = default_storage.save(
+        relative_path,
+        ContentFile(image_file.read())
+    )
+
+    return f"{settings.MEDIA_URL}{saved_path}"
+
+def delete_client_image(client_id, image_type):
+    folder_path = os.path.join(settings.MEDIA_ROOT, "Clients", str(client_id))
+
+    if not os.path.exists(folder_path):
+        return
+
+    for file in os.listdir(folder_path):
+        if file.startswith(image_type):
+            try:
+                os.remove(os.path.join(folder_path, file))
+            except Exception as e:
+                print("local client image delete error:", e)
