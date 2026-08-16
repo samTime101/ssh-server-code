@@ -1,12 +1,16 @@
+import logging
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from drf_spectacular.utils import extend_schema
 
-from core.permissions.permissions import IsAuthenticated
+from core.permissions.permissions import IsAuthenticated, IsAdminUser
 from core.constants.status import APPROVED_STATUS
 from mongo.models import Question, Submissions
-from .serializers import QuestionBankStatsSerializer
+from sql.models import User, SubscriptionOrder
+from .serializers import QuestionBankStatsSerializer, AdminDashboardStatsSerializer
+
+logger = logging.getLogger(__name__)
 
 
 class QuestionBankStatsAPIView(APIView):
@@ -49,3 +53,53 @@ class QuestionBankStatsAPIView(APIView):
 
         serializer = QuestionBankStatsSerializer(response_data)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class AdminDashboardStatsAPIView(APIView):
+    permission_classes = [IsAdminUser]
+
+    @extend_schema(responses=AdminDashboardStatsSerializer)
+    def get(self, request, *args, **kwargs):
+        # 1. Total Questions from Mongo DB
+        try:
+            total_questions = Question.objects(status=APPROVED_STATUS).count()
+        except Exception as e:
+            logger.error("Exception while fetching Mongo Question count: %s", e, exc_info=True)
+            total_questions = 0
+
+        # 2. Active Users from SQL DB
+        try:
+            active_users = User.objects.filter(is_active=True).count()
+        except Exception as e:
+            logger.error("Exception while fetching active users: %s", e, exc_info=True)
+            active_users = 0
+
+        # 3. Approved Subscription Order from SQL DB
+        try:
+            approved_order = (
+                SubscriptionOrder.objects.filter(
+                    user=request.user,
+                    status=SubscriptionOrder.Status.APPROVED,
+                )
+                .select_related("subscription")
+                .order_by("-updated_at")
+                .first()
+            )
+        except Exception as e:
+            logger.error("Exception while fetching SubscriptionOrder: %s", e, exc_info=True)
+            approved_order = None
+
+        current_subscription = (
+            approved_order.subscription.plan_name if (approved_order and hasattr(approved_order, 'subscription') and approved_order.subscription) else "Free"
+        )
+
+        response_data = {
+            "total_questions": total_questions,
+            "active_users": active_users,
+            "current_subscription": current_subscription,
+        }
+
+        serializer = AdminDashboardStatsSerializer(response_data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
