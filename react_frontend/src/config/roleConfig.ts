@@ -7,6 +7,7 @@ const ROLE_CONFIG = {
     "manage-subcategories",
     "manage-users",
     "manage-users/:id",
+    "manage-clients",
     "add-role",
     "add-college",
     "question-bank",

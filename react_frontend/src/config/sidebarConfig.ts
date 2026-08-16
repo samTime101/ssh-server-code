@@ -3,6 +3,7 @@ import {
   Plus,
   Folder,
   Users,
+  Building2,
   BarChart3,
   FileText,
   Settings,
@@ -29,6 +30,12 @@ export const BOTTOM_MENU_ITEMS: NavItem[] = [
     text: "Manage Users",
     path: "/admin/manage-users",
     allowedPermissions: ["manage-users"],
+  },
+  {
+    icon: Building2,
+    text: "Manage Clients",
+    path: "/admin/manage-clients",
+    allowedPermissions: ["manage-clients"],
   },
   {
     icon: BarChart3,
