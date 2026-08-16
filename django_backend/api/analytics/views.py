@@ -60,27 +60,18 @@ class AdminDashboardStatsAPIView(APIView):
 
     @extend_schema(responses=AdminDashboardStatsSerializer)
     def get(self, request, *args, **kwargs):
-        print(f"[DEBUG AdminDashboardStatsAPIView] Incoming GET request from user: {request.user} (is_authenticated={request.user.is_authenticated}, is_staff={getattr(request.user, 'is_staff', None)})")
-        logger.info(f"[DEBUG AdminDashboardStatsAPIView] Incoming GET request from user: {request.user}")
-
         # 1. Total Questions from Mongo DB
         try:
             total_questions = Question.objects(status=APPROVED_STATUS).count()
-            print(f"[DEBUG AdminDashboardStatsAPIView] Mongo DB Question count (status={APPROVED_STATUS}): {total_questions}")
-            logger.info(f"[DEBUG AdminDashboardStatsAPIView] Mongo DB Question count: {total_questions}")
         except Exception as e:
-            print(f"[ERROR AdminDashboardStatsAPIView] Exception while fetching Mongo Question count: {e}")
-            logger.error(f"[ERROR AdminDashboardStatsAPIView] Exception while fetching Mongo Question count: {e}", exc_info=True)
+            logger.error("Exception while fetching Mongo Question count: %s", e, exc_info=True)
             total_questions = 0
 
         # 2. Active Users from SQL DB
         try:
             active_users = User.objects.filter(is_active=True).count()
-            print(f"[DEBUG AdminDashboardStatsAPIView] SQL DB Active Users count: {active_users}")
-            logger.info(f"[DEBUG AdminDashboardStatsAPIView] SQL DB Active Users count: {active_users}")
         except Exception as e:
-            print(f"[ERROR AdminDashboardStatsAPIView] Exception while fetching active users: {e}")
-            logger.error(f"[ERROR AdminDashboardStatsAPIView] Exception while fetching active users: {e}", exc_info=True)
+            logger.error("Exception while fetching active users: %s", e, exc_info=True)
             active_users = 0
 
         # 3. Approved Subscription Order from SQL DB
@@ -94,13 +85,8 @@ class AdminDashboardStatsAPIView(APIView):
                 .order_by("-updated_at")
                 .first()
             )
-            print(f"[DEBUG AdminDashboardStatsAPIView] Approved order record: {approved_order}")
-            logger.info(f"[DEBUG AdminDashboardStatsAPIView] Approved order record: {approved_order}")
-            if approved_order:
-                print(f"[DEBUG AdminDashboardStatsAPIView] Approved order plan name: {getattr(approved_order.subscription, 'plan_name', None)}")
         except Exception as e:
-            print(f"[ERROR AdminDashboardStatsAPIView] Exception while fetching SubscriptionOrder: {e}")
-            logger.error(f"[ERROR AdminDashboardStatsAPIView] Exception while fetching SubscriptionOrder: {e}", exc_info=True)
+            logger.error("Exception while fetching SubscriptionOrder: %s", e, exc_info=True)
             approved_order = None
 
         current_subscription = (
@@ -112,10 +98,8 @@ class AdminDashboardStatsAPIView(APIView):
             "active_users": active_users,
             "current_subscription": current_subscription,
         }
-        print(f"[DEBUG AdminDashboardStatsAPIView] Prepared response_data: {response_data}")
-        logger.info(f"[DEBUG AdminDashboardStatsAPIView] Prepared response_data: {response_data}")
 
         serializer = AdminDashboardStatsSerializer(response_data)
-        print(f"[DEBUG AdminDashboardStatsAPIView] Serialized data: {serializer.data}")
         return Response(serializer.data, status=status.HTTP_200_OK)
+
 

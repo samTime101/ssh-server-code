@@ -12,8 +12,7 @@ export const getAdminDashboardStats = async (): Promise<AdminDashboardStats> => 
   try {
     const response = await axiosInstance.get(API_ENDPOINTS.dashboardStats);
     return response.data as AdminDashboardStats;
-  } catch (error) {
-    console.error("Error fetching admin dashboard stats:", error);
+  } catch {
     return emptyStats;
   }
 };
