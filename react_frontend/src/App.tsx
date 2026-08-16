@@ -26,6 +26,7 @@ import ManageQuestionSetsPage from "@/pages/admin/ManageQuestionSetsPage";
 import ApplicationFeedbackPage from "@/pages/admin/ApplicationFeedbackPage";
 import ManageTestimonialsPage from "@/pages/admin/ManageTestimonialsPage";
 import AdminSettingsPage from "@/pages/admin/AdminSettingsPage";
+import AdminIndexPage from "@/pages/admin/AdminIndexPage";
 import QuestionFeedbackPage from "@/pages/admin/QuestionFeedbackPage";
 import ProfilePage from "@/pages/user/ProfilePage";
 import MockExamPage from "@/pages/user/MockExamPage";
@@ -146,6 +147,8 @@ const App = () => {
 
         {/* Admin Panel */}
         <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<AdminIndexPage />} />
+
           <Route element={<RoleRoute allowedPermissions={["add-question"]} />}>
             <Route path="add-question" element={<AddQuestionPage />} />
           </Route>
