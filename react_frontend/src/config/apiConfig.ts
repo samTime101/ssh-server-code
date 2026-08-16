@@ -10,6 +10,7 @@ export const getImageUrl = (path: string | null | undefined): string => {
 export const API_ENDPOINTS = {
   // Analytics
   analytics: "/analytics/questionbank/",
+  dashboardStats: "/analytics/dashboard/",
 
   // Auth
   login: "/auth/signin/",
