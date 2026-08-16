@@ -27,6 +27,9 @@ export const API_ENDPOINTS = {
   getCategories: "/categories/",
   getCategoriesWithHierarchy: "/questions/hierarchy/",
 
+  // Clients
+  clients: "/clients/",
+
   // Colleges
   colleges: "/colleges/",
 

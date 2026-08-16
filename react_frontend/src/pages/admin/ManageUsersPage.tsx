@@ -37,20 +37,22 @@ const ManageUsersPage = () => {
   const [isSignupModalOpen, setIsSignupModalOpen] = useState(false);
 
   return (
-    <div>
-      <div className="manage-users-header">
-        <h1 className="manage-users-title text-foreground text-2xl font-bold">Manage Users</h1>
+    <div className="space-y-4">
+      <div className="space-y-2">
+        <div className="manage-users-header">
+          <h1 className="manage-users-title text-foreground text-2xl font-bold">Manage Users</h1>
+        </div>
+        <Button
+          onClick={() => setIsSignupModalOpen(true)}
+          className="bg-primary text-primary-foreground"
+        >
+          Add New User
+        </Button>
+        <div className="manage-users-content text-muted-foreground">
+          <p>This is where admin can manage users.</p>
+        </div>
       </div>
-      <Button
-        onClick={() => setIsSignupModalOpen(true)}
-        className="bg-primary text-primary-foreground"
-      >
-        Add New User
-      </Button>
-      <div className="manage-users-content text-muted-foreground mt-1">
-        <p>This is where admin can manage users.</p>
-      </div>
-      <div className="manage-users-main-content border-border bg-card mt-4 rounded-md border p-4 shadow-md">
+      <div className="manage-users-main-content border-border bg-card rounded-md border p-4 shadow-md">
         <div className="users-search-section">
           <Input
             placeholder="Search users by name or email"

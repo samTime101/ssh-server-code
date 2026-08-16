@@ -19,6 +19,7 @@ import ManageConstraintsPage from "@/pages/admin/ManageConstraintsPage";
 import ManageSubscriptionsPage from "@/pages/admin/ManageSubscriptionsPage";
 import ManageUsersPage from "@/pages/admin/ManageUsersPage";
 import EditUserPage from "@/pages/admin/EditUserPage";
+import ManageClientsPage from "@/pages/admin/ManageClientsPage";
 import QuestionBankPage from "@/pages/admin/QuestionBankPage";
 import AddRolePage from "@/pages/admin/AddRolePage";
 import AddCollegePage from "@/pages/admin/AddCollegePage";
@@ -184,6 +185,10 @@ const App = () => {
 
           <Route element={<RoleRoute allowedPermissions={["manage-users/:id"]} />}>
             <Route path="manage-users/:id" element={<EditUserPage />} />
+          </Route>
+
+          <Route element={<RoleRoute allowedPermissions={["manage-clients"]} />}>
+            <Route path="manage-clients" element={<ManageClientsPage />} />
           </Route>
 
           <Route element={<RoleRoute allowedPermissions={["add-role"]} />}>
