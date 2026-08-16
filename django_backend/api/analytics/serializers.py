@@ -10,3 +10,9 @@ class QuestionBankStatsSerializer(serializers.Serializer):
     unique_questions_attempted = serializers.IntegerField()
     questions_coverage_percent = serializers.FloatField()
     accuracy_percent = serializers.FloatField()
+
+
+class AdminDashboardStatsSerializer(serializers.Serializer):
+    total_questions = serializers.IntegerField()
+    active_users = serializers.IntegerField()
+    current_subscription = serializers.CharField()
