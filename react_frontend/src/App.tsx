@@ -36,6 +36,7 @@ import BookmarksPage from "@/pages/user/BookmarksPage";
 import SettingsPage from "@/pages/user/SettingsPage";
 import SharedQuestionPage from "@/pages/public/SharedQuestionPage";
 import RoleRoute from "@/components/RoleRoute";
+import SubscriptionRoute from "@/components/SubscriptionRoute";
 import Loader from "@/components/ui/Loader";
 import ROLE_CONFIG from "@/config/roleConfig";
 import EmailVerified from "@/pages/EmailVerified";
@@ -118,14 +119,16 @@ const App = () => {
       </Route>
       <Route path="/shared/question/:id" element={<SharedQuestionPage />} />
       <Route element={<PrivateRoute />}>
-        <Route
-          path="/userpanel/mock-exams"
-          element={
-            <QuestionProvider>
-              <MockExamPage />
-            </QuestionProvider>
-          }
-        />
+        <Route element={<SubscriptionRoute />}>
+          <Route
+            path="/userpanel/mock-exams"
+            element={
+              <QuestionProvider>
+                <MockExamPage />
+              </QuestionProvider>
+            }
+          />
+        </Route>
         {/* User Panel */}
         <Route
           path="/userpanel"
@@ -136,13 +139,15 @@ const App = () => {
           }
         >
           <Route index element={<Navigate to="question-bank" replace />} />
-          <Route path="question-bank" element={<QuestionBankSection />} />
-          <Route path="question" element={<QuestionPage />} />
-          <Route path="cee-practice" element={<CEEPracticeSection />} />
-          <Route path="cee-question" element={<CEEQuestionPage />} />
+          <Route element={<SubscriptionRoute />}>
+            <Route path="question-bank" element={<QuestionBankSection />} />
+            <Route path="question" element={<QuestionPage />} />
+            <Route path="cee-practice" element={<CEEPracticeSection />} />
+            <Route path="cee-question" element={<CEEQuestionPage />} />
+            <Route path="history" element={<HistoryPage />} />
+            <Route path="bookmarks" element={<BookmarksPage />} />
+          </Route>
           <Route path="profile" element={<ProfilePage />} />
-          <Route path="history" element={<HistoryPage />} />
-          <Route path="bookmarks" element={<BookmarksPage />} />
           <Route path="settings" element={<SettingsPage />} />
         </Route>
 
