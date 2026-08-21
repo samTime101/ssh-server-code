@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from sql.models import Client
+from sql.models import User
 
 class ClientSerializer(serializers.ModelSerializer):
     pan_photo = serializers.ImageField(source='pan_photo_url', write_only=True, required=True)
@@ -35,3 +36,24 @@ class ClientSerializer(serializers.ModelSerializer):
         if new_registration_photo and instance.registration_photo_url:
             instance.registration_photo_url.delete(save=False)
         return super().update(instance, validated_data)
+
+
+class ClientAdminSetupSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['username', 'email', 'password', 'first_name', 'last_name', 'phonenumber']
+        extra_kwargs = {
+            'password': {'write_only': True}
+        }
+    
+    def create(self, validated_data):
+        user = User(
+            username=validated_data['username'],
+            email=validated_data['email'],
+            first_name=validated_data['first_name'],
+            last_name=validated_data['last_name'],
+            phonenumber=validated_data['phonenumber'],
+        )
+        user.set_password(validated_data['password'])
+        user.save()
+        return user

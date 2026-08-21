@@ -3,6 +3,9 @@ SPECTACULAR_SETTINGS = {
     "TITLE": "MCQ API",
     "DESCRIPTION": """
 
+## August 21, 2026
+- Clients can now add users
+    
 ## August 15, 2026
 - Added endpoint for client
 - Moved client to sql from mongo Aug 21

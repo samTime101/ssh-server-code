@@ -126,6 +126,8 @@ class Client(models.Model):
     registration_photo_url = models.ImageField(upload_to=client_registration_path)
     phonenumber = models.CharField(max_length=20)
     email = models.EmailField(unique=True)
+    setup_token = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    is_setup_completed = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -134,3 +136,14 @@ class Client(models.Model):
 
     def __str__(self):
         return self.organization_name
+
+class ClientUser(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='client_profiles')
+    client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name='client_users')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'client')
+
+    def __str__(self):
+        return f"{self.user.email} - {self.client.organization_name}"
