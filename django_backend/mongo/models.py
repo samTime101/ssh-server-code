@@ -161,16 +161,3 @@ class Reaction(TimeStampedDocument):
     reaction_type = StringField(required=True, choices=["like", "dislike"])
 
     meta = {'collection': 'reactions','indexes': [{'fields': ['user_guid', 'question'],'unique': True,}]}
-
-
-class Client(TimeStampedDocument):
-    organization_name = StringField(required=True, unique=True)
-    address = StringField(required=True)
-    pan = StringField(required=True, unique=True)
-    registration_number = StringField(required=True, unique=True)
-    pan_photo_url = StringField(required=False)
-    registration_photo_url = StringField(required=True)
-    phonenumber = StringField(required=True)
-    email = EmailField(required=True, unique=True)
-
-    meta = {'collection': 'clients', 'indexes': ['organization_name']}

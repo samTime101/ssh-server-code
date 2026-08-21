@@ -1,16 +1,15 @@
 # STRICT ADMIN ONLY ENDPOINT
 # SAMIP REGMI AUG 21
-from rest_framework_mongoengine import viewsets
+from rest_framework import viewsets
 from core.pagination import StandardResultsSetPagination
 from core.permissions.permissions import IsAdminUser
-from mongo.models import Client
+from sql.models import Client
 from .serializers import ClientSerializer
 
 class ClientViewSet(viewsets.ModelViewSet):
-    queryset = Client.objects.order_by("-created_at")
+    queryset = Client.objects.all().order_by("-created_at")
     serializer_class = ClientSerializer
     pagination_class = StandardResultsSetPagination
     http_method_names = ["get", "post", "put", "patch", "delete"]
     lookup_field = "id"
-    lookup_value_regex = "[0-9a-f]{24}"
     permission_classes = [IsAdminUser]
