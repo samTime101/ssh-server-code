@@ -107,3 +107,30 @@ class SubscriptionOrder(models.Model):
 
     def __str__(self):
         return f"{self.user} - {self.subscription}"
+
+
+def client_pan_path(instance, filename):
+    ext = filename.split('.')[-1]
+    return f'clients/{instance.id}/pan.{ext}'
+
+def client_registration_path(instance, filename):
+    ext = filename.split('.')[-1]
+    return f'clients/{instance.id}/registration.{ext}'
+
+class Client(models.Model):
+    organization_name = models.CharField(max_length=255, unique=True)
+    address = models.CharField(max_length=255)
+    pan = models.CharField(max_length=50, unique=True)
+    registration_number = models.CharField(max_length=50, unique=True)
+    pan_photo_url = models.ImageField(upload_to=client_pan_path)
+    registration_photo_url = models.ImageField(upload_to=client_registration_path)
+    phonenumber = models.CharField(max_length=20)
+    email = models.EmailField(unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return self.organization_name

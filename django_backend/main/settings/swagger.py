@@ -3,6 +3,10 @@ SPECTACULAR_SETTINGS = {
     "TITLE": "MCQ API",
     "DESCRIPTION": """
 
+## August 15, 2026
+- Added endpoint for client
+- Moved client to sql from mongo Aug 21
+
 ## August 4, 2026
 - Added show_zero attempts query parameter in submissions/ endpoint
     

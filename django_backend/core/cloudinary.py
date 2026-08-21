@@ -113,3 +113,4 @@ def delete_question_folder(question_id):
         os.rmdir(folder_path)
     except Exception as e:
         print("local folder delete error:", e)
+
