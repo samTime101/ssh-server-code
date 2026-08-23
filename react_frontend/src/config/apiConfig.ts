@@ -1,4 +1,25 @@
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api";
+const getApiBaseUrl = (): string => {
+  const envUrl = import.meta.env.VITE_API_BASE_URL;
+  if (typeof window === "undefined") return envUrl || "http://localhost:8000/api";
+  const hostname = window.location.hostname;
+  const protocol = window.location.protocol;
+
+  // Handle local subdomain testing (e.g. acme.localhost:5176 -> acme.localhost:8000/api)
+  if (hostname.endsWith(".localhost")) {
+    return `${protocol}//${hostname}:8000/api`;
+  }
+
+  // Handle production subdomains (e.g. acme.vaidix.org -> acme.vaidix.org/api)
+  const parts = hostname.split('.');
+  if (parts.length > 2 && hostname !== "127.0.0.1") {
+    return `${protocol}//${hostname}/api`;
+  }
+
+  // Fallback to env URL if configured, otherwise use current hostname
+  return envUrl || `${protocol}//${hostname}:8000/api`;
+};
+
+export const API_BASE_URL = getApiBaseUrl();
 
 export const getImageUrl = (path: string | null | undefined): string => {
   if (!path) return "";

@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 from mongoengine import *
 import os
 from .base import TimeStampedDocument
+from .base_document import TenantDocument
 from core.constants.status import APPROVED_STATUS, IN_PROGRESS_STATUS, QUESTION_STATUSES, SUBMISSION_STATUSES
 load_dotenv()
 mongo_uri = os.getenv("MONGO_URI")
@@ -72,7 +73,7 @@ class Attempt(EmbeddedDocument):
     attempted_at = DateTimeField(default=datetime.utcnow)
     response_time_seconds = IntField(default=0)
 
-class Submissions(Document):
+class Submissions(TenantDocument):
     user_guid = UUIDField(required=True, binary=False)
     selected_questions = ListField(ReferenceField(Question), default=list)
     attempts = ListField(EmbeddedDocumentField(Attempt))
