@@ -25,3 +25,6 @@ react_frontend/yarn-debug.log*
 react_frontend/yarn-error.log*
 react_frontend/dist/
 .vscode/launch.json
+
+
+django_backend/scratch

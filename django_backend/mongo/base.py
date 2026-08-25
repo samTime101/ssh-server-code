@@ -1,5 +1,6 @@
 from datetime import datetime
-from mongoengine import Document, DateTimeField
+from mongoengine import DateTimeField
+from mongo.base_document import TenantDocument
 
 
 # yo chai base class ho, yeslai argument ma halne
@@ -7,7 +8,7 @@ from mongoengine import Document, DateTimeField
 # only change updated_at field
 # Also, yesko collection create hudaina
 
-class TimeStampedDocument(Document):
+class TimeStampedDocument(TenantDocument):
     created_at = DateTimeField(default=datetime.utcnow)
     updated_at = DateTimeField(default=datetime.utcnow)
 
