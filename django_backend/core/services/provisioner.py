@@ -48,7 +48,6 @@ def provision_tenant_databases(client, custom_sql_db=None, custom_mongo_db=None)
         Role = apps.get_model('sql', 'Role')
         for role_name in ['ADMIN', 'CONTRIBUTOR']:
             Role.objects.using(db_alias).get_or_create(name=role_name)
-
         mongo_alias = f"mongo_{client.id}"
         mongo_uri = os.getenv("MONGO_URI", "mongodb://localhost:27017/sisani_refactored")        
         from urllib.parse import urlparse, urlunparse
@@ -61,20 +60,6 @@ def provision_tenant_databases(client, custom_sql_db=None, custom_mongo_db=None)
             name=client.mongo_database_name,
             host=clean_mongo_uri
         )
-
-        # Force-create MongoDB database and collections immediately so they appear in Compass
-        # from pymongo import MongoClient
-        # try:
-        #     mongo_client = MongoClient(clean_mongo_uri)
-        #     tenant_mongo_db = mongo_client[client.mongo_database_name]
-        #     for col in ['categories', 'questions', 'submissions', 'sub_categories']:
-        #         if col not in tenant_mongo_db.list_collection_names():
-        #             tenant_mongo_db.create_collection(col)
-        #     logger.info(f"Successfully pre-created MongoDB collections for: {client.mongo_database_name}")
-        # except Exception as e:
-        #     logger.warning(f"Could not pre-create MongoDB collections: {str(e)}")
-
-        # 6. Generate secure admin invitation token & save in cache
         logger.info(f"Generating admin invitation token for: {client.email}")
         invite_token = secrets.token_urlsafe(32)
         invite_payload = {
