@@ -12,10 +12,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ImageIcon, Upload, X } from "lucide-react";
+import { Upload, X } from "lucide-react";
 import { useQuestionForm } from "@/hooks/admin/useQuestionForm";
 import { useEffect } from "react";
-import { getImageUrl } from "@/config/apiConfig";
+import ImagePreview from "@/components/ImagePreview";
 import type { QuestionStatus } from "@/types/question";
 
 // uta questionbank bata aako data
@@ -115,7 +115,7 @@ const EditQuestionForm = ({ selectedQuestion, handleEditSuccess }: EditQuestionF
         {/* Image Upload */}
         <div className="space-y-2">
           <Label>Question Image</Label>
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center gap-4">
             <Input
               type="file"
               id="questionImage"
@@ -129,35 +129,32 @@ const EditQuestionForm = ({ selectedQuestion, handleEditSuccess }: EditQuestionF
             >
               <Upload size={16} /> Choose Question Image
             </label>
-
-            {selectedImages.question ? (
-              <div className="flex items-center gap-2">
-                <ImageIcon size={16} className="text-green-600" />
-                <span className="text-muted-foreground text-sm">
-                  {selectedImages.question.name}
-                </span>
+          </div>
+          {(selectedImages.question || selectedQuestion?.question_image_url) && (
+            <div className="flex items-start gap-2">
+              <ImagePreview
+                file={selectedImages.question}
+                existingSrc={selectedQuestion?.question_image_url}
+                alt="Question image preview"
+                className="mt-0 h-20 w-auto max-w-40 object-contain"
+              />
+              {selectedImages.question && (
                 <button
                   type="button"
                   onClick={() => handleImageChange("question", null)}
-                  className="text-destructive hover:text-destructive/70 ml-2"
+                  className="text-destructive hover:text-destructive/70"
                 >
                   <X size={14} />
                 </button>
-              </div>
-            ) : selectedQuestion?.question_image_url ? (
-              <img
-                src={getImageUrl(selectedQuestion.question_image_url)}
-                alt="Current question"
-                className="border-border h-20 rounded border"
-              />
-            ) : null}
-          </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Description Image */}
         <div className="space-y-2">
           <Label>Description Image</Label>
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center gap-4">
             <Input
               type="file"
               id="descriptionImage"
@@ -171,29 +168,26 @@ const EditQuestionForm = ({ selectedQuestion, handleEditSuccess }: EditQuestionF
             >
               <Upload size={16} /> Choose Description Image
             </label>
-
-            {selectedImages.description ? (
-              <div className="flex items-center gap-2">
-                <ImageIcon size={16} className="text-green-600" />
-                <span className="text-muted-foreground text-sm">
-                  {selectedImages.description.name}
-                </span>
+          </div>
+          {(selectedImages.description || selectedQuestion?.description_image_url) && (
+            <div className="flex items-start gap-2">
+              <ImagePreview
+                file={selectedImages.description}
+                existingSrc={selectedQuestion?.description_image_url}
+                alt="Description image preview"
+                className="mt-0 h-20 w-auto max-w-40 object-contain"
+              />
+              {selectedImages.description && (
                 <button
                   type="button"
                   onClick={() => handleImageChange("description", null)}
-                  className="text-destructive hover:text-destructive/70 ml-2"
+                  className="text-destructive hover:text-destructive/70"
                 >
                   <X size={14} />
                 </button>
-              </div>
-            ) : selectedQuestion?.description_image_url ? (
-              <img
-                src={getImageUrl(selectedQuestion.description_image_url)}
-                alt="Current description"
-                className="border-border h-20 rounded border"
-              />
-            ) : null}
-          </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 

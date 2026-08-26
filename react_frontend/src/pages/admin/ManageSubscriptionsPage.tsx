@@ -19,6 +19,7 @@ import Paginator from "@/components/Paginator";
 import { getImageUrl } from "@/config/apiConfig";
 import { useManageSubscriptions } from "@/hooks/admin/useManageSubscriptions";
 import { PenIcon, PlusIcon, TrashIcon } from "lucide-react";
+import ImagePreview from "@/components/ImagePreview";
 
 const ManageSubscriptionsPage = () => {
   const {
@@ -199,13 +200,11 @@ const ManageSubscriptionsPage = () => {
               accept="image/*"
               onChange={(e) => setImageFile(e.target.files?.[0] ?? null)}
             />
-            {editingSubscription?.image_url && !imageFile && (
-              <img
-                src={getImageUrl(editingSubscription.image_url)}
-                alt={editingSubscription.plan_name}
-                className="mt-1 h-16 w-16 rounded object-cover"
-              />
-            )}
+            <ImagePreview
+              file={imageFile}
+              existingSrc={editingSubscription?.image_url}
+              alt={form.plan_name || "Plan image"}
+            />
           </div>
 
           <div className="flex items-center gap-2">

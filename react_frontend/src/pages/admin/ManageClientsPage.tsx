@@ -14,9 +14,9 @@ import { PenIcon, TrashIcon } from "lucide-react";
 import Paginator from "@/components/Paginator";
 import TableSkeletonLoader from "@/components/TableSkeletonLoader";
 import { useManageClients } from "@/hooks/admin/useManageClients";
-import { getImageUrl } from "@/config/apiConfig";
 import { getTenantAccessHost } from "@/config/tenant";
 import { Badge } from "@/components/ui/badge";
+import ImagePreview from "@/components/ImagePreview";
 import type { ClientStatus } from "@/types/client";
 
 const CLIENT_STATUS_CLASSES: Record<ClientStatus, string> = {
@@ -179,6 +179,11 @@ const ManageClientsPage = () => {
               disabled={submitting}
               required={!editingId}
             />
+            <ImagePreview
+              file={formData.pan_photo}
+              existingSrc={editingClient?.pan_photo_url}
+              alt="PAN photo preview"
+            />
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="registration_photo">Registration Photo</Label>
@@ -193,40 +198,19 @@ const ManageClientsPage = () => {
               disabled={submitting}
               required={!editingId}
             />
+            <ImagePreview
+              file={formData.registration_photo}
+              existingSrc={editingClient?.registration_photo_url}
+              alt="Registration photo preview"
+            />
           </div>
         </div>
 
-        {editingClient && (
-          <div className="mt-4 space-y-2">
-            <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
-              {editingClient.pan_photo_url && (
-                <a
-                  href={getImageUrl(editingClient.pan_photo_url)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary text-sm underline"
-                >
-                  View existing PAN photo
-                </a>
-              )}
-              {editingClient.registration_photo_url && (
-                <a
-                  href={getImageUrl(editingClient.registration_photo_url)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary text-sm underline"
-                >
-                  View existing registration photo
-                </a>
-              )}
-            </div>
-            {(editingClient.database_name || editingClient.mongo_database_name) && (
-              <p className="text-muted-foreground text-xs">
-                SQL: {editingClient.database_name || "—"} · Mongo:{" "}
-                {editingClient.mongo_database_name || "—"}
-              </p>
-            )}
-          </div>
+        {editingClient && (editingClient.database_name || editingClient.mongo_database_name) && (
+          <p className="text-muted-foreground mt-4 text-xs">
+            SQL: {editingClient.database_name || "—"} · Mongo:{" "}
+            {editingClient.mongo_database_name || "—"}
+          </p>
         )}
 
         <div className="mt-4 flex gap-2">

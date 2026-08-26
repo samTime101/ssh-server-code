@@ -17,6 +17,7 @@ import Paginator from "@/components/Paginator";
 import { getImageUrl } from "@/config/apiConfig";
 import { useManageTestimonials } from "@/hooks/admin/useManageTestimonials";
 import { PenIcon, PlusIcon, TrashIcon } from "lucide-react";
+import ImagePreview from "@/components/ImagePreview";
 
 const ManageTestimonialsPage = () => {
   const {
@@ -177,13 +178,11 @@ const ManageTestimonialsPage = () => {
               accept="image/*"
               onChange={(e) => setImageFile(e.target.files?.[0] ?? null)}
             />
-            {editingTestimonial?.image_url && !imageFile && (
-              <img
-                src={getImageUrl(editingTestimonial.image_url)}
-                alt={editingTestimonial.name}
-                className="mt-1 h-16 w-16 rounded object-cover"
-              />
-            )}
+            <ImagePreview
+              file={imageFile}
+              existingSrc={editingTestimonial?.image_url}
+              alt={form.name || "Testimonial photo"}
+            />
           </div>
 
           <div className="flex justify-end gap-2">
