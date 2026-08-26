@@ -46,7 +46,7 @@ export const BOTTOM_MENU_ITEMS: NavItem[] = [
   },
   {
     icon: Plus,
-    text: "Add Role",
+    text: "Manage Roles",
     path: "/admin/add-role",
     allowedPermissions: ["add-role"],
   },
@@ -92,12 +92,6 @@ export const QUESTION_SUB_ITEMS: NavItem[] = [
 ];
 
 export const CATEGORY_SUB_ITEMS: NavItem[] = [
-  {
-    icon: Plus,
-    text: "Create Category",
-    path: "/admin/create-category",
-    allowedPermissions: ["create-category"],
-  },
   {
     icon: List,
     text: "Manage Categories",

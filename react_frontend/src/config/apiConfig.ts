@@ -73,6 +73,8 @@ export const API_ENDPOINTS = {
   accountInfo: "/users/profile/",
   usersList: "/users/",
   bookmarks: "/users/bookmarks/",
+  assignRole: (userGuid: string) => `/users/${userGuid}/assign-role/`,
+  removeRole: (userGuid: string) => `/users/${userGuid}/remove-role/`,
 
   // Notes
   notes: "/notes/",

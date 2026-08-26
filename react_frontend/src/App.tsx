@@ -12,7 +12,6 @@ import QuestionProvider from "@/contexts/QuestionContext.tsx";
 import QuestionPage from "@/pages/user/QuestionPage";
 import CEEQuestionPage from "@/pages/user/CEEQuestionPage";
 import AddQuestionPage from "@/pages/admin/AddQuestionPage";
-import CreateCategoryPage from "@/pages/admin/CreateCategoryPage";
 import ManageCategoriesPage from "@/pages/admin/ManageCategoriesPage";
 import ManageSubcategoriesPage from "@/pages/admin/ManageSubcategoriesPage";
 import ManageConstraintsPage from "@/pages/admin/ManageConstraintsPage";
@@ -21,8 +20,8 @@ import ManageUsersPage from "@/pages/admin/ManageUsersPage";
 import EditUserPage from "@/pages/admin/EditUserPage";
 import ManageClientsPage from "@/pages/admin/ManageClientsPage";
 import QuestionBankPage from "@/pages/admin/QuestionBankPage";
-import AddRolePage from "@/pages/admin/AddRolePage";
-import AddCollegePage from "@/pages/admin/AddCollegePage";
+import ManageRolesPage from "@/pages/admin/ManageRolesPage";
+import ManageCollegesPage from "@/pages/admin/ManageCollegesPage";
 import ManageQuestionSetsPage from "@/pages/admin/ManageQuestionSetsPage";
 import ApplicationFeedbackPage from "@/pages/admin/ApplicationFeedbackPage";
 import ManageTestimonialsPage from "@/pages/admin/ManageTestimonialsPage";
@@ -177,10 +176,6 @@ const App = () => {
             <Route path="manage-question-sets" element={<ManageQuestionSetsPage />} />
           </Route>
 
-          <Route element={<RoleRoute allowedPermissions={["create-category"]} />}>
-            <Route path="create-category" element={<CreateCategoryPage />} />
-          </Route>
-
           <Route element={<RoleRoute allowedPermissions={["manage-categories"]} />}>
             <Route path="manage-categories" element={<ManageCategoriesPage />} />
           </Route>
@@ -212,11 +207,11 @@ const App = () => {
           </Route>
 
           <Route element={<RoleRoute allowedPermissions={["add-role"]} />}>
-            <Route path="add-role" element={<AddRolePage />} />
+            <Route path="add-role" element={<ManageRolesPage />} />
           </Route>
 
           <Route element={<RoleRoute allowedPermissions={["add-college"]} />}>
-            <Route path="add-college" element={<AddCollegePage />} />
+            <Route path="add-college" element={<ManageCollegesPage />} />
           </Route>
 
           <Route element={<RoleRoute allowedPermissions={["application-feedback"]} />}>

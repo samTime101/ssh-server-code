@@ -9,7 +9,8 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { PenIcon, TrashIcon } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { PenIcon, PlusIcon, TrashIcon } from "lucide-react";
 import Modal from "@/components/Modal";
 import CategoryIcon from "@/components/CategoryIcon";
 import IconPicker from "@/components/IconPicker";
@@ -30,17 +31,19 @@ const ManageCategoriesPage = () => {
   const {
     categories,
     isLoading,
-    editTarget,
-    editName,
-    setEditName,
-    editIcon,
-    setEditIcon,
-    editStatus,
-    setEditStatus,
+    isFormOpen,
+    editingTarget,
+    name,
+    setName,
+    icon,
+    setIcon,
+    status,
+    setStatus,
     isSubmitting,
-    openEditModal,
-    closeEditModal,
-    handleEditSubmit,
+    openCreateForm,
+    openEditForm,
+    closeForm,
+    handleSubmit,
     handleDelete,
     currentPage,
     pageSize,
@@ -51,11 +54,19 @@ const ManageCategoriesPage = () => {
   } = useManageCategories();
 
   return (
-    <div>
-      <h1 className="text-foreground text-2xl font-bold">Manage Categories</h1>
-      <p className="text-muted-foreground mt-1">View, edit, or delete existing categories.</p>
+    <div className="space-y-6 p-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-foreground text-2xl font-bold">Manage Categories</h1>
+          <p className="text-muted-foreground mt-1">Create, edit, or delete categories.</p>
+        </div>
+        <Button onClick={openCreateForm} className="cursor-pointer">
+          <PlusIcon size={16} />
+          New Category
+        </Button>
+      </div>
 
-      <div className="border-border bg-card mt-4 rounded-md border p-4 shadow-md">
+      <div className="border-border bg-card rounded-md border p-4 shadow-md">
         <Table>
           <TableCaption>
             {isLoading ? "" : `Total categories: ${pagination?.count || categories.length}`}
@@ -91,13 +102,15 @@ const ManageCategoriesPage = () => {
                   <TableCell className="flex gap-2">
                     <Button
                       className="bg-primary text-primary-foreground cursor-pointer rounded"
-                      onClick={() => openEditModal(cat)}
+                      onClick={() => openEditForm(cat)}
+                      disabled={isSubmitting}
                     >
                       <PenIcon size={12} />
                     </Button>
                     <Button
                       className="bg-destructive text-primary-foreground cursor-pointer rounded"
                       onClick={() => handleDelete(cat)}
+                      disabled={isSubmitting}
                     >
                       <TrashIcon size={12} />
                     </Button>
@@ -122,45 +135,56 @@ const ManageCategoriesPage = () => {
       </div>
 
       <Modal
-        open={!!editTarget}
-        onOpenChange={(open) => !open && closeEditModal()}
-        title="Edit Category"
+        open={isFormOpen}
+        onOpenChange={(open) => !open && closeForm()}
+        title={editingTarget ? "Edit Category" : "New Category"}
+        contentClassName="sm:max-w-lg"
       >
-        <form onSubmit={handleEditSubmit} className="flex flex-col gap-4">
-          <Input
-            value={editName}
-            onChange={(e) => setEditName(e.target.value)}
-            placeholder="Category name"
-            required
-            autoFocus
-          />
-          <div>
-            <p className="text-muted-foreground mb-2 text-sm">Icon</p>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="categoryName">Name</Label>
+            <Input
+              id="categoryName"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Category name"
+              required
+              autoFocus
+            />
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <Label>Icon</Label>
             <IconPicker
-              value={editIcon}
-              onChange={setEditIcon}
+              value={icon}
+              onChange={setIcon}
               placeholder="Select category icon"
             />
           </div>
-          <Select
-            value={editStatus}
-            onValueChange={(value) => setEditStatus(value as CategoryStatus)}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="approved">Approved</SelectItem>
-              <SelectItem value="pending">Pending</SelectItem>
-              <SelectItem value="rejected">Rejected</SelectItem>
-            </SelectContent>
-          </Select>
+
+          <div className="flex flex-col gap-2">
+            <Label>Status</Label>
+            <Select
+              value={status}
+              onValueChange={(value) => setStatus(value as CategoryStatus)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="approved">Approved</SelectItem>
+                <SelectItem value="pending">Pending</SelectItem>
+                <SelectItem value="rejected">Rejected</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
           <div className="flex justify-end gap-2">
-            <Button type="button" variant="outline" onClick={closeEditModal}>
+            <Button type="button" variant="outline" onClick={closeForm}>
               Cancel
             </Button>
-            <Button type="submit" disabled={isSubmitting || !editName.trim()}>
-              {isSubmitting ? "Saving..." : "Save"}
+            <Button type="submit" disabled={isSubmitting || !name.trim()}>
+              {isSubmitting ? "Saving..." : editingTarget ? "Save" : "Create"}
             </Button>
           </div>
         </form>

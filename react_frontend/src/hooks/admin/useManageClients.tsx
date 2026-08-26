@@ -58,6 +58,7 @@ export const useManageClients = () => {
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
   const [pagination, setPagination] = useState({
@@ -93,7 +94,18 @@ export const useManageClients = () => {
     loadClients();
   }, [loadClients]);
 
-  const handleEdit = (client: Client) => {
+  const resetForm = () => {
+    setFormData(emptyForm);
+    setEditingId(null);
+    setEditingClient(null);
+  };
+
+  const openCreateForm = () => {
+    resetForm();
+    setIsFormOpen(true);
+  };
+
+  const openEditForm = (client: Client) => {
     setEditingId(client.id);
     setEditingClient(client);
     setFormData({
@@ -107,24 +119,24 @@ export const useManageClients = () => {
       pan_photo: null,
       registration_photo: null,
     });
+    setIsFormOpen(true);
+  };
+
+  const closeForm = () => {
+    setIsFormOpen(false);
+    resetForm();
   };
 
   const handleFileChange = (field: "pan_photo" | "registration_photo", file: File | null) => {
     setFormData((prev) => ({ ...prev, [field]: file }));
   };
 
-  const resetForm = () => {
-    setFormData(emptyForm);
-    setEditingId(null);
-    setEditingClient(null);
-  };
-
-  const handleSubmit = async (e: React.FormEvent): Promise<boolean> => {
+  const handleSubmit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
     const validationError = validateClientForm(formData, !!editingId);
     if (validationError) {
       toast.error(validationError);
-      return false;
+      return;
     }
 
     setSubmitting(true);
@@ -138,12 +150,10 @@ export const useManageClients = () => {
         const accessHost = getTenantAccessHost(formData.subdomain.trim().toLowerCase());
         toast.success(`Client created. Setup email sent. Org will be available at ${accessHost}`);
       }
-      resetForm();
-      loadClients();
-      return true;
+      closeForm();
+      await loadClients();
     } catch (err) {
       toast.error(getApiErrorMessage(err, "Failed to save client"));
-      return false;
     } finally {
       setSubmitting(false);
     }
@@ -157,7 +167,7 @@ export const useManageClients = () => {
       if (clients.length === 1 && currentPage > 1) {
         setCurrentPage((prev) => prev - 1);
       } else {
-        loadClients();
+        await loadClients();
       }
     } catch (err) {
       toast.error(getApiErrorMessage(err, "Failed to delete client"));
@@ -182,22 +192,24 @@ export const useManageClients = () => {
     filteredClients,
     loading,
     submitting,
+    isFormOpen,
     editingId,
     editingClient,
     pagination,
     currentPage,
     pageSize,
     formData,
-    searchQuery,
     setFormData,
+    searchQuery,
     setSearchQuery,
-    handleEdit,
+    openCreateForm,
+    openEditForm,
+    closeForm,
     handleFileChange,
     handleSubmit,
     handleDelete,
     handlePageChange,
     handlePageSizeChange,
-    resetForm,
     modal,
   };
 };

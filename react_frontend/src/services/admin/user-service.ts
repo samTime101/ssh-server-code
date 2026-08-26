@@ -32,8 +32,8 @@ export async function updateUser(userId: string, data: UserUpdate): Promise<User
 export async function assignRoleToUser(userGuid: string, roleId: string): Promise<any> {
   try {
     const response = await axiosInstance.post(
-      `/users/${userGuid}/assign-role/`,  // Adjusted endpoint manually for now
-      { role_ids: [roleId] }
+      API_ENDPOINTS.assignRole(userGuid),
+      { role_ids: [Number(roleId)] }
     );
     return response.data;
   } catch (error: any) {
@@ -43,9 +43,9 @@ export async function assignRoleToUser(userGuid: string, roleId: string): Promis
 
 export async function removeRoleFromUser(userGuid: string, roleId: string): Promise<any> {
   try {
-    const response = await axiosInstance.post(
-      `/users/${userGuid}/remove-role/`,
-      { role_ids: [roleId] }
+    const response = await axiosInstance.delete(
+      API_ENDPOINTS.removeRole(userGuid),
+      { data: { role_ids: [Number(roleId)] } }
     );
     return response.data;
   } catch (error: any) {
