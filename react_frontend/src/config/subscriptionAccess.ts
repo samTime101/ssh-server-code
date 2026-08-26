@@ -1,7 +1,7 @@
 import { useAuth } from "@/hooks/useAuth";
 
 export const TEMP_SUBSCRIBED_EMAILS = new Set<string>([
-  // "super@gmail.com"
+  
 ]);
 
 export const SUBSCRIPTION_PLANS_PATH = "/userpanel/profile?tab=subscriptions";
@@ -17,5 +17,6 @@ export function isTemporarilySubscribed(email?: string | null): boolean {
 
 export function useHasActiveSubscription(): boolean {
   const { user } = useAuth();
+  if (user?.roles?.includes("ADMIN")) return true;
   return isTemporarilySubscribed(user?.email);
 }
