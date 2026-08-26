@@ -36,6 +36,7 @@ export const BOTTOM_MENU_ITEMS: NavItem[] = [
     text: "Manage Clients",
     path: "/admin/manage-clients",
     allowedPermissions: ["manage-clients"],
+    platformOnly: true,
   },
   {
     icon: BarChart3,

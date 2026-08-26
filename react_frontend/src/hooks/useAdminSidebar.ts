@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import ROLE_CONFIG from "@/config/roleConfig";
+import { isPlatformHost } from "@/config/tenant";
 import {
   TOP_MENU_ITEMS,
   BOTTOM_MENU_ITEMS,
@@ -9,6 +10,7 @@ import {
   CATEGORY_SUB_ITEMS,
   FEEDBACK_SUB_ITEMS,
 } from "@/config/sidebarConfig";
+import type { NavItem } from "@/types/sidebar";
 
 export const useAdminSidebar = () => {
   const { user } = useAuth();
@@ -21,19 +23,14 @@ export const useAdminSidebar = () => {
       )
     ) ?? false;
 
-  const visibleTopItems = TOP_MENU_ITEMS.filter((item) => hasPermission(item.allowedPermissions));
-  const visibleBottomItems = BOTTOM_MENU_ITEMS.filter((item) =>
-    hasPermission(item.allowedPermissions)
-  );
-  const visibleQuestionItems = QUESTION_SUB_ITEMS.filter((item) =>
-    hasPermission(item.allowedPermissions)
-  );
-  const visibleCategoryItems = CATEGORY_SUB_ITEMS.filter((item) =>
-    hasPermission(item.allowedPermissions)
-  );
-  const visibleFeedbackItems = FEEDBACK_SUB_ITEMS.filter((item) =>
-    hasPermission(item.allowedPermissions)
-  );
+  const isItemVisible = (item: NavItem) =>
+    hasPermission(item.allowedPermissions) && (!item.platformOnly || isPlatformHost());
+
+  const visibleTopItems = TOP_MENU_ITEMS.filter(isItemVisible);
+  const visibleBottomItems = BOTTOM_MENU_ITEMS.filter(isItemVisible);
+  const visibleQuestionItems = QUESTION_SUB_ITEMS.filter(isItemVisible);
+  const visibleCategoryItems = CATEGORY_SUB_ITEMS.filter(isItemVisible);
+  const visibleFeedbackItems = FEEDBACK_SUB_ITEMS.filter(isItemVisible);
 
   const isPathActive = (path: string) =>
     location.pathname === path || location.pathname.startsWith(`${path}/`);

@@ -42,6 +42,8 @@ import ROLE_CONFIG from "@/config/roleConfig";
 import EmailVerified from "@/pages/EmailVerified";
 import ResetPasswordPage from "@/pages/ResetPasswordPage";
 import CompleteProfilePage from "@/pages/CompleteProfilePage";
+import SetupAdminPage from "@/pages/SetupAdminPage";
+import PlatformRoute from "@/components/PlatformRoute";
 
 // Redirect user to correct panel based on role
 const RootRedirect = () => {
@@ -118,6 +120,14 @@ const App = () => {
         />
       </Route>
       <Route path="/shared/question/:id" element={<SharedQuestionPage />} />
+      <Route
+        path="/setup-admin/:token"
+        element={
+          <PublicRoute>
+            <SetupAdminPage />
+          </PublicRoute>
+        }
+      />
       <Route element={<PrivateRoute />}>
         <Route element={<SubscriptionRoute />}>
           <Route
@@ -196,7 +206,9 @@ const App = () => {
           </Route>
 
           <Route element={<RoleRoute allowedPermissions={["manage-clients"]} />}>
-            <Route path="manage-clients" element={<ManageClientsPage />} />
+            <Route element={<PlatformRoute />}>
+              <Route path="manage-clients" element={<ManageClientsPage />} />
+            </Route>
           </Route>
 
           <Route element={<RoleRoute allowedPermissions={["add-role"]} />}>

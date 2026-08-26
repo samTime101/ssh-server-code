@@ -4,7 +4,8 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import axios from "axios";
-import { API_BASE_URL } from "@/config/apiConfig";
+import { getImageUrl } from "@/config/apiConfig";
+import { getApiBaseUrl } from "@/config/tenant";
 import type { Question } from "@/types/question";
 import MultipleChoiceOption from "@/components/user/MultipleChoiceOption";
 import SingleChoiceOption from "@/components/user/SingleChoiceOption";
@@ -21,7 +22,7 @@ const SharedQuestionPage = () => {
   useEffect(() => {
     const fetchQuestion = async () => {
       try {
-        const response = await axios.get(`${API_BASE_URL}/questions/${id}/`);
+        const response = await axios.get(`${getApiBaseUrl()}/questions/${id}/`);
         setQuestion(response.data);
       } catch (error) {
         console.error("Failed to fetch shared question", error);
@@ -84,7 +85,7 @@ const SharedQuestionPage = () => {
             {question.question_image_url && (
               <div className="flex justify-center">
                 <img
-                  src={`${API_BASE_URL.replace("/api", "")}${question.question_image_url}`}
+                  src={getImageUrl(question.question_image_url)}
                   alt="Question illustration"
                   className="max-h-72 w-auto max-w-full rounded-lg border object-contain shadow-md"
                 />

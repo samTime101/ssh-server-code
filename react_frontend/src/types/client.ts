@@ -1,3 +1,5 @@
+export type ClientStatus = "PENDING" | "PROVISIONING" | "ACTIVE" | "SUSPENDED" | "DELETED";
+
 export interface Client {
   id: string;
   organization_name: string;
@@ -6,6 +8,10 @@ export interface Client {
   registration_number: string;
   phonenumber: string;
   email: string;
+  subdomain: string;
+  database_name?: string | null;
+  mongo_database_name?: string | null;
+  status: ClientStatus;
   pan_photo_url?: string | null;
   registration_photo_url?: string | null;
   created_at?: string;
@@ -19,6 +25,7 @@ export interface ClientFormState {
   registration_number: string;
   phonenumber: string;
   email: string;
+  subdomain: string;
   pan_photo: File | null;
   registration_photo: File | null;
 }

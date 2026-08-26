@@ -1,9 +1,10 @@
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api";
+import { getApiBaseUrl } from "@/config/tenant";
 
 export const getImageUrl = (path: string | null | undefined): string => {
   if (!path) return "";
   if (path.startsWith("http")) return path;
-  const baseUrl = API_BASE_URL.endsWith("/api") ? API_BASE_URL.slice(0, -4) : API_BASE_URL;
+  const apiBase = getApiBaseUrl();
+  const baseUrl = apiBase.endsWith("/api") ? apiBase.slice(0, -4) : apiBase;
   return `${baseUrl}${path.startsWith("/") ? "" : "/"}${path}`;
 };
 
@@ -22,6 +23,7 @@ export const API_ENDPOINTS = {
   resetPasswordVerify: "/auth/forgot-password-verify/",
   resetPassword: "/auth/change-password/",
   resetPhoneNumber: "/auth/change-phonenumber/",
+  setupAdmin: "/auth/setup-admin/",
 
   // Categories
   createCategory: "/categories/",

@@ -12,6 +12,7 @@ export interface NavItem {
   text: string;
   path: string;
   allowedPermissions: string[];
+  platformOnly?: boolean;
 }
 
 export interface CollapsibleNavGroupProps {
