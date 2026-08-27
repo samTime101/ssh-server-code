@@ -3,6 +3,9 @@ SPECTACULAR_SETTINGS = {
     "TITLE": "MCQ API",
     "DESCRIPTION": """
 
+## August 25, 2026
+- Implemented multitenat architecture to system with divided databases
+
 ## August 15, 2026
 - Added endpoint for client
 - Moved client to sql from mongo Aug 21

@@ -126,6 +126,20 @@ class Client(models.Model):
     registration_photo_url = models.ImageField(upload_to=client_registration_path)
     phonenumber = models.CharField(max_length=20)
     email = models.EmailField(unique=True)
+    subdomain = models.CharField(max_length=100, unique=True, null=True, blank=True)
+    database_name = models.CharField(max_length=255, unique=True, null=True, blank=True)
+    mongo_database_name = models.CharField(max_length=255, unique=True, null=True, blank=True)
+    status = models.CharField(
+        max_length=20,
+        default='PENDING',
+        choices=[
+            ('PENDING', 'Pending'),
+            ('PROVISIONING', 'Provisioning'),
+            ('ACTIVE', 'Active'),
+            ('SUSPENDED', 'Suspended'),
+            ('DELETED', 'Deleted'),
+        ]
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
