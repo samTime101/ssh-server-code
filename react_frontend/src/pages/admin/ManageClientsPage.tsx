@@ -63,8 +63,8 @@ const ManageClientsPage = () => {
         <div>
           <h1 className="text-foreground text-2xl font-semibold">Manage Clients</h1>
           <p className="text-muted-foreground text-sm">
-            Create organization tenants. Each client gets its own subdomain, databases, and an
-            admin setup email.
+            Create organization tenants. Each client gets its own subdomain, databases, and an admin
+            setup email.
           </p>
         </div>
         <Button onClick={openCreateForm} className="cursor-pointer">
@@ -285,14 +285,6 @@ const ManageClientsPage = () => {
               />
             </div>
           </div>
-
-          {editingClient && (editingClient.database_name || editingClient.mongo_database_name) && (
-            <p className="text-muted-foreground text-xs">
-              SQL: {editingClient.database_name || "—"} · Mongo:{" "}
-              {editingClient.mongo_database_name || "—"}
-            </p>
-          )}
-
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={closeForm} disabled={submitting}>
               Cancel
