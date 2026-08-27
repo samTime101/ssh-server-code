@@ -56,6 +56,7 @@ LOCAL_APPS = [
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'core.middleware.tenant.TenantMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -76,6 +77,7 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'sql.User'
+DATABASE_ROUTERS = ['core.db_router.TenantRouter']
 
 if ENVIRONMENT == "production":
     CORS_ALLOW_ALL_ORIGINS = False

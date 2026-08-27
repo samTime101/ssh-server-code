@@ -19,8 +19,8 @@ class UserManager(BaseUserManager):
         Role = apps.get_model('sql', 'Role')
         UserRole = apps.get_model('sql', 'UserRole')
         if role and role != ROLE_USER:
-            role, _ = Role.objects.get_or_create(name=role)
-            UserRole.objects.create(user=user, role=role)
+            role, _ = Role.objects.using(self._db).get_or_create(name=role)
+            UserRole.objects.using(self._db).create(user=user, role=role)
         return user
 
     def create_superuser(self,email,username,phonenumber,first_name,last_name,password,**extra_fields):

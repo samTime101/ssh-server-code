@@ -172,3 +172,51 @@ class GoogleSignupView(APIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
         return Response(build_google_auth_tokens(user), status=status.HTTP_201_CREATED)
+
+
+class SetupAdminView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request, token):
+        from django.core.cache import cache
+        import secrets
+        invite_data = cache.get(f"admin_invite:{token}")
+        if not invite_data:
+            return Response({"detail": "Invalid or expired setup token."}, status=status.HTTP_400_BAD_REQUEST)        
+        first_name = request.data.get('first_name')
+        last_name = request.data.get('last_name')
+        phonenumber = request.data.get('phonenumber')
+        password = request.data.get('password')
+        confirm_password = request.data.get('confirm_password')
+
+        if not all([first_name, last_name, phonenumber, password]):
+            return Response({"detail": "All fields (first_name, last_name, phonenumber, password) are required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if password != confirm_password:
+            return Response({"detail": "Passwords do not match."}, status=status.HTTP_400_BAD_REQUEST)
+
+        from core.tenant_context import get_tenant_db
+        db_alias = get_tenant_db()
+        if db_alias == 'default':
+            return Response({"detail": "Must access via client subdomain to setup account."}, status=status.HTTP_400_BAD_REQUEST)
+        email = invite_data['email']
+        username = email.split('@')[0][:30]        
+        if User.objects.db_manager(db_alias).filter(email=email).exists():
+            return Response({"detail": "Administrator account already set up."}, status=status.HTTP_400_BAD_REQUEST)
+        if User.objects.db_manager(db_alias).filter(username=username).exists():
+            username = f"{username}_{secrets.token_hex(3)}"
+        try:
+            admin_user = User.objects.db_manager(db_alias).create_user(
+                email=email,
+                username=username,
+                phonenumber=phonenumber,
+                first_name=first_name,
+                last_name=last_name,
+                password=password,
+                role='ADMIN',
+                email_verified=True
+            )
+            cache.delete(f"admin_invite:{token}")           
+            return Response({"detail": "Administrator account set up successfully!"}, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response({"detail": f"Failed to setup account: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
