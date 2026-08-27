@@ -19,6 +19,57 @@ class ClientSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["id", "created_at", "updated_at", "pan_photo_url", "registration_photo_url", "status"]
 
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+        
+        subdomain = attrs.get('subdomain')
+        if subdomain is None and self.instance:
+            subdomain = self.instance.subdomain
+            
+        custom_sql_db = attrs.get('database_name')
+        if custom_sql_db is None and self.instance:
+            custom_sql_db = self.instance.database_name
+            
+        custom_mongo_db = attrs.get('mongo_database_name')
+        if custom_mongo_db is None and self.instance:
+            custom_mongo_db = self.instance.mongo_database_name
+
+        import re
+        def sanitize_name(name):
+            return re.sub(r'[^a-zA-Z0-9_]', '', name)
+
+        if subdomain:
+            subdomain_qs = Client.objects.filter(subdomain=subdomain)
+            if self.instance:
+                subdomain_qs = subdomain_qs.exclude(pk=self.instance.pk)
+            if subdomain_qs.exists():
+                raise serializers.ValidationError({"subdomain": "A client with this subdomain already exists."})
+
+            subdomain_clean = sanitize_name(subdomain)
+            sql_db_name = custom_sql_db or f"sisani_tenant_{subdomain_clean}"
+            sql_db_name = sanitize_name(sql_db_name)
+            
+            sql_qs = Client.objects.filter(database_name=sql_db_name)
+            if self.instance:
+                sql_qs = sql_qs.exclude(pk=self.instance.pk)
+            if sql_qs.exists():
+                raise serializers.ValidationError({
+                    "database_name": f"A client with SQL database name '{sql_db_name}' already exists."
+                })
+
+            mongo_db_name = custom_mongo_db or f"sisani_mongo_{subdomain_clean}"
+            mongo_db_name = sanitize_name(mongo_db_name)
+            
+            mongo_qs = Client.objects.filter(mongo_database_name=mongo_db_name)
+            if self.instance:
+                mongo_qs = mongo_qs.exclude(pk=self.instance.pk)
+            if mongo_qs.exists():
+                raise serializers.ValidationError({
+                    "mongo_database_name": f"A client with MongoDB database name '{mongo_db_name}' already exists."
+                })
+
+        return attrs
+
     def create(self, validated_data):
         pan_photo = validated_data.pop('pan_photo_url', None)
         registration_photo = validated_data.pop('registration_photo_url', None)
