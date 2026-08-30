@@ -9,7 +9,8 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from api.questions.serializers.csv_upload import CSVUploadSerializer
 from core.parser import QuestionCSVParser
-from core.constants.status import APPROVED_STATUS, IN_PROGRESS_STATUS, PENDING_STATUS
+from django.utils import timezone
+from core.constants.status import APPROVED_STATUS, IN_PROGRESS_STATUS, PENDING_STATUS, SUBMITTED_STATUS
 from mongo.models import Question, Bookmark, Bookmarks, Submissions
 from api.questions.serializers.question import *
 from api.questions.serializers.hierarchy import *
@@ -198,6 +199,12 @@ class QuestionViewSet(viewsets.ModelViewSet):
         page = self.paginate_queryset(queryset)
         selected_questions = list(page) if page is not None else all_selected_questions
         
+        if user_guid:
+            Submissions.objects(user_guid=user_guid, status=IN_PROGRESS_STATUS).update(
+                set__status=SUBMITTED_STATUS,
+                set__submitted_at=timezone.now()
+            )
+
         submission = Submissions(user_guid=user_guid,selected_questions=all_selected_questions,attempts=[],status=IN_PROGRESS_STATUS,type="question_bank")
         submission.save()
         self.paginator.submission_id = str(submission.id)

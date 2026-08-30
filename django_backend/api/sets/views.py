@@ -1,5 +1,6 @@
 from rest_framework_mongoengine import viewsets
-from core.constants.status import IN_PROGRESS_STATUS
+from django.utils import timezone
+from core.constants.status import IN_PROGRESS_STATUS, SUBMITTED_STATUS
 from mongo.models import QuestionSet, Submissions
 from rest_framework.exceptions import NotFound
 from .serializers import QuestionSetSerializer
@@ -33,6 +34,11 @@ class QuestionSetViewSet(viewsets.ModelViewSet):
             question_set_name = instance.name
             # shuffle the questions
             random.shuffle(selected_questions)
+            if user_guid:
+                Submissions.objects(user_guid=user_guid, status=IN_PROGRESS_STATUS).update(
+                    set__status=SUBMITTED_STATUS,
+                    set__submitted_at=timezone.now()
+                )
             submission = Submissions(user_guid=user_guid,selected_questions=selected_questions,attempts=[],status=IN_PROGRESS_STATUS,type=f"set_{question_set_name}")
             submission.save()
             serializer = QuestionPublicSerializer(selected_questions, many=True)
