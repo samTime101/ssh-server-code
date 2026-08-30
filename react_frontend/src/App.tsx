@@ -12,7 +12,6 @@ import QuestionProvider from "@/contexts/QuestionContext.tsx";
 import QuestionPage from "@/pages/user/QuestionPage";
 import CEEQuestionPage from "@/pages/user/CEEQuestionPage";
 import AddQuestionPage from "@/pages/admin/AddQuestionPage";
-import CreateCategoryPage from "@/pages/admin/CreateCategoryPage";
 import ManageCategoriesPage from "@/pages/admin/ManageCategoriesPage";
 import ManageSubcategoriesPage from "@/pages/admin/ManageSubcategoriesPage";
 import ManageConstraintsPage from "@/pages/admin/ManageConstraintsPage";
@@ -21,8 +20,8 @@ import ManageUsersPage from "@/pages/admin/ManageUsersPage";
 import EditUserPage from "@/pages/admin/EditUserPage";
 import ManageClientsPage from "@/pages/admin/ManageClientsPage";
 import QuestionBankPage from "@/pages/admin/QuestionBankPage";
-import AddRolePage from "@/pages/admin/AddRolePage";
-import AddCollegePage from "@/pages/admin/AddCollegePage";
+import ManageRolesPage from "@/pages/admin/ManageRolesPage";
+import ManageCollegesPage from "@/pages/admin/ManageCollegesPage";
 import ManageQuestionSetsPage from "@/pages/admin/ManageQuestionSetsPage";
 import ApplicationFeedbackPage from "@/pages/admin/ApplicationFeedbackPage";
 import ManageTestimonialsPage from "@/pages/admin/ManageTestimonialsPage";
@@ -36,11 +35,14 @@ import BookmarksPage from "@/pages/user/BookmarksPage";
 import SettingsPage from "@/pages/user/SettingsPage";
 import SharedQuestionPage from "@/pages/public/SharedQuestionPage";
 import RoleRoute from "@/components/RoleRoute";
+import SubscriptionRoute from "@/components/SubscriptionRoute";
 import Loader from "@/components/ui/Loader";
 import ROLE_CONFIG from "@/config/roleConfig";
 import EmailVerified from "@/pages/EmailVerified";
 import ResetPasswordPage from "@/pages/ResetPasswordPage";
 import CompleteProfilePage from "@/pages/CompleteProfilePage";
+import SetupAdminPage from "@/pages/SetupAdminPage";
+import PlatformRoute from "@/components/PlatformRoute";
 
 // Redirect user to correct panel based on role
 const RootRedirect = () => {
@@ -117,15 +119,25 @@ const App = () => {
         />
       </Route>
       <Route path="/shared/question/:id" element={<SharedQuestionPage />} />
+      <Route
+        path="/setup-admin/:token"
+        element={
+          <PublicRoute>
+            <SetupAdminPage />
+          </PublicRoute>
+        }
+      />
       <Route element={<PrivateRoute />}>
-        <Route
-          path="/userpanel/mock-exams"
-          element={
-            <QuestionProvider>
-              <MockExamPage />
-            </QuestionProvider>
-          }
-        />
+        <Route element={<SubscriptionRoute />}>
+          <Route
+            path="/userpanel/mock-exams"
+            element={
+              <QuestionProvider>
+                <MockExamPage />
+              </QuestionProvider>
+            }
+          />
+        </Route>
         {/* User Panel */}
         <Route
           path="/userpanel"
@@ -136,13 +148,15 @@ const App = () => {
           }
         >
           <Route index element={<Navigate to="question-bank" replace />} />
-          <Route path="question-bank" element={<QuestionBankSection />} />
-          <Route path="question" element={<QuestionPage />} />
-          <Route path="cee-practice" element={<CEEPracticeSection />} />
-          <Route path="cee-question" element={<CEEQuestionPage />} />
+          <Route element={<SubscriptionRoute />}>
+            <Route path="question-bank" element={<QuestionBankSection />} />
+            <Route path="question" element={<QuestionPage />} />
+            <Route path="cee-practice" element={<CEEPracticeSection />} />
+            <Route path="cee-question" element={<CEEQuestionPage />} />
+            <Route path="history" element={<HistoryPage />} />
+            <Route path="bookmarks" element={<BookmarksPage />} />
+          </Route>
           <Route path="profile" element={<ProfilePage />} />
-          <Route path="history" element={<HistoryPage />} />
-          <Route path="bookmarks" element={<BookmarksPage />} />
           <Route path="settings" element={<SettingsPage />} />
         </Route>
 
@@ -160,10 +174,6 @@ const App = () => {
 
           <Route element={<RoleRoute allowedPermissions={["manage-question-sets"]} />}>
             <Route path="manage-question-sets" element={<ManageQuestionSetsPage />} />
-          </Route>
-
-          <Route element={<RoleRoute allowedPermissions={["create-category"]} />}>
-            <Route path="create-category" element={<CreateCategoryPage />} />
           </Route>
 
           <Route element={<RoleRoute allowedPermissions={["manage-categories"]} />}>
@@ -191,15 +201,17 @@ const App = () => {
           </Route>
 
           <Route element={<RoleRoute allowedPermissions={["manage-clients"]} />}>
-            <Route path="manage-clients" element={<ManageClientsPage />} />
+            <Route element={<PlatformRoute />}>
+              <Route path="manage-clients" element={<ManageClientsPage />} />
+            </Route>
           </Route>
 
           <Route element={<RoleRoute allowedPermissions={["add-role"]} />}>
-            <Route path="add-role" element={<AddRolePage />} />
+            <Route path="add-role" element={<ManageRolesPage />} />
           </Route>
 
           <Route element={<RoleRoute allowedPermissions={["add-college"]} />}>
-            <Route path="add-college" element={<AddCollegePage />} />
+            <Route path="add-college" element={<ManageCollegesPage />} />
           </Route>
 
           <Route element={<RoleRoute allowedPermissions={["application-feedback"]} />}>

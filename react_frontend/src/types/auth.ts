@@ -122,3 +122,11 @@ export interface CompleteProfileFormValues {
 export interface CompleteProfileLocationState {
   googleSignup: GoogleSignupPending;
 }
+
+export interface SetupAdminRequest {
+  first_name: string;
+  last_name: string;
+  phonenumber: string;
+  password: string;
+  confirm_password: string;
+}

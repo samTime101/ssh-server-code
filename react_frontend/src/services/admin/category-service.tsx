@@ -1,15 +1,16 @@
 import axiosInstance from "../axios";
 import { API_ENDPOINTS } from "@/config/apiConfig";
-import type { CreateCategoryResponse, GetCategoriesResponse, Category } from "@/types/category";
+import type { CreateCategoryResponse, GetCategoriesResponse } from "@/types/category";
 import { extractPagination, toCategoryList } from "@/utils/categoryUtils";
 
 export const createCategory = async (
-  //TODO: Confirm the type of categoryName
-  categoryName: Category
+  name: string,
+  icon?: string
 ): Promise<CreateCategoryResponse> => {
   try {
-    const response = await axiosInstance.post(API_ENDPOINTS.createCategory, categoryName);
-
+    const payload: { name: string; icon?: string } = { name };
+    if (icon) payload.icon = icon;
+    const response = await axiosInstance.post(API_ENDPOINTS.createCategory, payload);
     return response.data;
   } catch (error) {
     console.error(error);

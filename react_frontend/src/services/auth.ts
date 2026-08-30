@@ -7,6 +7,7 @@ import type {
   GoogleSignupResponse,
   LoginRequest,
   ResetPasswordVerifyRequest,
+  SetupAdminRequest,
   SignupRequest,
 } from "@/types/auth";
 import axiosInstance from "@/services/axios";
@@ -77,4 +78,8 @@ export const verifyPasswordResetService = async (
   data: ResetPasswordVerifyRequest
 ) => {
   return axiosInstance.post(`${API_ENDPOINTS.resetPasswordVerify}${token}/`, data);
+};
+
+export const setupAdminService = async (token: string, data: SetupAdminRequest) => {
+  return axiosInstance.post(`${API_ENDPOINTS.setupAdmin}${token}/`, data);
 };

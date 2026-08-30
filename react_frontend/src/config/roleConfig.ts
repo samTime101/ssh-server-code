@@ -2,7 +2,6 @@ const ROLE_CONFIG = {
   ADMIN: [
     "dashboard",
     "add-question",
-    "create-category",
     "manage-categories",
     "manage-subcategories",
     "manage-users",

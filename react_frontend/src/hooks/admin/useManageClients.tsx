@@ -8,6 +8,8 @@ import {
   deleteClient,
 } from "@/services/admin/client-service";
 import type { Client, ClientFormState } from "@/types/client";
+import { getTenantAccessHost, isValidSubdomain } from "@/config/tenant";
+import { getApiErrorMessage } from "@/utils/errorUtils";
 
 const emptyForm: ClientFormState = {
   organization_name: "",
@@ -16,6 +18,7 @@ const emptyForm: ClientFormState = {
   registration_number: "",
   phonenumber: "",
   email: "",
+  subdomain: "",
   pan_photo: null,
   registration_photo: null,
 };
@@ -28,6 +31,7 @@ const buildFormData = (form: ClientFormState): FormData => {
   formData.append("registration_number", form.registration_number.trim());
   formData.append("phonenumber", form.phonenumber.trim());
   formData.append("email", form.email.trim());
+  formData.append("subdomain", form.subdomain.trim().toLowerCase());
   if (form.pan_photo) formData.append("pan_photo", form.pan_photo);
   if (form.registration_photo) formData.append("registration_photo", form.registration_photo);
   return formData;
@@ -40,6 +44,11 @@ const validateClientForm = (form: ClientFormState, isEditing: boolean): string |
   if (!form.registration_number.trim()) return "Registration number is required";
   if (!form.phonenumber.trim()) return "Phone number is required";
   if (!form.email.trim()) return "Email is required";
+  if (!form.subdomain.trim()) return "Subdomain is required";
+  if (!isValidSubdomain(form.subdomain.trim().toLowerCase())) {
+    return "Subdomain must be lowercase letters, numbers, or hyphens, and cannot be reserved";
+  }
+  if (!isEditing && !form.pan_photo) return "PAN photo is required";
   if (!isEditing && !form.registration_photo) return "Registration photo is required";
   return null;
 };
@@ -49,6 +58,7 @@ export const useManageClients = () => {
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
   const [pagination, setPagination] = useState({
@@ -84,7 +94,18 @@ export const useManageClients = () => {
     loadClients();
   }, [loadClients]);
 
-  const handleEdit = (client: Client) => {
+  const resetForm = () => {
+    setFormData(emptyForm);
+    setEditingId(null);
+    setEditingClient(null);
+  };
+
+  const openCreateForm = () => {
+    resetForm();
+    setIsFormOpen(true);
+  };
+
+  const openEditForm = (client: Client) => {
     setEditingId(client.id);
     setEditingClient(client);
     setFormData({
@@ -94,25 +115,29 @@ export const useManageClients = () => {
       registration_number: client.registration_number,
       phonenumber: client.phonenumber,
       email: client.email,
+      subdomain: client.subdomain ?? "",
       pan_photo: null,
       registration_photo: null,
     });
+    setIsFormOpen(true);
+  };
+
+  const closeForm = () => {
+    setIsFormOpen(false);
+    resetForm();
   };
 
   const handleFileChange = (field: "pan_photo" | "registration_photo", file: File | null) => {
     setFormData((prev) => ({ ...prev, [field]: file }));
   };
 
-  const resetForm = () => {
-    setFormData(emptyForm);
-    setEditingId(null);
-    setEditingClient(null);
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
     const validationError = validateClientForm(formData, !!editingId);
-    if (validationError) return toast.error(validationError);
+    if (validationError) {
+      toast.error(validationError);
+      return;
+    }
 
     setSubmitting(true);
     try {
@@ -122,12 +147,13 @@ export const useManageClients = () => {
         toast.success("Client updated successfully");
       } else {
         await createClient(payload);
-        toast.success("Client created successfully");
+        const accessHost = getTenantAccessHost(formData.subdomain.trim().toLowerCase());
+        toast.success(`Client created. Setup email sent. Org will be available at ${accessHost}`);
       }
-      resetForm();
-      loadClients();
+      closeForm();
+      await loadClients();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to save client");
+      toast.error(getApiErrorMessage(err, "Failed to save client"));
     } finally {
       setSubmitting(false);
     }
@@ -141,10 +167,10 @@ export const useManageClients = () => {
       if (clients.length === 1 && currentPage > 1) {
         setCurrentPage((prev) => prev - 1);
       } else {
-        loadClients();
+        await loadClients();
       }
-    } catch {
-      toast.error("Failed to delete client");
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, "Failed to delete client"));
     }
   };
 
@@ -156,7 +182,7 @@ export const useManageClients = () => {
   };
 
   const filteredClients = clients.filter((client) =>
-    `${client.organization_name} ${client.email} ${client.pan} ${client.registration_number}`
+    `${client.organization_name} ${client.email} ${client.pan} ${client.registration_number} ${client.subdomain} ${client.status}`
       .toLowerCase()
       .includes(searchQuery.toLowerCase())
   );
@@ -166,22 +192,24 @@ export const useManageClients = () => {
     filteredClients,
     loading,
     submitting,
+    isFormOpen,
     editingId,
     editingClient,
     pagination,
     currentPage,
     pageSize,
     formData,
-    searchQuery,
     setFormData,
+    searchQuery,
     setSearchQuery,
-    handleEdit,
+    openCreateForm,
+    openEditForm,
+    closeForm,
     handleFileChange,
     handleSubmit,
     handleDelete,
     handlePageChange,
     handlePageSizeChange,
-    resetForm,
     modal,
   };
 };

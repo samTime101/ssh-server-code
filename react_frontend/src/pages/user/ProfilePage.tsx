@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import Loader from "@/components/ui/Loader";
 import MyProfile from "@/components/profile/MyProfile";
@@ -6,11 +6,25 @@ import MyStatistics from "@/components/profile/MyStatistics";
 import MySuggestedQuestions from "@/components/profile/MySuggestedQuestions";
 import MySubscriptions from "@/components/profile/MySubscriptions";
 
-type TabType = "profile" | "statistics" | "questions" | "subscriptions";
+const PROFILE_TABS = ["profile", "statistics", "questions", "subscriptions"] as const;
+type TabType = (typeof PROFILE_TABS)[number];
+
+const isProfileTab = (value: string | null): value is TabType =>
+  PROFILE_TABS.includes(value as TabType);
 
 const ProfilePage = () => {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState<TabType>("profile");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabParam = searchParams.get("tab");
+  const activeTab: TabType = isProfileTab(tabParam) ? tabParam : "profile";
+
+  const setActiveTab = (tab: TabType) => {
+    if (tab === "profile") {
+      setSearchParams({}, { replace: true });
+      return;
+    }
+    setSearchParams({ tab }, { replace: true });
+  };
 
   if (!user) {
     return (

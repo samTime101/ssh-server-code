@@ -12,9 +12,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ImageIcon, Upload, X } from "lucide-react";
+import { Upload, X } from "lucide-react";
 import { useSuggestedQuestionForm } from "@/hooks/profile/useSuggestedQuestionForm";
-import { useEffect, useState } from "react";
+import ImagePreview from "@/components/ImagePreview";
 
 const MySuggestedQuestions = () => {
   const {
@@ -39,27 +39,6 @@ const MySuggestedQuestions = () => {
     contributorName,
     onSubmit,
   } = useSuggestedQuestionForm();
-
-  const [previewUrls, setPreviewUrls] = useState<{
-    question: string | null;
-    description: string | null;
-  }>({ question: null, description: null });
-
-  useEffect(() => {
-    const createdQuestionUrl = selectedImages.question
-      ? URL.createObjectURL(selectedImages.question)
-      : null;
-    const createdDescriptionUrl = selectedImages.description
-      ? URL.createObjectURL(selectedImages.description)
-      : null;
-
-    setPreviewUrls({ question: createdQuestionUrl, description: createdDescriptionUrl });
-
-    return () => {
-      if (createdQuestionUrl) URL.revokeObjectURL(createdQuestionUrl);
-      if (createdDescriptionUrl) URL.revokeObjectURL(createdDescriptionUrl);
-    };
-  }, [selectedImages.question, selectedImages.description]);
 
   return (
     <div className="space-y-8">
@@ -106,31 +85,22 @@ const MySuggestedQuestions = () => {
                     <Upload size={16} />
                     Choose Question Image
                   </label>
-
-                  {selectedImages.question && (
-                    <div className="flex items-center gap-2">
-                      <ImageIcon size={16} className="text-green-600" />
-                      <span className="text-muted-foreground text-sm">
-                        {selectedImages.question.name}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => handleImageChange("question", null)}
-                        className="text-destructive hover:text-destructive/70 ml-2"
-                      >
-                        <X size={14} />
-                      </button>
-                    </div>
-                  )}
                 </div>
 
                 {selectedImages.question && (
-                  <div className="mt-3">
-                    <img
-                      src={previewUrls.question || ""}
+                  <div className="flex items-start gap-2">
+                    <ImagePreview
+                      file={selectedImages.question}
                       alt="Question preview"
-                      className="border-border max-h-48 max-w-xs rounded-md border"
+                      className="mt-0 h-20 w-auto max-w-40 object-contain"
                     />
+                    <button
+                      type="button"
+                      onClick={() => handleImageChange("question", null)}
+                      className="text-destructive hover:text-destructive/70"
+                    >
+                      <X size={14} />
+                    </button>
                   </div>
                 )}
               </div>
@@ -153,31 +123,22 @@ const MySuggestedQuestions = () => {
                     <Upload size={16} />
                     Choose Description Image
                   </label>
-
-                  {selectedImages.description && (
-                    <div className="flex items-center gap-2">
-                      <ImageIcon size={16} className="text-green-600" />
-                      <span className="text-muted-foreground text-sm">
-                        {selectedImages.description.name}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => handleImageChange("description", null)}
-                        className="text-destructive hover:text-destructive/70 ml-2"
-                      >
-                        <X size={14} />
-                      </button>
-                    </div>
-                  )}
                 </div>
 
                 {selectedImages.description && (
-                  <div className="mt-3">
-                    <img
-                      src={previewUrls.description || ""}
+                  <div className="flex items-start gap-2">
+                    <ImagePreview
+                      file={selectedImages.description}
                       alt="Description preview"
-                      className="border-border max-h-48 max-w-xs rounded-md border"
+                      className="mt-0 h-20 w-auto max-w-40 object-contain"
                     />
+                    <button
+                      type="button"
+                      onClick={() => handleImageChange("description", null)}
+                      className="text-destructive hover:text-destructive/70"
+                    >
+                      <X size={14} />
+                    </button>
                   </div>
                 )}
               </div>

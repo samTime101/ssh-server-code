@@ -1,17 +1,23 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useConfirm } from "@/hooks/useConfirm";
-import { fetchCategories, updateCategory, deleteCategory } from "@/services/admin/category-service";
+import {
+  createCategory,
+  deleteCategory,
+  fetchCategories,
+  updateCategory,
+} from "@/services/admin/category-service";
 import type { Category, CategoryStatus } from "@/types/category";
 
 export const useManageCategories = () => {
   const { confirm, modal } = useConfirm();
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [editTarget, setEditTarget] = useState<Category | null>(null);
-  const [editName, setEditName] = useState("");
-  const [editIcon, setEditIcon] = useState("");
-  const [editStatus, setEditStatus] = useState<CategoryStatus>("pending");
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editingTarget, setEditingTarget] = useState<Category | null>(null);
+  const [name, setName] = useState("");
+  const [icon, setIcon] = useState("");
+  const [status, setStatus] = useState<CategoryStatus>("pending");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -22,11 +28,7 @@ export const useManageCategories = () => {
     current_page: 1,
   });
 
-  useEffect(() => {
-    loadCategories();
-  }, [currentPage, pageSize]);
-
-  const loadCategories = async () => {
+  const loadCategories = useCallback(async () => {
     setIsLoading(true);
     try {
       const data = await fetchCategories(currentPage, pageSize);
@@ -39,33 +41,56 @@ export const useManageCategories = () => {
     } finally {
       setIsLoading(false);
     }
+  }, [currentPage, pageSize]);
+
+  useEffect(() => {
+    loadCategories();
+  }, [loadCategories]);
+
+  const resetForm = () => {
+    setName("");
+    setIcon("");
+    setStatus("pending");
+    setEditingTarget(null);
   };
 
-  const openEditModal = (category: Category) => {
-    setEditTarget(category);
-    setEditName(category.name);
-    setEditIcon(category.icon ?? "");
-    setEditStatus(category.status ?? "pending");
+  const openCreateForm = () => {
+    resetForm();
+    setIsFormOpen(true);
   };
 
-  const closeEditModal = () => {
-    setEditTarget(null);
-    setEditName("");
-    setEditIcon("");
-    setEditStatus("pending");
+  const openEditForm = (category: Category) => {
+    setEditingTarget(category);
+    setName(category.name);
+    setIcon(category.icon ?? "");
+    setStatus(category.status ?? "pending");
+    setIsFormOpen(true);
   };
 
-  const handleEditSubmit = async (e: React.FormEvent) => {
+  const closeForm = () => {
+    setIsFormOpen(false);
+    resetForm();
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editTarget || !editName.trim()) return;
+    if (!name.trim()) {
+      toast.error("Category name is required");
+      return;
+    }
     setIsSubmitting(true);
     try {
-      await updateCategory(editTarget.id, editName.trim(), editStatus, editIcon);
-      toast.success("Category updated successfully");
-      closeEditModal();
+      if (editingTarget) {
+        await updateCategory(editingTarget.id, name.trim(), status, icon);
+        toast.success("Category updated successfully");
+      } else {
+        await createCategory(name.trim(), icon || undefined);
+        toast.success("Category created successfully");
+      }
+      closeForm();
       await loadCategories();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to update category");
+      toast.error(error instanceof Error ? error.message : "Failed to save category");
     } finally {
       setIsSubmitting(false);
     }
@@ -91,9 +116,7 @@ export const useManageCategories = () => {
     }
   };
 
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-  };
+  const handlePageChange = (page: number) => setCurrentPage(page);
 
   const handlePageSizeChange = (size: number) => {
     setPageSize(size);
@@ -103,17 +126,19 @@ export const useManageCategories = () => {
   return {
     categories,
     isLoading,
-    editTarget,
-    editName,
-    setEditName,
-    editIcon,
-    setEditIcon,
-    editStatus,
-    setEditStatus,
+    isFormOpen,
+    editingTarget,
+    name,
+    setName,
+    icon,
+    setIcon,
+    status,
+    setStatus,
     isSubmitting,
-    openEditModal,
-    closeEditModal,
-    handleEditSubmit,
+    openCreateForm,
+    openEditForm,
+    closeForm,
+    handleSubmit,
     handleDelete,
     currentPage,
     pageSize,

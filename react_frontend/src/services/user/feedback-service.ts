@@ -1,5 +1,6 @@
 import axios from "axios";
-import { API_BASE_URL, API_ENDPOINTS } from "@/config/apiConfig";
+import { API_ENDPOINTS } from "@/config/apiConfig";
+import { getApiBaseUrl } from "@/config/tenant";
 
 const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
 
@@ -49,7 +50,7 @@ export const submitFeedbackForm = async (
   }
 
   try {
-    await axios.post(`${API_BASE_URL}${API_ENDPOINTS.feedback}`, trimmedPayload);
+    await axios.post(`${getApiBaseUrl()}${API_ENDPOINTS.feedback}`, trimmedPayload);
     return { ok: true };
   } catch (error) {
     if (axios.isAxiosError(error)) {

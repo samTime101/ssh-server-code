@@ -1,21 +1,26 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useConfirm } from "@/hooks/useConfirm";
 import {
+  createSubCategory,
+  deleteSubCategory,
   fetchSubcategories,
   updateSubCategory,
-  deleteSubCategory,
 } from "@/services/admin/subcategory-service";
-import type { CategoryStatus, SubCategoryDetail } from "@/types/category";
+import { fetchCategories } from "@/services/admin/category-service";
+import type { Category, CategoryStatus, SubCategoryDetail } from "@/types/category";
 
 export const useManageSubcategories = () => {
   const { confirm, modal } = useConfirm();
   const [subcategories, setSubcategories] = useState<SubCategoryDetail[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isFormOpen, setIsFormOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<SubCategoryDetail | null>(null);
-  const [editName, setEditName] = useState("");
-  const [editIcon, setEditIcon] = useState("");
-  const [editStatus, setEditStatus] = useState<CategoryStatus>("pending");
+  const [name, setName] = useState("");
+  const [icon, setIcon] = useState("");
+  const [status, setStatus] = useState<CategoryStatus>("pending");
+  const [categoryId, setCategoryId] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -26,11 +31,7 @@ export const useManageSubcategories = () => {
     current_page: 1,
   });
 
-  useEffect(() => {
-    loadSubcategories();
-  }, [currentPage, pageSize]);
-
-  const loadSubcategories = async () => {
+  const loadSubcategories = useCallback(async () => {
     setIsLoading(true);
     try {
       const data = await fetchSubcategories(currentPage, pageSize);
@@ -43,39 +44,75 @@ export const useManageSubcategories = () => {
     } finally {
       setIsLoading(false);
     }
+  }, [currentPage, pageSize]);
+
+  const loadCategories = useCallback(async () => {
+    try {
+      const data = await fetchCategories(1, 1000);
+      setCategories(data.categories);
+    } catch {
+      toast.error("Failed to load categories");
+    }
+  }, []);
+
+  useEffect(() => {
+    loadSubcategories();
+  }, [loadSubcategories]);
+
+  useEffect(() => {
+    loadCategories();
+  }, [loadCategories]);
+
+  const resetForm = () => {
+    setName("");
+    setIcon("");
+    setStatus("pending");
+    setCategoryId("");
+    setEditTarget(null);
+  };
+
+  const openCreateForm = () => {
+    resetForm();
+    setIsFormOpen(true);
   };
 
   const openEditModal = (subcategory: SubCategoryDetail) => {
     setEditTarget(subcategory);
-    setEditName(subcategory.name);
-    setEditIcon(subcategory.icon ?? "");
-    setEditStatus(subcategory.status ?? "pending");
+    setName(subcategory.name);
+    setIcon(subcategory.icon ?? "");
+    setStatus(subcategory.status ?? "pending");
+    setCategoryId(subcategory.categoryId);
+    setIsFormOpen(true);
   };
 
-  const closeEditModal = () => {
-    setEditTarget(null);
-    setEditName("");
-    setEditIcon("");
-    setEditStatus("pending");
+  const closeForm = () => {
+    setIsFormOpen(false);
+    resetForm();
   };
 
-  const handleEditSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editTarget || !editName.trim()) return;
+    if (!name.trim()) {
+      toast.error("Subcategory name is required");
+      return;
+    }
+    if (!categoryId) {
+      toast.error("Category is required");
+      return;
+    }
     setIsSubmitting(true);
     try {
-      await updateSubCategory(
-        editTarget.id,
-        editName.trim(),
-        editTarget.categoryId,
-        editStatus,
-        editIcon
-      );
-      toast.success("Subcategory updated successfully");
-      closeEditModal();
+      if (editTarget) {
+        await updateSubCategory(editTarget.id, name.trim(), categoryId, status, icon);
+        toast.success("Subcategory updated successfully");
+      } else {
+        await createSubCategory(categoryId, name.trim(), icon || undefined);
+        toast.success("Subcategory created successfully");
+      }
+      closeForm();
       await loadSubcategories();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to update subcategory");
+      toast.error(error instanceof Error ? error.message : "Failed to save subcategory");
     } finally {
       setIsSubmitting(false);
     }
@@ -101,9 +138,7 @@ export const useManageSubcategories = () => {
     }
   };
 
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-  };
+  const handlePageChange = (page: number) => setCurrentPage(page);
 
   const handlePageSizeChange = (size: number) => {
     setPageSize(size);
@@ -112,18 +147,23 @@ export const useManageSubcategories = () => {
 
   return {
     subcategories,
+    categories,
     isLoading,
+    isFormOpen,
     editTarget,
-    editName,
-    setEditName,
-    editIcon,
-    setEditIcon,
-    editStatus,
-    setEditStatus,
+    name,
+    setName,
+    icon,
+    setIcon,
+    status,
+    setStatus,
+    categoryId,
+    setCategoryId,
     isSubmitting,
+    openCreateForm,
     openEditModal,
-    closeEditModal,
-    handleEditSubmit,
+    closeForm,
+    handleSubmit,
     handleDelete,
     currentPage,
     pageSize,

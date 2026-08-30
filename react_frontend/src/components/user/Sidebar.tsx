@@ -12,8 +12,10 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   History,
+  Lock,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { useHasActiveSubscription } from "@/config/subscriptionAccess";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   Dialog,
@@ -34,23 +36,44 @@ interface SidebarProps {
 }
 
 const menuItems = [
-  { icon: Book, text: "Question Bank", path: "/userpanel/question-bank" },
-  { icon: Stethoscope, text: "CEE Practice", path: "/userpanel/cee-practice" },
-  { icon: FileText, text: "Mock Exams", path: "/userpanel/mock-exams" },
+  { icon: Book, text: "Question Bank", path: "/userpanel/question-bank", requiresSubscription: true },
+  {
+    icon: Stethoscope,
+    text: "CEE Practice",
+    path: "/userpanel/cee-practice",
+    requiresSubscription: true,
+  },
+  { icon: FileText, text: "Mock Exams", path: "/userpanel/mock-exams", requiresSubscription: true },
 ];
 
 const otherItems = [
   { icon: User, text: "Profile", path: "/userpanel/profile", type: "link" as const },
-  { icon: History, text: "History", path: "/userpanel/history", type: "link" as const },
-  { icon: Bookmark, text: "Bookmarks", path: "/userpanel/bookmarks", type: "link" as const },
+  {
+    icon: History,
+    text: "History",
+    path: "/userpanel/history",
+    type: "link" as const,
+    requiresSubscription: true,
+  },
+  {
+    icon: Bookmark,
+    text: "Bookmarks",
+    path: "/userpanel/bookmarks",
+    type: "link" as const,
+    requiresSubscription: true,
+  },
   { icon: Settings, text: "Settings", path: "/userpanel/settings", type: "link" as const },
   { icon: LogOut, text: "Logout", type: "button" as const },
 ];
 
 const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }: SidebarProps) => {
   const { logout } = useAuth();
+  const hasActiveSubscription = useHasActiveSubscription();
   const location = useLocation();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+
+  const isLocked = (requiresSubscription?: boolean) =>
+    Boolean(requiresSubscription) && !hasActiveSubscription;
 
   const isActive = (path: string) => {
     if (path === "/userpanel/cee-practice") {
@@ -74,6 +97,8 @@ const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }: SidebarProp
   const renderNavLink = (item: (typeof menuItems)[number]) => {
     const IconComponent = item.icon;
     const active = isActive(item.path);
+    const locked = isLocked(item.requiresSubscription);
+    const tooltipLabel = locked ? `${item.text} (locked)` : item.text;
 
     const link = (
       <Link key={item.path} to={item.path} onClick={onClose} className={baseItemClass(active)}>
@@ -84,7 +109,13 @@ const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }: SidebarProp
             active ? "text-sidebar-primary-foreground" : "text-muted-foreground"
           )}
         />
-        {!isCollapsed && <p className="text-sm font-medium">{item.text}</p>}
+        {!isCollapsed && <p className="flex-1 text-sm font-medium">{item.text}</p>}
+        {!isCollapsed && locked && (
+          <Lock
+            size={14}
+            className={active ? "text-sidebar-primary-foreground" : "text-muted-foreground"}
+          />
+        )}
       </Link>
     );
 
@@ -93,7 +124,7 @@ const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }: SidebarProp
     return (
       <Tooltip key={item.path}>
         <TooltipTrigger asChild>{link}</TooltipTrigger>
-        <TooltipContent side="right">{item.text}</TooltipContent>
+        <TooltipContent side="right">{tooltipLabel}</TooltipContent>
       </Tooltip>
     );
   };
@@ -103,6 +134,8 @@ const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }: SidebarProp
 
     if (item.type === "link" && item.path) {
       const active = isActive(item.path);
+      const locked = isLocked(item.requiresSubscription);
+      const tooltipLabel = locked ? `${item.text} (locked)` : item.text;
       const link = (
         <Link
           key={item.path}
@@ -114,7 +147,13 @@ const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }: SidebarProp
             size={20}
             className={active ? "text-sidebar-primary-foreground" : "text-muted-foreground"}
           />
-          {!isCollapsed && <p className="text-sm font-medium">{item.text}</p>}
+          {!isCollapsed && <p className="flex-1 text-sm font-medium">{item.text}</p>}
+          {!isCollapsed && locked && (
+            <Lock
+              size={14}
+              className={active ? "text-sidebar-primary-foreground" : "text-muted-foreground"}
+            />
+          )}
         </Link>
       );
 
@@ -123,7 +162,7 @@ const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }: SidebarProp
       return (
         <Tooltip key={item.path}>
           <TooltipTrigger asChild>{link}</TooltipTrigger>
-          <TooltipContent side="right">{item.text}</TooltipContent>
+          <TooltipContent side="right">{tooltipLabel}</TooltipContent>
         </Tooltip>
       );
     }

@@ -21,3 +21,22 @@ export const createRole = async (roleName: string) => {
     throw new Error("Failed to create role");
   }
 };
+
+export const updateRole = async (id: string, roleName: string) => {
+  try {
+    const res = await axiosInstance.put(`${API_ENDPOINTS.roles}${id}/`, { name: roleName });
+    return res.data;
+  } catch (error) {
+    console.error("Failed to update role:", error);
+    throw new Error("Failed to update role");
+  }
+};
+
+export const deleteRole = async (id: string) => {
+  try {
+    await axiosInstance.delete(`${API_ENDPOINTS.roles}${id}/`);
+  } catch (error) {
+    console.error("Failed to delete role:", error);
+    throw new Error("Failed to delete role");
+  }
+};
