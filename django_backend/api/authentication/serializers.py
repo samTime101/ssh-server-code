@@ -89,10 +89,32 @@ class EmailVerifyRequestSerializer(serializers.Serializer):
 
 class VerifiedTokenObtainPairSerializer(TokenObtainPairSerializer):
     recaptcha = ReCaptchaV2Field()
+
     def validate(self, attrs):
         data = super().validate(attrs)
         if not self.user.is_email_verified:
             raise AuthenticationFailed("Please verify your email address before signing in.")
+
+        if self.user.has_role("ADMIN"):
+            data["ADMIN"] = [
+                "dashboard",
+                "add-question",
+                "manage-categories",
+                "manage-subcategories",
+                "manage-users",
+                "manage-users/:id",
+                "manage-clients",
+                "add-role",
+                "add-college",
+                "question-bank",
+                "manage-question-sets",
+                "manage-constraints",
+                "manage-subscriptions",
+                "application-feedback",
+                "analytics",
+                "manage-testimonials",
+            ]
+
         return data
 
 

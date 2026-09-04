@@ -3,6 +3,9 @@ SPECTACULAR_SETTINGS = {
     "TITLE": "MCQ API",
     "DESCRIPTION": """
 
+## September 4, 2026
+- Added `ADMIN` role config to signin response for users with admin privileges, providing them with additional information and access to admin-specific functionalities within the application.
+
 ## August 25, 2026
 - Implemented multitenat architecture to system with divided databases
 
